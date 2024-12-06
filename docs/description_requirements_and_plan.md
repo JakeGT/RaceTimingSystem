@@ -33,9 +33,9 @@ In order to scroll through the gantt chart, change the number in cell C7 called 
 #### Implementation
  - Dataset Pre-processing: This is where videos and images from running races and cropped and handled by humans to get the bib number along with the bounding box for the runners and the bibs.
  - Model creation and training: This is where we take the dataset and start running the training process of the dataset.
- - Front-end Components Implementation: 
- - Back-end Components Implementation:
- - Component Integration
+ - Front-end Components Implementation: This will be the website such as live race times and race management screens.
+ - Back-end Components Implementation: This would elements such as the database, race time processing, computer vision, etc. 
+ - Component Integration: This is where each individual component developed is brought together into a complete system.
 
 #### Testing and Validation
  - Unit Testing:
