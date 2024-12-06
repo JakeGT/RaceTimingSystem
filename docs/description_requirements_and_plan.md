@@ -43,7 +43,7 @@ The project also requires a website that allows runners to access their finish t
 
 ### Stretch Goals
   1.	The website could provide an API for the race organiser to integrate the race results into their own website
-  2.	Each time entry should also have a link for the runner to view the video of them crossing theline
+  2.	Each time entry should also have a link for the runner to view the video of them crossing the line
   3.	The leaderboard should allow users to filter by runner categories
 
 # Success Criteria
@@ -52,7 +52,7 @@ The project also requires a website that allows runners to access their finish t
   1.	The race recording program can run on a high-end laptop with good specifications
   2.	Able to identify runner bibs within an acceptable error margin
   3.	Able to read the runner bibs where the number is clear in the image
-  4.	Able to record a correct time for when the bib finished, within a 2 second accuracy
+  4.	Able to record a correct time for when the bib finished, within a 2-second accuracy
   5.	Able to post results to an online leaderboard
   6.	Able to correctly format the leaderboard to show the runners in the correct order
   7.	Able to retrieve any stored video or images for the purposes for complying with GDPR
@@ -99,7 +99,7 @@ In order to scroll through the gantt chart, change the number in cell C7 called 
 
 ### Research and Planning
  - Project Kick-off report: This is the first submissible and contains the summary, project spec, requirements, inventory, success criteria, and ethics.
- - Background Research: Initial research into the potential development pathway of the project. This includes research into the project requriements from the client.
+ - Background Research: Initial research into the potential development pathway of the project. This includes research into the project requirements from the client.
 
 ### Project Design
  - System Design: This is the stage where we define the overall system such as the interfaces between each component and how the project will be broken down into smaller components. 
