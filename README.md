@@ -1,6 +1,6 @@
 # README
 
-## Executive Summary (500)
+## Executive Summary
 Across the world, people compete in a variety of running races spanning across different abilities, ages, and forms. These races require some form of accurate timing system. For more professional and more equipped races, RFID is often a sufficient solution. However, for many races operating on lower budgets, RFID is impractical from an economic and organisational standpoint. Therefore, an alternative must be found, outside the traditional method of utilising an organiser member sat at the finish line with a clipboard and stopwatch recording all results. This older method, whilst practical, is by nature prone to human error, and struggles with a variety of situations, such as when a large number of contestants are crossing the finish line at the same time. Recent developments in computer vision technology, in combination with the ubiquitous use of high quality mobile cameras, present a more modern approach to this problem.
 
 We propose a system where the organisers set up a camera in the vicinity of the finishing line, which is connected to a nearby laptop. Using the camera feed, computer vision models will recognise runners, their bib numbers, and after associating those together, detect when they have finished the race. Once this has been completed the results of the race can be uploaded to the organiser's website.
