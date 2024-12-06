@@ -18,11 +18,11 @@ In this part of the project, the main goal would be to use a framework such as Y
 
 ### Minimum Viable Product
   1.	The software should be able to identify and read bibs using either YOLO or OCR Viola-Jones
-  2.	It should detect when the bib finishes the race i.e. leaves screen or crosses a line defined by theuser
+  2.	It should detect when the bib finishes the race i.e. leaves screen or crosses a line defined by the user
 
 ### Ideal Product
   1.	The software should identify the full runner, to allow for more accurate timing
-  2.	It should be able to identify runners whose bibs cannot be read, and store frames when therunner is visible to allow user to review and identify them by hand
+  2.	It should be able to identify runners whose bibs cannot be read, and store frames when the runner is visible to allow user to review and identify them by hand
 
 ### Stretch Goals
   1. The software should implement a 2 camera system that each independently detects and times, and then balance each other out to provide a more accurate system
@@ -37,12 +37,12 @@ The project also requires a website that allows runners to access their finish t
   3.	The organiser must have access to the video of the finishers in order to comply with GDPR
 
 ### Ideal Product
-  1.	The website should post the times for each individual runner shortly after the runner has finishedthe race and the computer vision has determined the time and position
-  2.	The website should allow the videos of unidentified runners to be looked over by an admin formanual identification, with the times for that runner being posted once that is completed
-  3.	The website should correctly connect bib numbers to a database of racers names, age categoriesand other useful leaderboard information
+  1.	The website should post the times for each individual runner shortly after the runner has finished the race and the computer vision has determined the time and position
+  2.	The website should allow the videos of unidentified runners to be looked over by an admin for manual identification, with the times for that runner being posted once that is completed
+  3.	The website should correctly connect bib numbers to a database of racers names, age categories and other useful leaderboard information
 
 ### Stretch Goals
-  1.	The website could provide an API for the race organiser to integrate the race results into theirown website
+  1.	The website could provide an API for the race organiser to integrate the race results into their own website
   2.	Each time entry should also have a link for the runner to view the video of them crossing theline
   3.	The leaderboard should allow users to filter by runner categories
 
@@ -63,10 +63,10 @@ The project also requires a website that allows runners to access their finish t
   3.	Able to save video where the runner’s bib cannot be read for future manual verification
   4.	The user can view videos for unidentified runners and manually input their bib number
   5.	Leaderboard is updated in near real-time
-  6.	Fill out leaderboard with correct runner information such as name, position, and other desiredmetrics
+  6.	Fill out leaderboard with correct runner information such as name, position, and other desired metrics
 
 ## Stretch Goals
-  1.	The race recording program can be run on the vast majority of laptops, encompassing even someof the lowest-spec systems
+  1.	The race recording program can be run on the vast majority of laptops, encompassing even some of the lowest-spec systems
   2.	Able to run a multi-camera system
   3.	Able to use the multi-camera system to improve timing and bib reading accuracy
   4.	Runners can view the video of their finish time
