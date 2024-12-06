@@ -59,8 +59,8 @@ The project also requires a website that allows runners to access their finish t
 
 ## Ideal Project
   1.	The race recording program can run on the average laptop
-  2.	Able to identify the full runner’s body, and connect them to the correct bib
-  3.	Able to save video where the runner’s bib cannot be read for future manual verification
+  2.	Able to identify the full runner's body, and connect them to the correct bib
+  3.	Able to save video where the runner's bib cannot be read for future manual verification
   4.	The user can view videos for unidentified runners and manually input their bib number
   5.	Leaderboard is updated in near real-time
   6.	Fill out leaderboard with correct runner information such as name, position, and other desired metrics
