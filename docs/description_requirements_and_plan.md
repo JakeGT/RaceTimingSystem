@@ -94,9 +94,7 @@ In order to scroll through the gantt chart, change the number in cell C7 called 
  - Component Integration: This is where each individual component developed is brought together into a complete system.
 
 #### Testing and Validation
- - Unit Testing:
- - Component Testing:
- - System Testing:
+This will consist of unit tests, component tests and system tests. This means testing individual functions, individual components and then the system as a whole.
 
 #### Documentation and Reporting
  - Handover Report
