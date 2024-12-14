@@ -1,0 +1,41 @@
+name: Django CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.12
+
+      - name: Install dependencies
+        run: |
+          cd running
+          python -m venv venv
+          source venv/bin/activate
+          pip install django
+
+      - name: Run migrations
+        run: |
+          cd running
+          source venv/bin/activate
+          python manage.py migrate
+
+      - name: Run tests
+        run: |
+          cd running
+          source venv/bin/activate
+          python manage.py test
