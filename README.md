@@ -6,3 +6,24 @@ We propose a system where the organisers set up a camera in the vicinity of the 
 This system provides numerous benefits to the aforementioned methods. One benefit is that it is a cheaper alternative to RFID, especially for large scale races, given that this method uses widely available technology that the organisers will certainly have access to. Furthermore, due to the availability of the required technologies, and the aforementioned low cost of this system, this approach is far more accessible than the expensive and difficult to organise RFID method. The numerous issues with the RFID method are exacerbated by the fact that a lot of race organisers do not have sufficient baseline technical understanding to get satisfactory results from RFID. Moreover, when compared to the traditional manual clipboard method, computer vision methods can achieve a comparable accuracy to RFID, removing human error.
 
 Nevertheless, it is important to take into account certain niche cases where minor risks are present. One example is certain environmental situations where the weather or lighting could affect the quality of the system’s final results, for example the camera could easily be affected by dark conditions or knocked over in high winds. Nonetheless, the vast majority of races are not held in such conditions and additionally well organised events will have mitigating strategies in place for the runners which subsequently also positively affect the quality of system results. Examples of this would be lighting for cases where it is too dark and a sheltered location for organisers near the finish line. Another risk is that organisers do not have access to sufficiently powerful hardware, and thus are not able to obtain accurate results in a timely manner. This is easily mitigated by creating a system which can run on the vast majority of devices that exist today.
+
+## Installation
+1. Download the project
+2. Navigate to the running directory
+3. Create the virtual environment with:
+    ```bash 
+    python -m venv venv
+    ```
+4. Activate the venv using:
+   ```bash
+   source venv/bin/activate # for macOS/Linux
+   .\venv\Scripts\activate # for windows
+   ```
+5. Install django to the venv with:
+    ```bash
+    pip install django
+    ```
+6. To start the front-end run:
+    ```bash
+    python manage.py runserver
+    ```

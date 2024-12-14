@@ -1,0 +1,26 @@
+<!-- running/app/templates/app/upload_participants.html-->
+{% extends 'base.html' %}
+
+{% block title %}Upload Participants - Race Timing System{% endblock %}
+
+{% block content %}
+    <h1>Upload Participant Data</h1>
+
+    <!-- Display success or error messages -->
+    <div class="container mt-4">
+        {% if messages %}
+            <div class="alert alert-info">
+                {% for message in messages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label for="file">Upload CSV</label>
+        <input type="file" name="file" id="file" required>
+        <input type="submit" value="Upload" class="btn btn-primary">
+    </form>
+{% endblock %}

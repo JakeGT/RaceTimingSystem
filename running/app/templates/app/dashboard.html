@@ -1,0 +1,21 @@
+<!-- running/app/templates/app/dashboard.html -->
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Race Timing System{% endblock %}
+
+{% block content %}
+    <h1>Race Dashboard</h1>
+    <h2>Participants</h2>
+    <ul>
+        {% for participant in participants %}
+            <li>{{ participant.name }} - Number: {{ participant.race_number }}</li>
+        {% endfor %}
+    </ul>
+
+    <h2>Real-time Results</h2>
+    <ul>
+        {% for result in results %}
+            <li>{{ result.participant.name }}: {{ result.total_time }}</li>
+        {% endfor %}
+    </ul>
+{% endblock %}

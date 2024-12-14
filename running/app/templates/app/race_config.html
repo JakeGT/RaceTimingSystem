@@ -1,0 +1,44 @@
+<!-- running/app/templates/app/race_config.html-->
+{% extends 'base.html' %}
+
+{% block title %}Race Configuration - Race Timing System{% endblock %}
+
+{% block content %}
+    <h1>Race Configuration</h1>
+
+    <form method="POST">
+        {% csrf_token %}
+        
+        <!-- Race Name -->
+        <div class="form-group">
+            <label for="race_name">Race Name</label>
+            <input type="text" name="race_name" id="race_name" class="form-control" required>
+        </div>
+
+        <!-- Race Date -->
+        <div class="form-group">
+            <label for="race_date">Race Date</label>
+            <input type="date" name="race_date" id="race_date" class="form-control" required>
+        </div>
+
+        <!-- Race Start Time -->
+        <div class="form-group">
+            <label for="start_time">Start Time</label>
+            <input type="time" name="start_time" id="start_time" class="form-control" required>
+        </div>
+
+        <!-- Race Categories -->
+        <div class="form-group">
+            <label for="race_categories">Race Categories</label>
+            <select name="race_categories" id="race_categories" class="form-control" multiple required>
+                <option value="5k">5k</option>
+                <option value="10k">10k</option>
+                <option value="half_marathon">Half Marathon</option>
+                <option value="marathon">Marathon</option>
+            </select>
+        </div>
+
+        <!-- Submit Button -->
+        <input type="submit" value="Save Configuration" class="btn btn-primary">
+    </form>
+{% endblock %}
