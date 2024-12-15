@@ -1,26 +1,57 @@
-<!-- running/app/templates/app/upload_participants.html-->
 {% extends 'base.html' %}
 
 {% block title %}Upload Participants - Race Timing System{% endblock %}
 
 {% block content %}
-    <h1>Upload Participant Data</h1>
+<div class="container mt-5">
 
-    <!-- Display success or error messages -->
-    <div class="container mt-4">
-        {% if messages %}
-            <div class="alert alert-info">
-                {% for message in messages %}
-                    <p>{{ message }}</p>
-                {% endfor %}
-            </div>
-        {% endif %}
+    <!-- Page Header -->
+    <div class="row">
+        <div class="col-12">
+            <h1 class="display-4 text-center">Upload Participant Data</h1>
+            <p class="lead text-center text-muted">Upload a CSV file containing participant data for the race</p>
+        </div>
     </div>
 
-    <form method="POST" enctype="multipart/form-data">
-        {% csrf_token %}
-        <label for="file">Upload CSV</label>
-        <input type="file" name="file" id="file" required>
-        <input type="submit" value="Upload" class="btn btn-primary">
-    </form>
+    <!-- Message Section -->
+    <div class="row mt-4">
+        <div class="col-12">
+            {% if messages %}
+                <div class="alert alert-info">
+                    {% for message in messages %}
+                        <p>{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- File Upload Form -->
+    <div class="row mt-4">
+        <div class="col-12 col-md-8 offset-md-2">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title mb-0">Upload CSV File</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <!-- File Upload Input -->
+                        <div class="form-group mb-4">
+                            <label for="file" class="form-label">Select CSV File</label>
+                            <input type="file" name="file" id="file" class="form-control" required>
+                            <small class="form-text text-muted">Please upload a valid CSV file containing participant information.</small>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="form-group text-center">
+                            <input type="submit" value="Upload" class="btn btn-success btn-lg">
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

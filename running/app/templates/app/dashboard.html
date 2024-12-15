@@ -1,21 +1,66 @@
-<!-- running/app/templates/app/dashboard.html -->
 {% extends 'base.html' %}
 
 {% block title %}Dashboard - Race Timing System{% endblock %}
 
 {% block content %}
-    <h1>Race Dashboard</h1>
-    <h2>Participants</h2>
-    <ul>
-        {% for participant in participants %}
-            <li>{{ participant.name }} - Number: {{ participant.race_number }}</li>
-        {% endfor %}
-    </ul>
+<div class="container mt-5">
 
-    <h2>Real-time Results</h2>
-    <ul>
-        {% for result in results %}
-            <li>{{ result.participant.name }}: {{ result.total_time }}</li>
-        {% endfor %}
-    </ul>
+    <!-- Page Header -->
+    <div class="row">
+        <div class="col-12">
+            <h1 class="display-4 text-center">Race Dashboard</h1>
+            <p class="lead text-center text-muted">Overview of participants and real-time results</p>
+        </div>
+    </div>
+
+    <!-- Participants Section -->
+    <div class="row mt-4">
+        <div class="col-12 col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title mb-0">Participants</h3>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Here is the list of participants registered for the race:</p>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Race Number</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for participant in participants %}
+                                <tr>
+                                    <td>{{ participant.name }}</td>
+                                    <td>{{ participant.race_number }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Real-time Results Section -->
+        <div class="col-12 col-md-6 mt-4 mt-md-0">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h3 class="card-title mb-0">Real-time Results</h3>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Here are the latest race results:</p>
+                    <ul class="list-group">
+                        {% for result in results %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ result.participant.name }}
+                                <span class="badge bg-info">{{ result.total_time }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
