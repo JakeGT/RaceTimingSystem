@@ -13,8 +13,28 @@
         </div>
     </div>
 
-    <!-- Participants Section -->
+    <!-- Race Selection Section -->
     <div class="row mt-4">
+        <div class="col-12 text-center">
+            <h2 class="h4">Currently Viewing: <span class="text-primary">{{ current_race.name }}</span></h2>
+            <form method="get" action="{% url 'dashboard' %}">
+                <label for="race-select" class="form-label mt-3">Select a race:</label>
+                <select id="race-select" name="race_id" class="form-select w-auto d-inline-block">
+                    {% for race in races %}
+                        <option value="{{ race.id }}" {% if race.id == current_race.id %}selected{% endif %}>
+                            {{ race.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-primary ms-2">View</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Participants and Results Section -->
+    <div class="row mt-5">
+    
+        <!-- Participants Section -->
         <div class="col-12 col-md-6">
             <div class="card shadow-sm">
                 <div class="card-header bg-primary text-white">

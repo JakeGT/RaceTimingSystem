@@ -37,6 +37,18 @@
                     <form method="POST" enctype="multipart/form-data">
                         {% csrf_token %}
 
+                        <!-- Race Selection Dropdown -->
+                        <div class="form-group mb-4">
+                            <label for="race" class="form-label">Select Race</label>
+                            <select name="race_id" id="race" class="form-control" required>
+                                <option value="" disabled selected>Select a Race</option>
+                                {% for race in races %}
+                                    <option value="{{ race.id }}">{{ race.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="form-text text-muted">Please select the race for which participants are being uploaded.</small>
+                        </div>
+
                         <!-- File Upload Input -->
                         <div class="form-group mb-4">
                             <label for="file" class="form-label">Select CSV File</label>

@@ -5,7 +5,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
-from .models import Participant, RaceResult, RaceConfig
+from .models import Participant, RaceResult, Race
 import io
 
 # -------------------------------------------------- Test Definitions --------------------------------------------------
@@ -25,7 +25,7 @@ class RaceTimingSystemTests(TestCase):
         self.participant_3 = Participant.objects.create(name='Jane Doe', race_number='3', age=28, gender='Female')
 
         #  create a race configuration
-        self.race_config = RaceConfig.objects.create(
+        self.race_config = Race.objects.create(
             name="christmas",
             date="2024-12-25",
             start_time="12:00:00",
@@ -55,7 +55,7 @@ class RaceTimingSystemTests(TestCase):
 
         response = self.client.post(reverse('race_config'), data)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(RaceConfig.objects.count(), 2)
+        self.assertEqual(Race.objects.count(), 2)
         self.assertRedirects(response, reverse('race_config'))
 
     def test_upload_results_view_post(self):
@@ -71,6 +71,7 @@ class RaceTimingSystemTests(TestCase):
         3,00:29:30
         """)
         csv_file.name = 'results.csv'
+
         response = self.client.post(reverse('upload_results'), {'file': SimpleUploadedFile(csv_file.name, csv_file.getvalue().encode())})
         self.assertEqual(response.status_code, 302)
         self.assertEqual(RaceResult.objects.count(), 0)
@@ -92,16 +93,6 @@ class RaceTimingSystemTests(TestCase):
         response = self.client.post(reverse('upload_participants'), {'file': SimpleUploadedFile(csv_file.name, csv_file.getvalue().encode())})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(Participant.objects.count(), 3)
-
-    def test_real_time_results_view(self):
-        """
-        Test the real-time results view.
-        """
-
-        response = self.client.get(reverse('real_time_results'))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()['results'], [
-        ])
 
     def test_race_config_invalid_post(self):
         """

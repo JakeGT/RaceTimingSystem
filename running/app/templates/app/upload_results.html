@@ -9,7 +9,7 @@
     <div class="row">
         <div class="col-12">
             <h1 class="display-4 text-center">Upload Race Results</h1>
-            <p class="lead text-center text-muted">Upload a CSV file containing the race results</p>
+            <p class="lead text-center text-muted">Upload a CSV file containing the race results for a selected race</p>
         </div>
     </div>
 
@@ -37,11 +37,23 @@
                     <form method="POST" enctype="multipart/form-data">
                         {% csrf_token %}
 
+                        <!-- Race Selection Dropdown -->
+                        <div class="form-group mb-4">
+                            <label for="race" class="form-label">Select Race</label>
+                            <select name="race_id" id="race" class="form-control" required>
+                                <option value="" disabled selected>Select a Race</option>
+                                {% for race in races %}
+                                    <option value="{{ race.id }}" {% if race.id == selected_race.id %}selected{% endif %}>{{ race.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="form-text text-muted">Please select the race for which you are uploading results.</small>
+                        </div>
+
                         <!-- File Upload Input -->
                         <div class="form-group mb-4">
                             <label for="file" class="form-label">Select CSV File</label>
                             <input type="file" name="file" id="file" class="form-control" required>
-                            <small class="form-text text-muted">Please upload a CSV file containing race results.</small>
+                            <small class="form-text text-muted">Please upload a valid CSV file containing the race results.</small>
                         </div>
 
                         <!-- Submit Button -->
