@@ -150,6 +150,8 @@ def upload_results(request):
         except Exception as e:
             messages.error(request, f"Error uploading CSV file: {e}")
 
+        return redirect('dashboard')
+
     #  get all available races
     races = Race.objects.all()
     selected_race = races.first() if races.exists() else None
@@ -226,7 +228,7 @@ def upload_participants(request):
         except Exception as e:
             messages.error(request, f"An error occurred while processing the CSV file: {e}")
 
-        return redirect('upload_participants')
+        return redirect('dashboard')
 
     return render(request, 'app/upload_participants.html', {
         'races': races,
