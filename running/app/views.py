@@ -5,6 +5,9 @@ import csv
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from .models import Participant, RaceResult, Race
+from .utils.logger import setup_logging
+
+logger = setup_logging()
 
 # ------------------------------------------------ Function Definitions ------------------------------------------------
 def dashboard(request):
@@ -12,20 +15,25 @@ def dashboard(request):
     View for the dashboard with race selection.
     """
 
+    logger.info("Accessing the dashboard view")
+
     #  get the race_id
     race_id = request.GET.get('race_id')
 
     try:
         #  ensure race_id is an integer
         race_id = int(race_id) if race_id else None
-
+        logger.debug(f"Parsed race_id: {race_id}")
     except ValueError:
+        logger.warning(f"Invalid race_id provided: {race_id}")
         race_id = None
 
     #  fetch all races for dropdown
     races = Race.objects.all()
 
     if not races:
+        logger.info("No races found in the database")
+
         #  if no races exist, show a message to the user
         return render(request, 'app/dashboard.html', {
             'races': races,
@@ -42,6 +50,7 @@ def dashboard(request):
     #  use the current_race.id for getting participants and results
     participants = Participant.objects.all()
     results = RaceResult.objects.all().order_by('total_time')
+    logger.debug(f"Rendering dashboard with race_id: {current_race.id if current_race else None}")
 
     return render(request, 'app/dashboard.html', {
         'current_race': current_race,
@@ -55,6 +64,7 @@ def race_config(request):
     View for race configuration.
     """
 
+    logger.info("Accessing race configuration view")
     if request.method == 'POST':
 
         #  retrieve form data
@@ -63,6 +73,7 @@ def race_config(request):
         start_time = request.POST.get('start_time')
         race_categories = request.POST.getlist('race_categories')
 
+        logger.debug(f"Received race configuration: {race_name}, {race_date}, {start_time}, {race_categories}")
         try:  #  try to save the race configuration to the database
             Race.objects.create(
                 name=race_name,
@@ -70,12 +81,14 @@ def race_config(request):
                 start_time=start_time,
                 categories=','.join(race_categories)
             )
+            logger.info(f"Race configuration saved: {race_name}")
 
             #  success message
             messages.success(request, 'Race configuration saved successfully!')
             return redirect('upload_participants')
 
         except Exception as e:
+            logger.error(f"Error saving race configuration: {e}")
 
             #  error message
             messages.error(request, f"Error saving race configuration: {e}")
@@ -84,20 +97,28 @@ def race_config(request):
 
 
 def upload_results(request):
+    """
+    View for result upload.
+    """
+
+    logger.info("Accessing results upload view")
 
     if request.method == "POST" and request.FILES["file"]:
         file = request.FILES["file"]
         race_id = request.POST["race_id"]
 
+        logger.debug(f"File uploaded: {file.name}, race_id: {race_id}")
         #  find the selected race
         try:
             race = Race.objects.get(id=race_id)
         except Race.DoesNotExist:
+            logger.warning(f"Race with id {race_id} does not exist")
             messages.error(request, "Selected race does not exist.")
             return redirect('upload_results')
 
         #  validate the file is a CSV
         if not file.name.endswith('.csv'):
+            logger.warning(f"Invalid file format: {file.name}")
             messages.error(request, "The uploaded file must be a CSV.")
             return redirect('upload_results')
 
@@ -109,6 +130,7 @@ def upload_results(request):
             #  validate the csv format
             expected_headers = {"race_number", "total_time"}
             if set(csv_reader.fieldnames) != expected_headers:
+                logger.error(f"Invalid CSV headers: {csv_reader.fieldnames}")
                 messages.error(request, "CSV file must contain 'race_number' and 'total_time' columns.")
                 return redirect('upload_results')
 
@@ -118,8 +140,10 @@ def upload_results(request):
                 #  ensure each row contains the necessary fields and valid data
                 race_number = row.get("race_number")
                 total_time = row.get("total_time")
+                logger.debug(f"Processing row: {row}")
 
                 if not race_number or not total_time:
+                    logger.warning(f"Missing data for row: {row}")
                     messages.warning(request, f"Missing data for race number {race_number}. Skipping row.")
                     continue
 
@@ -130,6 +154,7 @@ def upload_results(request):
                         messages.warning(request, f"Invalid time format for race number {race_number}. Skipping row.")
                         continue
                 except ValueError:
+                    logger.warning(f"Invalid time format: {total_time}")
                     messages.warning(request, f"Invalid time format for race number {race_number}. Skipping row.")
                     continue
 
@@ -142,12 +167,16 @@ def upload_results(request):
                         participant=participant,
                         defaults={'total_time': total_time}
                     )
+                    logger.info(f"Updated result for participant {race_number}")
                 else:
                     #  if the participant does not exist, log a warning
+                    logger.warning(f"Participant not found: {race_number}")
                     messages.warning(request, f"Participant with race number {race_number} not found for this race.")
 
+            logger.info("Results uploaded successfully")
             messages.success(request, "Results uploaded successfully.")
         except Exception as e:
+            logger.error(f"Error processing CSV file: {e}")
             messages.error(request, f"Error uploading CSV file: {e}")
 
         return redirect('dashboard')
@@ -165,8 +194,9 @@ def upload_results(request):
 def upload_participants(request):
     """
     View for uploading participants to a selected race via CSV.
-    Handles CSV format with Name, Race Number, Age, and Gender columns.
     """
+
+    logger.info("Accessing participants upload view")
 
     #  get all races
     races = Race.objects.all()
@@ -175,6 +205,7 @@ def upload_participants(request):
         #  get the selected race from the form
         race_id = request.POST.get('race_id')
         if not race_id:
+            logger.error("Race ID not provided in the form")
             messages.error(request, "Please select a race.")
             return redirect('upload_participants')
 
@@ -183,6 +214,7 @@ def upload_participants(request):
         #  get the uploaded file
         csv_file = request.FILES['file']
         if not csv_file.name.endswith('.csv'):
+            logger.warning(f"Invalid file format: {csv_file.name}")
             messages.error(request, "The uploaded file must be a CSV.")
             return redirect('upload_participants')
 
@@ -194,12 +226,14 @@ def upload_participants(request):
 
             #  check if the header has the expected columns
             if header != ['Name', 'Race Number', 'Age', 'Gender']:
+                logger.error(f"Invalid CSV header: {header}")
                 messages.error(request, "Invalid CSV format. The header must be: Name, Race Number, Age, Gender.")
                 return redirect('upload_participants')
 
             #  create participants from the CSV
             for row in csv_reader:
                 if len(row) != 4:  #  ensure there are exactly 4 columns (Name, Race Number, Age, Gender)
+                    logger.warning(f"Skipping invalid row: {row}")
                     messages.warning(request, f"Skipping row: Invalid number of columns. Expected 4, got {len(row)}.")
                     continue  #  skip incomplete rows
 
@@ -208,6 +242,7 @@ def upload_participants(request):
 
                 #  validate data
                 if not race_number.isdigit():
+                    logger.warning(f"Invalid data in row: {row}")
                     messages.warning(request, f"Skipping row: Invalid race number '{race_number}' (must be an integer).")
                     continue
 
@@ -223,9 +258,11 @@ def upload_participants(request):
                     gender=gender.lower(),
                     race_id=race.id
                 )
+                logger.info(f"Added participant: {name} (Race Number: {race_number})")
 
             messages.success(request, f"Participants have been successfully uploaded to {race.name}.")
         except Exception as e:
+            logger.error(f"Error processing participants CSV: {e}")
             messages.error(request, f"An error occurred while processing the CSV file: {e}")
 
         return redirect('dashboard')

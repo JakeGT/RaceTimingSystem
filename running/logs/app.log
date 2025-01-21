@@ -1,0 +1,50 @@
+2025-01-20 10:16:12,334 - app_logger - INFO - Accessing the dashboard view
+2025-01-20 10:16:12,334 - app_logger - DEBUG - Parsed race_id: None
+2025-01-20 10:16:12,339 - app_logger - INFO - No races found in the database
+2025-01-20 10:16:15,255 - app_logger - INFO - Accessing race configuration view
+2025-01-20 10:16:16,498 - app_logger - INFO - Accessing the dashboard view
+2025-01-20 10:16:16,498 - app_logger - DEBUG - Parsed race_id: None
+2025-01-20 10:16:16,500 - app_logger - INFO - No races found in the database
+2025-01-20 14:03:55,201 - app_logger - INFO - Accessing the dashboard view
+2025-01-20 14:03:55,203 - app_logger - DEBUG - Parsed race_id: None
+2025-01-20 14:03:55,205 - app_logger - INFO - No races found in the database
+2025-01-20 14:04:07,900 - app_logger - INFO - Accessing race configuration view
+2025-01-20 14:04:14,024 - app_logger - INFO - Accessing participants upload view
+2025-01-20 14:04:15,944 - app_logger - INFO - Accessing results upload view
+2025-01-20 14:04:21,591 - app_logger - INFO - Accessing the dashboard view
+2025-01-20 14:04:21,593 - app_logger - DEBUG - Parsed race_id: None
+2025-01-20 14:04:21,594 - app_logger - INFO - No races found in the database
+2025-01-20 14:04:28,192 - app_logger - INFO - Accessing the dashboard view
+2025-01-20 14:04:28,194 - app_logger - DEBUG - Parsed race_id: None
+2025-01-20 14:04:28,195 - app_logger - INFO - No races found in the database
+2025-01-20 14:08:55,824 - app_logger - INFO - Accessing race configuration view
+2025-01-20 14:08:59,889 - app_logger - INFO - Accessing participants upload view
+2025-01-20 14:09:02,873 - app_logger - INFO - Accessing results upload view
+2025-01-20 14:09:08,300 - app_logger - INFO - Accessing the dashboard view
+2025-01-20 14:09:08,302 - app_logger - DEBUG - Parsed race_id: None
+2025-01-20 14:09:08,303 - app_logger - INFO - No races found in the database
+2025-01-20 14:09:13,123 - app_logger - INFO - Accessing race configuration view
+2025-01-20 14:09:40,831 - app_logger - INFO - Accessing race configuration view
+2025-01-20 14:09:40,831 - app_logger - DEBUG - Received race configuration: Christmas Run, 2025-12-25, 12:00, ['5k']
+2025-01-20 14:09:40,840 - app_logger - INFO - Race configuration saved: Christmas Run
+2025-01-20 14:09:40,856 - app_logger - INFO - Accessing participants upload view
+2025-01-20 14:10:11,583 - app_logger - INFO - Accessing participants upload view
+2025-01-20 14:10:11,599 - app_logger - INFO - Added participant: John Doe (Race Number: 1)
+2025-01-20 14:10:11,603 - app_logger - INFO - Added participant: Jane Smith (Race Number: 2)
+2025-01-20 14:10:11,607 - app_logger - INFO - Added participant: Jane Doe (Race Number: 3)
+2025-01-20 14:10:11,621 - app_logger - INFO - Accessing the dashboard view
+2025-01-20 14:10:11,621 - app_logger - DEBUG - Parsed race_id: None
+2025-01-20 14:10:11,624 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-01-20 14:10:15,857 - app_logger - INFO - Accessing results upload view
+2025-01-20 14:11:15,317 - app_logger - INFO - Accessing results upload view
+2025-01-20 14:11:15,319 - app_logger - DEBUG - File uploaded: example_results.csv, race_id: 1
+2025-01-20 14:11:15,321 - app_logger - DEBUG - Processing row: {'race_number': '1', 'total_time': '00:25:36'}
+2025-01-20 14:11:15,330 - app_logger - INFO - Updated result for participant 1
+2025-01-20 14:11:15,330 - app_logger - DEBUG - Processing row: {'race_number': '2', 'total_time': '00:30:45'}
+2025-01-20 14:11:15,335 - app_logger - INFO - Updated result for participant 2
+2025-01-20 14:11:15,335 - app_logger - DEBUG - Processing row: {'race_number': '3', 'total_time': '00:28:12'}
+2025-01-20 14:11:15,340 - app_logger - INFO - Updated result for participant 3
+2025-01-20 14:11:15,340 - app_logger - INFO - Results uploaded successfully
+2025-01-20 14:11:15,353 - app_logger - INFO - Accessing the dashboard view
+2025-01-20 14:11:15,353 - app_logger - DEBUG - Parsed race_id: None
+2025-01-20 14:11:15,357 - app_logger - DEBUG - Rendering dashboard with race_id: 1
