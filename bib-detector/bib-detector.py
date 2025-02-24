@@ -4,33 +4,34 @@ import numpy as np
 from ultralytics import YOLO
 import cv2
 import time
-import sys, getopt
 import easyocr
+import argparse
 
 device = "cpu"
 
-argument_list = sys.argv[1:]
-options = "d:"
-long_options = ["device"]
-try:
-    arguments, values = getopt.getopt(argument_list, options, long_options)
+parser = argparse.ArgumentParser()
 
-    for current_arguments, current_value in arguments:
-        if current_arguments in ("-d", "--device"):
-            print(f"Using device {current_value}")
-            device = current_value
-except getopt.error as err:
-    print(str(err))
-    exit()
+parser.add_argument("-d", "--device", help="Select Device")
+parser.add_argument("-i", "--input", help="Input file")
+parser.add_argument("-o", "--output", help="Output file")
+
+args = parser.parse_args()
+if args.device:
+    device = args.device
+if args.input:
+    video_input = args.input
+else:
+    video_input = 0
+if args.output:
+    output_video = args.output
+else:
+    output_video = None
 
 
 model = YOLO("best.pt")
 reader = easyocr.Reader(['en'], gpu=(device != "cpu"))
 
-input_video = "drogo.mp4"
-output_video = "output.mp4"
-
-cap = cv2.VideoCapture(input_video)
+cap = cv2.VideoCapture(video_input)
 
 
 frame_width = int(cap.get(3))
@@ -40,7 +41,7 @@ fps = int(cap.get(cv2.CAP_PROP_FPS))
 out = cv2.VideoWriter(output_video, cv2.VideoWriter_fourcc(*'mp4v'), fps, (frame_width, frame_height))
 
 if not cap.isOpened():
-    print("File cound not be found")
+    print("Video input could not be loaded")
     exit()
 
 prev_time = time.time()
@@ -81,8 +82,8 @@ while cap.isOpened():
 
             cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
             cv2.putText(frame, label, (x1, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-
-    out.write(frame)
+    if output_video:
+        out.write(frame)
 
     cv2.imshow("Bib-Detector", frame)
 
@@ -90,4 +91,6 @@ while cap.isOpened():
         break
 
 cap.release()
+if output_video:
+    out.release()
 cv2.destroyAllWindows()
