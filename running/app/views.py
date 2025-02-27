@@ -2,6 +2,8 @@
 
 # -------------------------------------------------- Import Libraries --------------------------------------------------
 import csv
+
+from django.contrib.auth import authenticate, login
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from .models import Participant, RaceResult, Race
@@ -10,6 +12,111 @@ from .utils.logger import setup_logging
 logger = setup_logging()
 
 # ------------------------------------------------ Function Definitions ------------------------------------------------
+def landing_page(request):
+    """
+    View for the landing page of the Race Timing System.
+    """
+
+    logger.info("Accessing the landing page view")
+
+    return render(request, 'app/landing.html', {})
+
+
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
+from django.contrib import messages
+from django.contrib.auth.forms import PasswordResetForm
+from django.core.mail import send_mail
+from django.conf import settings
+
+
+def user_register(request):
+    """
+    Handles user registration.
+    """
+
+    if request.method == "POST":
+        username = request.POST.get("username")
+        email = request.POST.get("email")
+        password1 = request.POST.get("password1")
+        password2 = request.POST.get("password2")
+
+        if password1 != password2:
+            messages.error(request, "Passwords do not match.")
+            return redirect("register")
+
+        if User.objects.filter(username=username).exists():
+            messages.error(request, "Username is already taken.")
+            return redirect("register")
+
+        user = User.objects.create_user(username=username, email=email, password=password1)
+        user.save()
+
+        messages.success(request, "Registration successful! You can now log in.")
+        return redirect("login")
+
+    return render(request, "app/register.html")
+
+
+def user_login(request):
+    """
+    Handles user login.
+    """
+
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        user = authenticate(request, username=username, password=password)
+
+        if user:
+            login(request, user)
+            messages.success(request, "Login successful!")
+            return redirect("dashboard")
+        else:
+            messages.error(request, "Invalid username or password.")
+
+    return render(request, "app/login.html")
+
+
+def user_logout(request):
+    """
+    Logs out the user.
+    """
+
+    logout(request)
+    messages.success(request, "You have been logged out.")
+    return redirect("login")
+
+
+def password_reset_request(request):
+    """
+    Handles password reset request.
+    """
+
+    if request.method == "POST":
+        email = request.POST.get("email")
+        form = PasswordResetForm(request.POST)
+
+        if form.is_valid():
+            user = User.objects.filter(email=email).first()
+            if user:
+                # Send password reset email
+                send_mail(
+                    "Password Reset Request",
+                    "Click the link below to reset your password.",
+                    settings.DEFAULT_FROM_EMAIL,
+                    [email],
+                    fail_silently=False,
+                )
+                messages.success(request, "Password reset email sent! Check your inbox.")
+                return redirect("login")
+            else:
+                messages.error(request, "No user found with this email.")
+
+    return render(request, "app/password_reset.html")
+
+
 def dashboard(request):
     """
     View for the dashboard with race selection.

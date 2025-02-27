@@ -1,15 +1,15 @@
 {% extends 'base.html' %}
 
-{% block title %}Dashboard - Race Timing System{% endblock %}
+{% block title %}Leaderboard - Race Timing System{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
 
     <!-- Page Header -->
     <div class="row">
-        <div class="col-12">
-            <h1 class="display-4 text-center">Race Dashboard</h1>
-            <p class="lead text-center text-muted">Overview of participants and real-time results</p>
+        <div class="col-12 text-center">
+            <h1 class="display-4">Race Leaderboard</h1>
+            <p class="lead text-muted">Real-time results of the race participants</p>
         </div>
     </div>
 
@@ -26,29 +26,23 @@
         </div>
     </div>
 
-    <!-- Race Selection Section -->
+    <!-- Race Selection and Filters Section -->
     <div class="row mt-4">
         <div class="col-12 text-center">
-            <h2 class="h4">Currently Viewing: <span class="text-primary">{{ current_race.name }}</span></h2>
-            <form method="get" action="{% url 'dashboard' %}">
-                <label for="race-select" class="form-label mt-3">Select a race:</label>
-                <select id="race-select" name="race_id" class="form-select w-auto d-inline-block">
-                    {% for race in races %}
-                        <option value="{{ race.id }}" {% if race.id == current_race.id %}selected{% endif %}>
-                            {{ race.name }}
-                        </option>
-                    {% endfor %}
-                </select>
-                <button type="submit" class="btn btn-primary ms-2">View</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Filter Section for Gender and Age -->
-    <div class="row mt-4">
-        <div class="col-12">
             <form method="get" action="{% url 'dashboard' %}">
                 <div class="d-flex justify-content-between">
+                    <!-- Race Filter -->
+                    <div class="form-group">
+                        <label for="race-select" class="form-label">Select a Race:</label>
+                        <select id="race-select" name="race_id" class="form-select w-auto">
+                            {% for race in races %}
+                                <option value="{{ race.id }}" {% if race.id == current_race.id %}selected{% endif %}>
+                                    {{ race.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
                     <!-- Gender Filter -->
                     <div class="form-group">
                         <label for="gender-select" class="form-label">Filter by Gender</label>
@@ -72,6 +66,7 @@
                         </select>
                     </div>
 
+                    <!-- Submit Button -->
                     <div class="form-group align-self-end">
                         <button type="submit" class="btn btn-primary">Apply Filters</button>
                     </div>
@@ -80,56 +75,74 @@
         </div>
     </div>
 
-    <!-- Participants and Results Section -->
+    <!-- Leaderboard Section -->
     <div class="row mt-5">
-    
-        <!-- Participants Section -->
-        <div class="col-12 col-md-6">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h3 class="card-title mb-0">Participants</h3>
-                </div>
-                <div class="card-body">
-                    <p class="card-text">Here is the list of participants registered for the race:</p>
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Race Number</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for participant in participants %}
-                                <tr>
-                                    <td>{{ participant.name }}</td>
-                                    <td>{{ participant.race_number }}</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- Real-time Results Section -->
-        <div class="col-12 col-md-6 mt-4 mt-md-0">
+        <div class="col-12">
             <div class="card shadow-sm">
                 <div class="card-header bg-success text-white">
-                    <h3 class="card-title mb-0">Real-time Results</h3>
+                    <h3 class="card-title mb-0">Current Leaderboard</h3>
                 </div>
                 <div class="card-body">
-                    <p class="card-text">Here are the latest race results:</p>
-                    <ul class="list-group">
+                    <p class="card-text">Here are the current standings:</p>
+                    <div class="list-group list-group-flush">
                         {% for result in results %}
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                {{ result.participant.name }}
-                                <span class="badge bg-info">{{ result.total_time }}</span>
-                            </li>
+                            <div class="list-group-item d-flex justify-content-between align-items-center p-3 mb-2 rounded border">
+                                <div class="d-flex align-items-center">
+                                    <!-- Rank Badge -->
+                                    <span class="badge bg-secondary me-3">{{ forloop.counter }}</span>
+                                    <!-- Participant Name with Tooltip -->
+                                    <span class="fw-bold" 
+                                          data-bs-toggle="tooltip"
+                                          data-bs-placement="top"
+                                          title="Age: {{ result.participant.age }}<br>Gender: {{ result.participant.gender }}<br>Category: {{ result.participant.category }}">
+                                        {{ result.participant.name }}
+                                    </span>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <span class="badge bg-info me-2">{{ result.total_time }}</span>
+                                </div>
+                            </div>
                         {% endfor %}
-                    </ul>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
 </div>
+
+<!-- Tooltip Initialization Script (with jQuery fallback) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function(){
+        // Initialize Bootstrap tooltips using jQuery
+        $('[data-bs-toggle="tooltip"]').tooltip({
+            trigger: 'hover',  // Show tooltip on hover
+            html: true,        // Allow HTML content in the tooltip
+            animation: true    // Add animation for a better user experience
+        });
+    });
+</script>
+
+<!-- Custom Styles for Tooltip -->
+<style>
+    .tooltip-inner {
+        background-color: #333 !important;
+        color: white !important;
+        font-size: 1.2rem !important;
+        padding: 10px 20px !important;
+        border-radius: 10px !important;
+        max-width: 250px;
+        text-align: left;
+        line-height: 1.4; /* Increase line height for readability */
+    }
+    .tooltip-arrow {
+        border-top-color: #333 !important;
+    }
+    .tooltip.bs-tooltip-top .tooltip-arrow {
+        border-top-width: 12px;
+        border-top-color: #333 !important;
+    }
+</style>
+
 {% endblock %}

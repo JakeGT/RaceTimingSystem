@@ -14,6 +14,9 @@
             font-family: 'Arial', sans-serif;
             background-color: #f4f7fc;
             color: #333;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh; /* Ensure the page takes at least the full height */
         }
 
         .navbar {
@@ -36,6 +39,7 @@
 
         .content-area {
             margin-top: 90px;
+            flex-grow: 1; /* Allow the content to grow and push footer down if necessary */
         }
 
         footer {
@@ -43,9 +47,9 @@
             color: #fff;
             padding: 15px;
             text-align: center;
-            position: absolute;
-            width: 100%;
+            position: relative;
             bottom: 0;
+            width: 100%;
         }
 
     </style>
@@ -56,7 +60,8 @@
     <!-- Navigation Bar -->
     <nav class="navbar navbar-expand-lg navbar-light fixed-top">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">Race Timing System</a>
+            <!-- Changed the href from "#" to "/" -->
+            <a class="navbar-brand" href="/">Race Timing System</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>

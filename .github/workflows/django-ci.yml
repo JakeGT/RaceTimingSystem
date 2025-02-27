@@ -39,3 +39,8 @@ jobs:
           cd running
           source venv/bin/activate
           python manage.py test
+
+      - name: Run Playwright tests
+        run: | 
+          cd running source/venv/bin/activate
+          pytest tests/ --browser chromium

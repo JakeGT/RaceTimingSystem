@@ -9,7 +9,7 @@
     <div class="row">
         <div class="col-12">
             <h1 class="display-4 text-center">Race Configuration</h1>
-            <p class="lead text-center text-muted">Configure the race details below</p>
+            <p class="lead text-center text-muted">Set up an empty race configuration below</p>
         </div>
     </div>
 
@@ -18,7 +18,7 @@
         <div class="col-12 col-md-8 offset-md-2">
             <div class="card shadow-sm">
                 <div class="card-header bg-primary text-white">
-                    <h3 class="card-title mb-0">Configure Race Details</h3>
+                    <h3 class="card-title mb-0">Configure Your Race</h3>
                 </div>
                 <div class="card-body">
                     <form method="POST">
@@ -27,7 +27,7 @@
                         <!-- Race Name -->
                         <div class="form-group mb-4">
                             <label for="race_name">Race Name</label>
-                            <input type="text" name="race_name" id="race_name" class="form-control" placeholder="Enter race name" required>
+                            <input type="text" name="race_name" id="race_name" class="form-control" placeholder="Enter the name of your race (e.g., 'Spring 5k')" required>
                         </div>
 
                         <!-- Race Date -->
@@ -42,21 +42,15 @@
                             <input type="time" name="start_time" id="start_time" class="form-control" required>
                         </div>
 
-                        <!-- Race Categories -->
+                        <!-- Optional: Add race categories later -->
                         <div class="form-group mb-4">
-                            <label for="race_categories">Race Categories</label>
-                            <select name="race_categories" id="race_categories" class="form-control" multiple required>
-                                <option value="5k">5k</option>
-                                <option value="10k">10k</option>
-                                <option value="half_marathon">Half Marathon</option>
-                                <option value="marathon">Marathon</option>
-                            </select>
-                            <small class="form-text text-muted">Select multiple categories if applicable.</small>
+                            <label for="race_categories">Race Categories (Optional)</label>
+                            <p class="form-text text-muted">You can add categories later after the race is created.</p>
                         </div>
 
                         <!-- Submit Button -->
                         <div class="form-group text-center">
-                            <input type="submit" value="Save Configuration" class="btn btn-success btn-lg">
+                            <input type="submit" value="Create Race" class="btn btn-success btn-lg">
                         </div>
                     </form>
                 </div>

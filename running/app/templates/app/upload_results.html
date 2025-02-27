@@ -9,7 +9,7 @@
     <div class="row">
         <div class="col-12">
             <h1 class="display-4 text-center">Upload Race Results</h1>
-            <p class="lead text-center text-muted">Upload a CSV file containing the race results for a selected race</p>
+            <p class="lead text-center text-muted">Choose how you want to upload race results</p>
         </div>
     </div>
 
@@ -26,8 +26,63 @@
         </div>
     </div>
 
-    <!-- File Upload Form -->
+    <!-- Options Section (Radio Buttons for Manual or CSV Upload) -->
     <div class="row mt-4">
+        <div class="col-12 text-center">
+            <label for="upload_option" class="form-label">Choose an Option</label><br>
+            <input type="radio" id="manual" name="upload_option" value="manual" class="form-check-input" onclick="toggleForms()" checked>
+            <label for="manual" class="form-check-label">Manual Entry</label>
+            <input type="radio" id="csv_upload" name="upload_option" value="csv_upload" class="form-check-input" onclick="toggleForms()">
+            <label for="csv_upload" class="form-check-label">Upload CSV File</label>
+        </div>
+    </div>
+
+    <!-- Manual Entry Form (Initially visible) -->
+    <div id="manual_form" class="row mt-4">
+        <div class="col-12 col-md-8 offset-md-2">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title mb-0">Add Race Results Manually</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {% csrf_token %}
+
+                        <!-- Race Selection Dropdown -->
+                        <div class="form-group mb-4">
+                            <label for="race" class="form-label">Select Race</label>
+                            <select name="race_id" id="race" class="form-control" required>
+                                <option value="" disabled selected>Select a Race</option>
+                                {% for race in races %}
+                                    <option value="{{ race.id }}">{{ race.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Bib Number (Required) -->
+                        <div class="form-group mb-4">
+                            <label for="bib_number" class="form-label">Bib Number</label>
+                            <input type="text" name="bib_number" id="bib_number" class="form-control" placeholder="Enter Bib Number" required>
+                        </div>
+
+                        <!-- Result (Required) -->
+                        <div class="form-group mb-4">
+                            <label for="result" class="form-label">Result (Time)</label>
+                            <input type="text" name="result" id="result" class="form-control" placeholder="Enter Result (Time)" required>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="form-group text-center">
+                            <input type="submit" value="Submit Result" class="btn btn-success btn-lg">
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CSV Upload Form (Initially hidden) -->
+    <div id="csv_form" class="row mt-4" style="display: none;">
         <div class="col-12 col-md-8 offset-md-2">
             <div class="card shadow-sm">
                 <div class="card-header bg-primary text-white">
@@ -43,7 +98,7 @@
                             <select name="race_id" id="race" class="form-control" required>
                                 <option value="" disabled selected>Select a Race</option>
                                 {% for race in races %}
-                                    <option value="{{ race.id }}" {% if race.id == selected_race.id %}selected{% endif %}>{{ race.name }}</option>
+                                    <option value="{{ race.id }}">{{ race.name }}</option>
                                 {% endfor %}
                             </select>
                             <small class="form-text text-muted">Please select the race for which you are uploading results.</small>
@@ -53,12 +108,12 @@
                         <div class="form-group mb-4">
                             <label for="file" class="form-label">Select CSV File</label>
                             <input type="file" name="file" id="file" class="form-control" required>
-                            <small class="form-text text-muted">Please upload a valid CSV file containing the race results.</small>
+                            <small class="form-text text-muted">Please upload a valid CSV file containing race results (BibNumber, Result, etc.).</small>
                         </div>
 
                         <!-- Submit Button -->
                         <div class="form-group text-center">
-                            <input type="submit" value="Upload" class="btn btn-success btn-lg">
+                            <input type="submit" value="Upload CSV" class="btn btn-success btn-lg">
                         </div>
                     </form>
                 </div>
@@ -66,4 +121,20 @@
         </div>
     </div>
 </div>
+
+<script>
+    function toggleForms() {
+        const manualForm = document.getElementById('manual_form');
+        const csvForm = document.getElementById('csv_form');
+        
+        if (document.getElementById('manual').checked) {
+            manualForm.style.display = 'block';
+            csvForm.style.display = 'none';
+        } else {
+            manualForm.style.display = 'none';
+            csvForm.style.display = 'block';
+        }
+    }
+</script>
+
 {% endblock %}
