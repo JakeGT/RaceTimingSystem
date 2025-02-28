@@ -124,39 +124,64 @@ def dashboard(request):
 
     logger.info("Accessing the dashboard view")
 
-    #  get the race_id
+    # Get the race_id, gender, and age filters
     race_id = request.GET.get('race_id')
+    gender = request.GET.get('gender')
+    age = request.GET.get('age')
 
     try:
-        #  ensure race_id is an integer
+        # Ensure race_id is an integer
         race_id = int(race_id) if race_id else None
         logger.debug(f"Parsed race_id: {race_id}")
     except ValueError:
         logger.warning(f"Invalid race_id provided: {race_id}")
         race_id = None
 
-    #  fetch all races for dropdown
+    # Fetch all races for the dropdown
     races = Race.objects.all()
 
     if not races:
         logger.info("No races found in the database")
-
-        #  if no races exist, show a message to the user
+        # If no races exist, show a message to the user
         return render(request, 'app/dashboard.html', {
             'races': races,
             'message': 'No races available. Please add a race first.'
         })
 
     if race_id:
-        #  try to get the current race based on the given race_id
+        # Try to get the current race based on the given race_id
         current_race = get_object_or_404(Race, id=race_id)
     else:
-        #  default to the first race if no race_id is provided
+        # Default to the first race if no race_id is provided
         current_race = races.first()
 
-    #  use the current_race.id for getting participants and results
-    participants = Participant.objects.all()
-    results = RaceResult.objects.all().order_by('total_time')
+    # Use the current_race.id for getting participants and results
+    participants = Participant.objects.filter(race=current_race)
+    results = RaceResult.objects.filter(participant__race=current_race).order_by('total_time')
+
+    # Apply gender filter
+    if gender:
+        participants = participants.filter(gender=gender)
+        results = results.filter(participant__gender=gender)
+
+    # Apply age filter
+    if age:
+        if age == '18':
+            participants = participants.filter(age__gte=18, age__lte=25)
+            results = results.filter(participant__age__gte=18, participant__age__lte=25)
+        elif age == '26':
+            participants = participants.filter(age__gte=26, age__lte=35)
+            results = results.filter(participant__age__gte=26, participant__age__lte=35)
+        elif age == '36':
+            participants = participants.filter(age__gte=36, age__lte=45)
+            results = results.filter(participant__age__gte=36, participant__age__lte=45)
+        elif age == '46':
+            participants = participants.filter(age__gte=46, age__lte=60)
+            results = results.filter(participant__age__gte=46, participant__age__lte=60)
+        elif age == '60':
+            participants = participants.filter(age__gte=60)
+            results = results.filter(participant__age__gte=60)
+
     logger.debug(f"Rendering dashboard with race_id: {current_race.id if current_race else None}")
 
     return render(request, 'app/dashboard.html', {
@@ -165,6 +190,7 @@ def dashboard(request):
         'participants': participants,
         'results': results,
     })
+
 
 def race_config(request):
     """
