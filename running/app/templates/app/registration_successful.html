@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block title %}Registration Successful{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="alert alert-success text-center">
+        <h2>You have successfully registered for the race: {{ race.name }}</h2>
+        <p>Good luck in the race!</p>
+    </div>
+    <a href="{% url 'dashboard' %}" class="btn btn-success">Back to Dashboard</a>
+</div>
+{% endblock %}

@@ -2,13 +2,25 @@
 
 # -------------------------------------------------- Import Libraries --------------------------------------------------
 import csv
-
 from django.contrib.auth import authenticate, login
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from .models import Participant, RaceResult, Race
 from .utils.logger import setup_logging
+from .forms import RegisterRaceForm
+from django.utils import timezone
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.contrib import messages
+from django.contrib.auth.forms import PasswordResetForm
+from django.core.mail import send_mail
+from django.conf import settings
+import re
 
+
+# -------------------------------------------------- Setup Logging -----------------------------------------------------
 logger = setup_logging()
 
 # ------------------------------------------------ Function Definitions ------------------------------------------------
@@ -21,19 +33,9 @@ def landing_page(request):
 
     return render(request, 'app/landing.html', {})
 
-
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import User
-from django.contrib import messages
-from django.contrib.auth.forms import PasswordResetForm
-from django.core.mail import send_mail
-from django.conf import settings
-
-
 def user_register(request):
     """
-    Handles user registration.
+    Handles user registration with password validation.
     """
 
     if request.method == "POST":
@@ -42,14 +44,29 @@ def user_register(request):
         password1 = request.POST.get("password1")
         password2 = request.POST.get("password2")
 
+        #  password validation
         if password1 != password2:
             messages.error(request, "Passwords do not match.")
             return redirect("register")
 
+        if len(password1) < 8:
+            messages.error(request, "Password must be at least 8 characters long.")
+            return redirect("register")
+
+        if not re.search(r"\d", password1):
+            messages.error(request, "Password must contain at least one number.")
+            return redirect("register")
+
+        if not re.search(r"[!@#$%^&*()\-_=+[\]{}|;:'\",.<>?/]", password1):
+            messages.error(request, "Password must contain at least one special character.")
+            return redirect("register")
+
+        #  check if username already exists
         if User.objects.filter(username=username).exists():
             messages.error(request, "Username is already taken.")
             return redirect("register")
 
+        #  create and save the user
         user = User.objects.create_user(username=username, email=email, password=password1)
         user.save()
 
@@ -57,7 +74,6 @@ def user_register(request):
         return redirect("login")
 
     return render(request, "app/register.html")
-
 
 def user_login(request):
     """
@@ -69,15 +85,14 @@ def user_login(request):
         password = request.POST.get("password")
         user = authenticate(request, username=username, password=password)
 
-        if user:
+        if user is not None:
             login(request, user)
             messages.success(request, "Login successful!")
-            return redirect("dashboard")
+            return redirect("/")
         else:
             messages.error(request, "Invalid username or password.")
 
     return render(request, "app/login.html")
-
 
 def user_logout(request):
     """
@@ -87,7 +102,6 @@ def user_logout(request):
     logout(request)
     messages.success(request, "You have been logged out.")
     return redirect("login")
-
 
 def password_reset_request(request):
     """
@@ -101,7 +115,7 @@ def password_reset_request(request):
         if form.is_valid():
             user = User.objects.filter(email=email).first()
             if user:
-                # Send password reset email
+                #  send password reset email
                 send_mail(
                     "Password Reset Request",
                     "Click the link below to reset your password.",
@@ -116,7 +130,6 @@ def password_reset_request(request):
 
     return render(request, "app/password_reset.html")
 
-
 def dashboard(request):
     """
     View for the dashboard with race selection.
@@ -124,8 +137,10 @@ def dashboard(request):
 
     logger.info("Accessing the dashboard view")
 
-    #  get the race_id
+    #  get the race_id and other filters
     race_id = request.GET.get('race_id')
+    gender = request.GET.get('gender')
+    age = request.GET.get('age')
 
     try:
         #  ensure race_id is an integer
@@ -140,7 +155,6 @@ def dashboard(request):
 
     if not races:
         logger.info("No races found in the database")
-
         #  if no races exist, show a message to the user
         return render(request, 'app/dashboard.html', {
             'races': races,
@@ -154,9 +168,17 @@ def dashboard(request):
         #  default to the first race if no race_id is provided
         current_race = races.first()
 
-    #  use the current_race.id for getting participants and results
-    participants = Participant.objects.all()
-    results = RaceResult.objects.all().order_by('total_time')
+    #  filter participants based on gender and age if provided
+    participants = Participant.objects.filter(race=current_race)
+
+    if gender:
+        participants = participants.filter(gender=gender)
+
+    if age:
+        participants = participants.filter(age=age)
+
+    #  fetch the race results related to the current race and participants
+    results = RaceResult.objects.filter(participant__in=participants).order_by('total_time')
     logger.debug(f"Rendering dashboard with race_id: {current_race.id if current_race else None}")
 
     return render(request, 'app/dashboard.html', {
@@ -166,6 +188,7 @@ def dashboard(request):
         'results': results,
     })
 
+@login_required(login_url="login")
 def race_config(request):
     """
     View for race configuration.
@@ -202,7 +225,7 @@ def race_config(request):
 
     return render(request, 'app/race_config.html')
 
-
+@login_required(login_url="login")
 def upload_results(request):
     """
     View for result upload.
@@ -297,83 +320,193 @@ def upload_results(request):
         'selected_race': selected_race
     })
 
-
+@login_required(login_url="login")
 def upload_participants(request):
     """
-    View for uploading participants to a selected race via CSV.
+    View for uploading participants either manually or via CSV.
     """
 
-    logger.info("Accessing participants upload view")
-
-    #  get all races
-    races = Race.objects.all()
-
     if request.method == 'POST':
-        #  get the selected race from the form
         race_id = request.POST.get('race_id')
+
         if not race_id:
-            logger.error("Race ID not provided in the form")
             messages.error(request, "Please select a race.")
             return redirect('upload_participants')
 
-        race = get_object_or_404(Race, id=race_id)
+        #  try to get the race, if not found, return an error
+        race = Race.objects.get(id=race_id)
 
-        #  get the uploaded file
-        csv_file = request.FILES['file']
-        if not csv_file.name.endswith('.csv'):
-            logger.warning(f"Invalid file format: {csv_file.name}")
-            messages.error(request, "The uploaded file must be a CSV.")
+        #  handle manual entry
+        if 'bib_number' in request.POST:
+            bib_number = request.POST['bib_number']
+            firstname = request.POST['firstname']
+            lastname = request.POST['lastname']
+            gender = request.POST['gender']
+            club_name = request.POST.get('club_name', '')
+            team_name = request.POST['team_name']
+            age_category = request.POST['age_category']
+
+            #  create a new participant and associate with the selected race
+            Participant.objects.create(
+                race=race,
+                race_number=bib_number,
+                name=f"{firstname} {lastname}",
+                gender=gender,
+                club_name=club_name,
+                team_name=team_name,
+                age_category=age_category
+            )
+            messages.success(request, "Participant added successfully.")
             return redirect('upload_participants')
 
-        #  read and process the CSV file
-        try:
-            decoded_file = csv_file.read().decode('utf-8').splitlines()
-            csv_reader = csv.reader(decoded_file)
-            header = next(csv_reader)
+        #  handle CSV upload
+        if 'file' in request.FILES:
+            csv_file = request.FILES['file']
+            messages.success(request, "CSV file uploaded successfully.")
+            return redirect('upload_participants')
 
-            #  check if the header has the expected columns
-            if header != ['Name', 'Race Number', 'Age', 'Gender']:
-                logger.error(f"Invalid CSV header: {header}")
-                messages.error(request, "Invalid CSV format. The header must be: Name, Race Number, Age, Gender.")
-                return redirect('upload_participants')
-
-            #  create participants from the CSV
-            for row in csv_reader:
-                if len(row) != 4:  #  ensure there are exactly 4 columns (Name, Race Number, Age, Gender)
-                    logger.warning(f"Skipping invalid row: {row}")
-                    messages.warning(request, f"Skipping row: Invalid number of columns. Expected 4, got {len(row)}.")
-                    continue  #  skip incomplete rows
-
-                #  unpack row data
-                name, race_number, age, gender = row
-
-                #  validate data
-                if not race_number.isdigit():
-                    logger.warning(f"Invalid data in row: {row}")
-                    messages.warning(request, f"Skipping row: Invalid race number '{race_number}' (must be an integer).")
-                    continue
-
-                if not age.isdigit() or int(age) <= 0:
-                    messages.warning(request, f"Skipping row: Invalid age '{age}' (must be a positive integer).")
-                    continue
-
-                #  create participant object
-                Participant.objects.create(
-                    name=name,
-                    race_number=race_number,
-                    age=int(age),
-                    gender=gender.lower(),
-                    race_id=race.id
-                )
-                logger.info(f"Added participant: {name} (Race Number: {race_number})")
-
-            messages.success(request, f"Participants have been successfully uploaded to {race.name}.")
-        except Exception as e:
-            logger.error(f"Error processing participants CSV: {e}")
-            messages.error(request, f"An error occurred while processing the CSV file: {e}")
-
-        return redirect('dashboard')
-
+    #  if GET request, just display the form
+    races = Race.objects.all()
     return render(request, 'app/upload_participants.html', {
         'races': races,
     })
+
+def user_logout(request):
+    """
+    Logs out the user and redirects to the homepage.
+    """
+
+    #  logs out the user
+    logout(request)
+    messages.success(request, "You have successfully logged out.")
+
+    #  redirect the user to the homepage
+    return redirect('/')
+
+@login_required
+def register_for_race(request):
+
+    #  get the current date and time
+    current_time = timezone.now()
+
+    #  filter races to future races
+    races = Race.objects.filter(date__gte=current_time.date()).filter(start_time__gte=current_time.time())
+
+    if request.method == 'POST':
+        race_id = request.POST.get('race_id')
+        race = get_object_or_404(Race, id=race_id)
+
+        #  ensure the user has a Participant instance
+        if hasattr(request.user, 'participant'):
+            participant = request.user.participant
+
+            #  register the participant for the race
+            participant.races.add(race)
+            participant.save()
+            return render(request, 'app/registration_success.html', {'race': race})
+        else:
+            #  handle the case where the user doesn't have a participant record yet
+            return render(request, 'app/error.html', {'message': 'You must have a participant record to register for a race.'})
+
+    return render(request, 'app/register_for_race.html', {'races': races})
+
+@login_required
+def manage_participants(request, race_id):
+    """
+    Loads a page where organisers can approve or deny participants.
+    """
+
+    race = get_object_or_404(Race, id=race_id)
+    participants = race.participants.filter(status='pending')
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        participant_id = request.POST.get('participant_id')
+        participant = get_object_or_404(Participant, id=participant_id)
+
+        if action == 'approve':
+            participant.status = 'approved'
+        elif action == 'deny':
+            participant.status = 'denied'
+
+        participant.save()
+        return redirect('manage_participants', race_id=race.id)
+
+    return render(request, 'app/manage_participants.html', {'race': race, 'participants': participants})
+
+@login_required(login_url="login")
+def race_history(request):
+    """
+    Views the history of a runner.
+    """
+
+    #  check if the user has an associated participant
+    if hasattr(request.user, 'participant'):
+        participant = request.user.participant
+
+    else:
+        #  handle the case where the user does not have an associated participant
+        participant = None
+
+    #  render the page with race history
+    return render(request, 'app/race_history.html', {'participant': participant})
+
+@login_required(login_url="login")
+def race_detail(request, race_id):
+    """
+    View for displaying the details of a specific race.
+    """
+
+    race = get_object_or_404(Race, id=race_id)
+    return render(request, 'app/race_detail.html', {'race': race})
+
+@login_required
+def race_organiser_dashboard(request):
+
+    # TODO - currently assume the user is a race organiser
+    races = Race.objects.filter(organiser=request.user)
+    return render(request, 'app/race_organiser_dashboard.html', {'races': races})
+
+@login_required(login_url="login")
+def upcoming_races(request):
+    """
+    View for displaying all upcoming races.
+    Filters races that have a start date in the future.
+    """
+
+    #  get the current date and time
+    current_time = timezone.now()
+
+    #  get all races that are scheduled to take place after the current date and time
+    upcoming_races = Race.objects.filter(date__gte=current_time.date()).order_by('date', 'start_time')
+
+    return render(request, 'app/upcoming_races.html', {'upcoming_races': upcoming_races})
+
+@login_required
+def organiser_race_detail(request, race_id):
+
+    race = get_object_or_404(Race, id=race_id)
+
+    if request.method == 'POST':
+        participant_id = request.POST.get('participant_id')
+        participant = race.participants.get(id=participant_id)
+        status = request.POST.get('status')
+
+        #  update the status of the participant
+        participant.status = status
+        participant.save()
+
+    participants = race.participants.all()
+    return render(request, 'app/organiser_race_detail.html', {'race': race, 'participants': participants})
+
+@login_required(login_url="login")
+def race_results(request, race_id):
+
+    #  get the race using the provided race_id
+    race = get_object_or_404(Race, id=race_id)
+
+    #  retrieve the results related to that race
+    results = RaceResult.objects.filter(race=race)
+
+    #  render the race results page with race and results context
+    return render(request, 'race_results.html', {'race': race, 'results': results})

@@ -1,0 +1,13 @@
+<!-- race_detail.html -->
+{% extends 'base.html' %}
+
+{% block title %}{{ race.name }} - Race Details{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>{{ race.name }}</h1>
+    <p>Date: {{ race.date }}</p>
+    <p>Start Time: {{ race.start_time }}</p>
+    <p>Categories: {{ race.categories }}</p>
+</div>
+{% endblock %}

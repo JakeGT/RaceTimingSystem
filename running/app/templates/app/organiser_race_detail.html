@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}Race Details - Organizer{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center">Manage Participants for {{ race.name }}</h1>
+    <p class="lead text-muted text-center">Approve or deny race participants.</p>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for participant in participants %}
+                <tr>
+                    <td>{{ participant.name }}</td>
+                    <td>{{ participant.status }}</td>
+                    <td>
+                        <form method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="participant_id" value="{{ participant.id }}">
+                            <button type="submit" name="status" value="approved" class="btn btn-success">Approve</button>
+                            <button type="submit" name="status" value="denied" class="btn btn-danger">Deny</button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

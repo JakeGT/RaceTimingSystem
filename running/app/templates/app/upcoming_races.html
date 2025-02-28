@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block title %}Upcoming Races{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center">Upcoming Races</h1>
+    <p class="lead text-muted text-center">Check out the races coming up in the near future.</p>
+
+    <div class="list-group">
+        {% for race in races %}
+            <a href="{% url 'race_detail' race.id %}" class="list-group-item list-group-item-action">
+                <h5 class="mb-1">{{ race.name }}</h5>
+                <p class="mb-1">Date: {{ race.date }}</p>
+                <p class="mb-1">Location: {{ race.location }}</p>
+            </a>
+        {% empty %}
+            <p class="text-center">No upcoming races at the moment.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

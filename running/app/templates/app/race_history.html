@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block title %}Race History{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center">Your Race History</h1>
+    <p class="lead text-muted text-center">View your past races and results.</p>
+
+    <div class="list-group">
+        {% for race in races %}
+            <a href="{% url 'race_detail' race.id %}" class="list-group-item list-group-item-action">
+                <h5 class="mb-1">{{ race.name }}</h5>
+                <p class="mb-1">Date: {{ race.date }}</p>
+                <p class="mb-1">Your Result: {{ race.result_for_user }}</p>
+            </a>
+        {% empty %}
+            <p class="text-center">You haven't participated in any races yet.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -19,22 +19,47 @@
             min-height: 100vh; /* Ensure the page takes at least the full height */
         }
 
+        /* Navbar Styling */
         .navbar {
             background-color: #0069d9;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease;
         }
 
         .navbar-brand {
             color: white;
             font-weight: bold;
+            text-transform: uppercase;
         }
 
         .nav-link {
             color: #ffffff !important;
+            padding: 10px 20px; /* Add some padding to make the links look better */
+            font-size: 16px;
+            margin: 5px; /* Space between buttons */
+            border-radius: 5px; /* Rounded corners for the "button" effect */
+            background-color: #007bff; /* Button-like background color */
+            border: 1px solid transparent; /* Transparent border for a clean look */
+            transition: all 0.3s ease;
         }
 
         .nav-link:hover {
-            color: #cfd8dc !important;
+            background-color: #0056b3; /* Darker blue on hover */
+            color: #ffffff !important;
+            border-radius: 5px; /* Rounded corners for the hover effect */
+            border: 1px solid #004085; /* Darker border color on hover */
+        }
+
+        .navbar-toggler {
+            border-color: #ffffff;
+        }
+
+        .navbar-toggler-icon {
+            background-color: #ffffff;
+        }
+
+        .navbar-nav .nav-item + .nav-item {
+            margin-left: 10px; /* Add spacing between navbar items */
         }
 
         .content-area {
@@ -60,16 +85,19 @@
     <!-- Navigation Bar -->
     <nav class="navbar navbar-expand-lg navbar-light fixed-top">
         <div class="container-fluid">
-            <!-- Changed the href from "#" to "/" -->
             <a class="navbar-brand" href="/">Race Timing System</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
+                    <!-- Always show Dashboard button -->
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a>
                     </li>
+
+                    <!-- Show these links only if the user is logged in -->
+                    {% if user.is_authenticated %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'race_config' %}">Race Configuration</a>
                     </li>
@@ -79,6 +107,16 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'upload_results' %}">Upload Results</a>
                     </li>
+                    <!-- Logout Button -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+                    </li>
+                    {% else %}
+                    <!-- If the user is not logged in, only show the dashboard link -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}">Login</a>
+                    </li>
+                    {% endif %}
                 </ul>
             </div>
         </div>

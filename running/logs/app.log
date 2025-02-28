@@ -338,3 +338,235 @@
 2025-02-24 13:47:20,001 - app_logger - DEBUG - Parsed race_id: None
 2025-02-24 13:47:20,010 - app_logger - DEBUG - Rendering dashboard with race_id: 1
 2025-02-24 13:47:30,375 - app_logger - INFO - Accessing participants upload view
+2025-02-27 16:28:40,555 - app_logger - INFO - Accessing the landing page view
+2025-02-27 16:28:43,128 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 16:28:43,128 - app_logger - DEBUG - Parsed race_id: None
+2025-02-27 16:28:43,130 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 16:28:49,234 - app_logger - INFO - Accessing the landing page view
+2025-02-27 16:30:51,534 - app_logger - INFO - Accessing the landing page view
+2025-02-27 16:33:04,113 - app_logger - INFO - Accessing the landing page view
+2025-02-27 16:33:11,523 - app_logger - INFO - Accessing the landing page view
+2025-02-27 16:39:13,186 - app_logger - INFO - Accessing the landing page view
+2025-02-27 16:42:18,011 - app_logger - INFO - Accessing the landing page view
+2025-02-27 16:44:45,876 - app_logger - INFO - Accessing the landing page view
+2025-02-27 16:44:55,842 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 16:44:55,842 - app_logger - DEBUG - Parsed race_id: None
+2025-02-27 16:44:55,844 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 16:46:30,492 - app_logger - INFO - Accessing race configuration view
+2025-02-27 16:48:09,849 - app_logger - INFO - Accessing race configuration view
+2025-02-27 16:48:47,027 - app_logger - INFO - Accessing the landing page view
+2025-02-27 16:51:38,311 - app_logger - INFO - Accessing the landing page view
+2025-02-27 16:53:03,096 - app_logger - INFO - Accessing the landing page view
+2025-02-27 16:53:09,180 - app_logger - INFO - Accessing the landing page view
+2025-02-27 16:53:14,687 - app_logger - INFO - Accessing race configuration view
+2025-02-27 16:53:17,790 - app_logger - INFO - Accessing the landing page view
+2025-02-27 16:53:43,056 - app_logger - INFO - Accessing the landing page view
+2025-02-27 16:53:44,680 - app_logger - INFO - Accessing race configuration view
+2025-02-27 16:53:48,281 - app_logger - INFO - Accessing participants upload view
+2025-02-27 16:53:53,846 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 16:53:53,846 - app_logger - DEBUG - Parsed race_id: None
+2025-02-27 16:53:53,847 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 16:54:42,741 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 16:54:42,741 - app_logger - DEBUG - Parsed race_id: None
+2025-02-27 16:54:42,742 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 16:54:58,869 - app_logger - INFO - Accessing race configuration view
+2025-02-27 16:55:00,667 - app_logger - INFO - Accessing participants upload view
+2025-02-27 16:55:06,508 - app_logger - INFO - Accessing results upload view
+2025-02-27 16:55:09,405 - app_logger - INFO - Accessing race configuration view
+2025-02-27 16:55:22,228 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 16:55:22,228 - app_logger - DEBUG - Parsed race_id: None
+2025-02-27 16:55:22,229 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 16:56:26,117 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 16:56:26,117 - app_logger - DEBUG - Parsed race_id: None
+2025-02-27 16:56:26,118 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 16:57:35,726 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 16:57:35,726 - app_logger - DEBUG - Parsed race_id: None
+2025-02-27 16:57:35,727 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 16:57:40,252 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 16:57:40,252 - app_logger - DEBUG - Parsed race_id: None
+2025-02-27 16:57:40,253 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 16:57:54,826 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 16:57:54,826 - app_logger - DEBUG - Parsed race_id: 2
+2025-02-27 16:57:54,827 - app_logger - DEBUG - Rendering dashboard with race_id: 2
+2025-02-27 16:58:22,427 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 16:58:22,428 - app_logger - DEBUG - Parsed race_id: 2
+2025-02-27 16:58:22,429 - app_logger - DEBUG - Rendering dashboard with race_id: 2
+2025-02-27 16:59:52,780 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 16:59:52,780 - app_logger - DEBUG - Parsed race_id: 2
+2025-02-27 17:00:58,251 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 17:00:58,252 - app_logger - DEBUG - Parsed race_id: 2
+2025-02-27 17:02:34,302 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 17:02:34,303 - app_logger - DEBUG - Parsed race_id: 2
+2025-02-27 17:02:34,305 - app_logger - DEBUG - Rendering dashboard with race_id: 2
+2025-02-27 17:02:38,803 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 17:02:38,803 - app_logger - DEBUG - Parsed race_id: 2
+2025-02-27 17:02:38,804 - app_logger - DEBUG - Rendering dashboard with race_id: 2
+2025-02-27 17:02:41,174 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 17:02:41,174 - app_logger - DEBUG - Parsed race_id: 1
+2025-02-27 17:02:41,175 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 17:02:43,191 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 17:02:43,191 - app_logger - DEBUG - Parsed race_id: 1
+2025-02-27 17:02:43,193 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 17:02:45,187 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 17:02:45,187 - app_logger - DEBUG - Parsed race_id: 1
+2025-02-27 17:02:45,188 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 17:03:22,957 - app_logger - INFO - Accessing race configuration view
+2025-02-27 17:03:42,667 - app_logger - INFO - Accessing participants upload view
+2025-02-27 17:06:21,438 - app_logger - INFO - Accessing results upload view
+2025-02-27 17:06:28,182 - app_logger - INFO - Accessing results upload view
+2025-02-27 17:07:23,373 - app_logger - INFO - Accessing results upload view
+2025-02-27 17:07:31,763 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 17:07:31,763 - app_logger - DEBUG - Parsed race_id: None
+2025-02-27 17:07:31,765 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 17:07:52,805 - app_logger - INFO - Accessing the landing page view
+2025-02-27 17:08:58,191 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 17:08:58,191 - app_logger - DEBUG - Parsed race_id: None
+2025-02-27 17:08:58,193 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 17:09:10,322 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 17:09:10,322 - app_logger - DEBUG - Parsed race_id: 1
+2025-02-27 17:09:10,324 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 17:09:40,757 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 17:09:40,757 - app_logger - DEBUG - Parsed race_id: 1
+2025-02-27 17:09:40,759 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 17:09:43,109 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 17:09:43,109 - app_logger - DEBUG - Parsed race_id: 1
+2025-02-27 17:09:43,110 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 17:09:43,750 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 17:09:43,750 - app_logger - DEBUG - Parsed race_id: 1
+2025-02-27 17:09:43,752 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 17:09:45,686 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 17:09:45,686 - app_logger - DEBUG - Parsed race_id: 1
+2025-02-27 17:09:45,687 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 17:09:47,540 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 17:09:47,540 - app_logger - DEBUG - Parsed race_id: 1
+2025-02-27 17:09:47,542 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 17:09:58,748 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 17:09:58,748 - app_logger - DEBUG - Parsed race_id: 1
+2025-02-27 17:09:58,749 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 17:10:03,510 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 17:10:03,510 - app_logger - DEBUG - Parsed race_id: 1
+2025-02-27 17:10:03,512 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 17:10:13,119 - app_logger - INFO - Accessing the landing page view
+2025-02-27 17:10:16,174 - app_logger - INFO - Accessing race configuration view
+2025-02-27 17:10:37,345 - app_logger - INFO - Accessing results upload view
+2025-02-27 17:10:41,839 - app_logger - INFO - Accessing the landing page view
+2025-02-27 17:10:51,103 - app_logger - INFO - Accessing race configuration view
+2025-02-27 17:12:51,478 - app_logger - INFO - Accessing the landing page view
+2025-02-27 17:17:11,991 - app_logger - INFO - Accessing the landing page view
+2025-02-27 17:17:15,573 - app_logger - INFO - Accessing the landing page view
+2025-02-27 17:17:17,155 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 17:17:17,155 - app_logger - DEBUG - Parsed race_id: None
+2025-02-27 17:17:17,157 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 17:18:20,804 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 17:18:20,805 - app_logger - DEBUG - Parsed race_id: None
+2025-02-27 17:18:20,807 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 17:18:23,362 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 17:18:23,363 - app_logger - DEBUG - Parsed race_id: None
+2025-02-27 17:18:23,364 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 17:20:19,309 - app_logger - INFO - Accessing the landing page view
+2025-02-27 17:23:09,072 - app_logger - INFO - Accessing race configuration view
+2025-02-27 17:23:14,340 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 17:23:14,340 - app_logger - DEBUG - Parsed race_id: None
+2025-02-27 17:23:14,342 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 17:25:03,004 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 17:25:03,004 - app_logger - DEBUG - Parsed race_id: None
+2025-02-27 17:25:03,005 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 17:29:36,887 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 17:29:36,887 - app_logger - DEBUG - Parsed race_id: None
+2025-02-27 17:29:36,889 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 17:32:57,413 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 17:32:57,413 - app_logger - DEBUG - Parsed race_id: None
+2025-02-27 17:32:57,415 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 17:33:47,484 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 17:33:47,484 - app_logger - DEBUG - Parsed race_id: None
+2025-02-27 17:33:47,486 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 17:35:14,216 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 17:35:14,216 - app_logger - DEBUG - Parsed race_id: None
+2025-02-27 17:35:14,217 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 17:35:46,844 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 17:35:46,844 - app_logger - DEBUG - Parsed race_id: None
+2025-02-27 17:35:46,846 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 17:36:01,642 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 17:36:01,643 - app_logger - DEBUG - Parsed race_id: None
+2025-02-27 17:36:01,644 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 17:36:28,374 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 17:36:28,375 - app_logger - DEBUG - Parsed race_id: None
+2025-02-27 17:36:28,380 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 17:38:28,737 - app_logger - INFO - Accessing the landing page view
+2025-02-27 17:38:30,009 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 17:38:30,009 - app_logger - DEBUG - Parsed race_id: None
+2025-02-27 17:38:30,011 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 17:44:47,540 - app_logger - INFO - Accessing the landing page view
+2025-02-27 17:44:48,622 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 17:44:48,623 - app_logger - DEBUG - Parsed race_id: None
+2025-02-27 17:44:48,625 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 17:44:52,776 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 17:44:52,776 - app_logger - DEBUG - Parsed race_id: None
+2025-02-27 17:44:52,778 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 17:46:24,637 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 17:46:24,638 - app_logger - DEBUG - Parsed race_id: None
+2025-02-27 17:46:24,640 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 17:46:37,636 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 17:46:37,636 - app_logger - DEBUG - Parsed race_id: None
+2025-02-27 17:46:37,638 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 17:48:48,541 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 17:48:48,541 - app_logger - DEBUG - Parsed race_id: None
+2025-02-27 17:48:48,543 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 17:48:50,941 - app_logger - INFO - Accessing the landing page view
+2025-02-27 17:48:51,856 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 17:48:51,856 - app_logger - DEBUG - Parsed race_id: None
+2025-02-27 17:48:51,858 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 17:57:22,442 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 17:57:22,442 - app_logger - DEBUG - Parsed race_id: 1
+2025-02-27 17:57:22,444 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 17:57:24,436 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 17:57:24,436 - app_logger - DEBUG - Parsed race_id: 1
+2025-02-27 17:57:24,438 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 17:57:26,648 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 17:57:26,648 - app_logger - DEBUG - Parsed race_id: 1
+2025-02-27 17:57:26,649 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 17:57:28,266 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 17:57:28,266 - app_logger - DEBUG - Parsed race_id: 1
+2025-02-27 17:57:28,267 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 17:57:29,639 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 17:57:29,639 - app_logger - DEBUG - Parsed race_id: 1
+2025-02-27 17:57:29,640 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 17:57:47,129 - app_logger - INFO - Accessing the landing page view
+2025-02-27 17:57:47,790 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 17:57:47,790 - app_logger - DEBUG - Parsed race_id: None
+2025-02-27 17:57:47,792 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 17:59:38,645 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 17:59:38,645 - app_logger - DEBUG - Parsed race_id: None
+2025-02-27 17:59:38,646 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 18:01:00,043 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 18:01:00,043 - app_logger - DEBUG - Parsed race_id: None
+2025-02-27 18:01:00,044 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 18:01:08,755 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 18:01:08,755 - app_logger - DEBUG - Parsed race_id: None
+2025-02-27 18:01:08,757 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 18:02:33,987 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 18:02:33,987 - app_logger - DEBUG - Parsed race_id: None
+2025-02-27 18:02:33,989 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 18:02:36,408 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 18:02:36,408 - app_logger - DEBUG - Parsed race_id: None
+2025-02-27 18:02:36,410 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 18:02:37,479 - app_logger - INFO - Accessing the landing page view
+2025-02-27 18:02:38,906 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 18:02:38,906 - app_logger - DEBUG - Parsed race_id: None
+2025-02-27 18:02:38,908 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 18:03:58,246 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 18:03:58,246 - app_logger - DEBUG - Parsed race_id: None
+2025-02-27 18:03:58,249 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 18:03:59,757 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 18:03:59,757 - app_logger - DEBUG - Parsed race_id: None
+2025-02-27 18:03:59,759 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 18:05:34,793 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 18:05:34,793 - app_logger - DEBUG - Parsed race_id: None
+2025-02-27 18:05:34,795 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 18:06:56,715 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 18:06:56,715 - app_logger - DEBUG - Parsed race_id: None
+2025-02-27 18:06:56,717 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-27 18:07:06,617 - app_logger - INFO - Accessing the landing page view
+2025-02-27 18:07:07,855 - app_logger - INFO - Accessing the dashboard view
+2025-02-27 18:07:07,855 - app_logger - DEBUG - Parsed race_id: None
+2025-02-27 18:07:07,858 - app_logger - DEBUG - Rendering dashboard with race_id: 1
