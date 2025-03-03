@@ -1,9 +1,11 @@
+#  running/app/tests.py
+
 # -------------------------------------------------- Import Libraries --------------------------------------------------
 from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
-from .models import Participant, RaceResult, Race
+from .models import Participant, Race
 import io
 
 # -------------------------------------------------- Test Definitions --------------------------------------------------

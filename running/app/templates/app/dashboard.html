@@ -1,3 +1,4 @@
+<!-- running/app/templates/app/dashboard.html -->
 {% extends 'base.html' %}
 
 {% block title %}Race Dashboard - Race Timing System{% endblock %}
@@ -9,7 +10,7 @@
     <div class="row">
         <div class="col-12 text-center">
             <h1 class="display-4">Race Dashboard</h1>
-            <p class="lead text-muted">Manage and view your race registrations, history, and leaderboards</p>
+            <p class="lead text-muted">Search for races and view their leaderboards</p>
         </div>
     </div>
 
@@ -19,153 +20,67 @@
             <div class="btn-group" role="group" aria-label="Dashboard Links">
 
                 {% if user.is_authenticated %}
-                    <!-- Link to Race History only if the user is logged in -->
+                    <!-- If the user is logged in, show the following links -->
                     <a href="{% url 'race_history' %}" class="btn btn-info btn-lg">Race History</a>
-                    <!-- Link to Organiser Dashboard only if the user is logged in -->
                     <a href="{% url 'race_organiser_dashboard' %}" class="btn btn-success btn-lg">Organiser Dashboard</a>
-                {% endif %}
-
-                <!-- Link to Register for Race only if the user is NOT logged in -->
-                {% if not user.is_authenticated %}
                     <a href="{% url 'register_for_race' %}" class="btn btn-primary btn-lg">Register for Race</a>
+                    <a href="{% url 'upcoming_races' %}" class="btn btn-warning btn-lg">Upcoming Races</a>
                 {% endif %}
 
-                <!-- Link to Upcoming Races (accessible to everyone) -->
-                <a href="{% url 'upcoming_races' %}" class="btn btn-warning btn-lg">Upcoming Races</a>
             </div>
         </div>
     </div>
 
-    <!-- Message Section -->
-    <div class="row mt-4">
-        <div class="col-12">
-            {% if messages %}
-                <div class="alert alert-info">
-                    {% for message in messages %}
-                        <p>{{ message }}</p>
-                    {% endfor %}
-                </div>
-            {% endif %}
+    <!-- Create Race Button (for authenticated users) -->
+    {% if user.is_authenticated %}
+    <div class="row">
+        <div class="col-12 text-end mt-4">
+            <a href="{% url 'race_config' %}" class="btn btn-danger btn-lg">Create Race</a>
         </div>
     </div>
+    {% endif %}
 
-    <!-- Race Selection and Filters Section -->
+    <!-- Search and Filter Section -->
     <div class="row mt-4">
         <div class="col-12 text-center">
             <form method="get" action="{% url 'dashboard' %}">
                 <div class="d-flex justify-content-between">
-                    <!-- Race Filter -->
+                    <!-- Race Search -->
                     <div class="form-group">
-                        <label for="race-select" class="form-label">Select a Race:</label>
-                        <select id="race-select" name="race_id" class="form-select w-auto">
-                            {% for race in races %}
-                                <option value="{{ race.id }}" {% if race.id == current_race.id %}selected{% endif %}>
-                                    {{ race.name }}
-                                </option>
-                            {% endfor %}
-                        </select>
+                        <label for="race-search" class="form-label">Search for a Race:</label>
+                        <input type="text" id="race-search" name="race_search" class="form-control w-auto" placeholder="Search by race name">
                     </div>
 
-                    <!-- Gender Filter -->
+                    <!-- Filter by Completion Status -->
                     <div class="form-group">
-                        <label for="gender-select" class="form-label">Filter by Gender</label>
-                        <select id="gender-select" name="gender" class="form-select w-auto">
-                            <option value="">All Genders</option>
-                            <option value="male" {% if request.GET.gender == 'male' %}selected{% endif %}>Male</option>
-                            <option value="female" {% if request.GET.gender == 'female' %}selected{% endif %}>Female</option>
-                        </select>
-                    </div>
-
-                    <!-- Age Filter -->
-                    <div class="form-group">
-                        <label for="age-select" class="form-label">Filter by Age</label>
-                        <select id="age-select" name="age" class="form-select w-auto">
-                            <option value="">All Ages</option>
-                            <option value="18" {% if request.GET.age == '18' %}selected{% endif %}>18-25</option>
-                            <option value="26" {% if request.GET.age == '26' %}selected{% endif %}>26-35</option>
-                            <option value="36" {% if request.GET.age == '36' %}selected{% endif %}>36-45</option>
-                            <option value="46" {% if request.GET.age == '46' %}selected{% endif %}>46-60</option>
-                            <option value="60" {% if request.GET.age == '60' %}selected{% endif %}>60+</option>
-                        </select>
+                        <label for="completed" class="form-label">Show Completed Races Only:</label>
+                        <input type="checkbox" id="completed" name="completed" {% if request.GET.completed %} checked {% endif %}>
                     </div>
 
                     <!-- Submit Button -->
                     <div class="form-group align-self-end">
-                        <button type="submit" class="btn btn-primary">Apply Filters</button>
+                        <button type="submit" class="btn btn-primary">Search</button>
                     </div>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Leaderboard Section -->
-    <div class="row mt-5">
-        <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-header bg-success text-white">
-                    <h3 class="card-title mb-0">Current Leaderboard</h3>
-                </div>
-                <div class="card-body">
-                    <p class="card-text">Here are the current standings:</p>
-                    <div class="list-group list-group-flush">
-                        {% for result in results %}
-                            <div class="list-group-item d-flex justify-content-between align-items-center p-3 mb-2 rounded border">
-                                <div class="d-flex align-items-center">
-                                    <!-- Rank Badge -->
-                                    <span class="badge bg-secondary me-3">{{ forloop.counter }}</span>
-                                    <!-- Participant Name with Tooltip -->
-                                    <span class="fw-bold"
-                                          data-bs-toggle="tooltip"
-                                          data-bs-placement="top"
-                                          title="Age: {{ result.participant.age }}<br>Gender: {{ result.participant.gender }}<br>Category: {{ result.participant.category }}">
-                                        {{ result.participant.name }}
-                                    </span>
-                                </div>
-                                <div class="d-flex align-items-center">
-                                    <span class="badge bg-info me-2">{{ result.total_time }}</span>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
+    <!-- Race Selection Section -->
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            <h3>Select a Race:</h3>
+            <div class="list-group">
+                {% for race in races %}
+                    <a href="{% url 'race_detail' race.id %}" class="list-group-item list-group-item-action">
+                        {{ race.name }} - {{ race.date }}
+                    </a>
+                {% empty %}
+                    <p>No races found. Please add a race.</p>
+                {% endfor %}
             </div>
         </div>
     </div>
 
 </div>
-
-<!-- Tooltip Initialization Script (with jQuery fallback) -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-    $(document).ready(function(){
-        // Initialize Bootstrap tooltips using jQuery
-        $('[data-bs-toggle="tooltip"]').tooltip({
-            trigger: 'hover',  // Show tooltip on hover
-            html: true,        // Allow HTML content in the tooltip
-            animation: true    // Add animation for a better user experience
-        });
-    });
-</script>
-
-<!-- Custom Styles for Tooltip -->
-<style>
-    .tooltip-inner {
-        background-color: #333 !important;
-        color: white !important;
-        font-size: 1.2rem !important;
-        padding: 10px 20px !important;
-        border-radius: 10px !important;
-        max-width: 250px;
-        text-align: left;
-        line-height: 1.4; /* Increase line height for readability */
-    }
-    .tooltip-arrow {
-        border-top-color: #333 !important;
-    }
-    .tooltip.bs-tooltip-top .tooltip-arrow {
-        border-top-width: 12px;
-        border-top-color: #333 !important;
-    }
-</style>
-
 {% endblock %}

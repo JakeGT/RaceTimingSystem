@@ -570,3 +570,345 @@
 2025-02-27 18:07:07,855 - app_logger - INFO - Accessing the dashboard view
 2025-02-27 18:07:07,855 - app_logger - DEBUG - Parsed race_id: None
 2025-02-27 18:07:07,858 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-28 08:14:39,417 - app_logger - INFO - Accessing the landing page view
+2025-02-28 08:14:45,538 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 08:14:45,540 - app_logger - DEBUG - Parsed race_id: None
+2025-02-28 08:14:45,547 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-28 09:26:36,425 - app_logger - INFO - Accessing the landing page view
+2025-02-28 09:26:58,927 - app_logger - INFO - Accessing the landing page view
+2025-02-28 09:27:06,483 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 09:27:06,484 - app_logger - DEBUG - Parsed race_id: None
+2025-02-28 09:27:06,488 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-28 09:27:15,533 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 09:27:15,533 - app_logger - DEBUG - Parsed race_id: None
+2025-02-28 09:27:15,536 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-28 09:27:23,397 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 09:27:23,398 - app_logger - DEBUG - Parsed race_id: None
+2025-02-28 09:27:23,402 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-28 09:27:26,624 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 09:27:26,624 - app_logger - DEBUG - Parsed race_id: None
+2025-02-28 09:27:26,626 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-28 09:27:31,887 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 09:27:31,889 - app_logger - DEBUG - Parsed race_id: 1
+2025-02-28 09:27:31,894 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-28 09:27:38,490 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 09:27:38,491 - app_logger - DEBUG - Parsed race_id: 1
+2025-02-28 09:27:38,496 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-28 09:27:44,147 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 09:27:44,148 - app_logger - DEBUG - Parsed race_id: 1
+2025-02-28 09:27:44,151 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-28 09:27:51,738 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 09:27:51,738 - app_logger - DEBUG - Parsed race_id: 1
+2025-02-28 09:27:51,742 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-28 09:28:24,636 - app_logger - INFO - Accessing results upload view
+2025-02-28 09:28:54,344 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 09:28:54,345 - app_logger - DEBUG - Parsed race_id: None
+2025-02-28 09:28:54,348 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-28 09:29:23,663 - app_logger - INFO - Accessing the landing page view
+2025-02-28 09:29:25,329 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 09:29:25,329 - app_logger - DEBUG - Parsed race_id: None
+2025-02-28 09:29:25,332 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-28 09:29:35,976 - app_logger - INFO - Accessing the landing page view
+2025-02-28 09:37:49,181 - app_logger - INFO - Accessing the landing page view
+2025-02-28 09:37:53,481 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 09:37:53,482 - app_logger - DEBUG - Parsed race_id: None
+2025-02-28 09:37:53,488 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-28 09:38:02,817 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 09:38:02,818 - app_logger - DEBUG - Parsed race_id: 1
+2025-02-28 09:38:02,821 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-28 09:38:33,972 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 09:38:33,973 - app_logger - DEBUG - Parsed race_id: None
+2025-02-28 09:38:33,976 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-28 09:38:41,757 - app_logger - INFO - Accessing race configuration view
+2025-02-28 09:38:45,606 - app_logger - INFO - Accessing the landing page view
+2025-02-28 09:54:30,601 - app_logger - INFO - Accessing the landing page view
+2025-02-28 11:32:49,121 - app_logger - INFO - Accessing the landing page view
+2025-02-28 11:32:56,193 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 11:32:56,193 - app_logger - DEBUG - Parsed race_id: None
+2025-02-28 11:32:56,199 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-28 11:37:05,103 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 11:37:05,104 - app_logger - DEBUG - Parsed race_id: None
+2025-02-28 11:37:05,110 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-28 11:37:11,027 - app_logger - INFO - Accessing the landing page view
+2025-02-28 11:37:43,395 - app_logger - INFO - Accessing the landing page view
+2025-02-28 11:37:49,003 - app_logger - INFO - Accessing the landing page view
+2025-02-28 11:37:51,377 - app_logger - INFO - Accessing the landing page view
+2025-02-28 11:39:18,153 - app_logger - INFO - Accessing the landing page view
+2025-02-28 11:44:57,867 - app_logger - INFO - Accessing the landing page view
+2025-02-28 11:45:04,727 - app_logger - INFO - Accessing the landing page view
+2025-02-28 11:50:09,151 - app_logger - INFO - Accessing the landing page view
+2025-02-28 11:50:10,323 - app_logger - INFO - Accessing the landing page view
+2025-02-28 11:56:12,569 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 11:56:12,571 - app_logger - DEBUG - Parsed race_id: None
+2025-02-28 11:58:40,034 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 11:58:40,035 - app_logger - DEBUG - Parsed race_id: None
+2025-02-28 11:58:40,040 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-28 12:01:17,748 - app_logger - INFO - Accessing the landing page view
+2025-02-28 12:01:19,507 - app_logger - INFO - Accessing race configuration view
+2025-02-28 12:01:30,396 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 12:01:30,397 - app_logger - DEBUG - Parsed race_id: None
+2025-02-28 12:01:30,401 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-28 12:01:31,907 - app_logger - INFO - Accessing race configuration view
+2025-02-28 12:01:41,420 - app_logger - INFO - Accessing the landing page view
+2025-02-28 12:01:43,798 - app_logger - INFO - Accessing the landing page view
+2025-02-28 12:01:46,011 - app_logger - INFO - Accessing the landing page view
+2025-02-28 12:03:19,336 - app_logger - INFO - Accessing the landing page view
+2025-02-28 12:03:22,385 - app_logger - INFO - Accessing the landing page view
+2025-02-28 12:03:30,120 - app_logger - INFO - Accessing the landing page view
+2025-02-28 12:11:27,324 - app_logger - INFO - Accessing the landing page view
+2025-02-28 12:12:42,502 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 12:12:42,504 - app_logger - DEBUG - Parsed race_id: None
+2025-02-28 12:12:42,508 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-28 12:13:42,489 - app_logger - INFO - Accessing the landing page view
+2025-02-28 12:13:55,389 - app_logger - INFO - Accessing the landing page view
+2025-02-28 12:13:57,339 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 12:13:57,340 - app_logger - DEBUG - Parsed race_id: None
+2025-02-28 12:13:57,343 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-28 12:15:35,045 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 12:15:35,047 - app_logger - DEBUG - Parsed race_id: None
+2025-02-28 12:15:35,052 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-28 12:15:49,119 - app_logger - INFO - Accessing the landing page view
+2025-02-28 12:15:50,643 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 12:15:50,643 - app_logger - DEBUG - Parsed race_id: None
+2025-02-28 12:15:50,646 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-28 12:18:29,642 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 12:18:29,643 - app_logger - DEBUG - Parsed race_id: None
+2025-02-28 12:18:29,649 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-28 12:21:49,895 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 12:21:52,547 - app_logger - INFO - Accessing race details for race_id: 1
+2025-02-28 12:21:52,552 - app_logger - DEBUG - Rendering leaderboard for race: christmas race
+2025-02-28 12:22:00,894 - app_logger - INFO - Accessing race details for race_id: 1
+2025-02-28 12:22:00,897 - app_logger - DEBUG - Rendering leaderboard for race: christmas race
+2025-02-28 12:22:09,893 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 12:22:12,311 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 12:23:20,151 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 12:23:56,154 - app_logger - INFO - Accessing the landing page view
+2025-02-28 12:23:58,836 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 12:24:02,573 - app_logger - INFO - Accessing race details for race_id: 1
+2025-02-28 12:24:02,575 - app_logger - DEBUG - Rendering leaderboard for race: christmas race
+2025-02-28 12:26:08,677 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-02-28 12:28:28,098 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-02-28 12:28:28,109 - app_logger - DEBUG - Rendering leaderboard for race: christmas race, with 0 results
+2025-02-28 12:29:17,734 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 12:30:50,439 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 12:31:39,269 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 12:32:15,942 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 12:32:30,282 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 12:32:34,511 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 12:32:41,510 - app_logger - INFO - Accessing race configuration view
+2025-02-28 12:33:33,814 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 12:33:34,944 - app_logger - INFO - Accessing race configuration view
+2025-02-28 12:34:17,328 - app_logger - INFO - Accessing race configuration view
+2025-02-28 12:34:17,329 - app_logger - DEBUG - Received race configuration: Spring 5k, 2025-09-20, 07:30, []
+2025-02-28 12:34:17,332 - app_logger - ERROR - Error saving race configuration: NOT NULL constraint failed: app_race.organiser_id
+2025-02-28 12:34:27,150 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 12:34:29,245 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 12:39:07,234 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 12:39:09,574 - app_logger - INFO - Accessing the race detail view for race_id: 4
+2025-02-28 12:39:09,577 - app_logger - DEBUG - Rendering leaderboard for race: Spring 5k, with 0 results
+2025-02-28 12:39:27,835 - app_logger - INFO - Accessing the race detail view for race_id: 4
+2025-02-28 12:39:27,839 - app_logger - DEBUG - Rendering leaderboard for race: Spring 5k, with 0 results
+2025-02-28 12:44:17,129 - app_logger - INFO - Accessing the race detail view for race_id: 4
+2025-02-28 12:44:17,134 - app_logger - DEBUG - Rendering leaderboard for race: Spring 5k, with 0 results
+2025-02-28 12:47:28,408 - app_logger - INFO - Accessing the race detail view for race_id: 4
+2025-02-28 12:47:28,413 - app_logger - DEBUG - Rendering leaderboard for race: Spring 5k, with 0 results
+2025-02-28 12:47:49,094 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 12:47:50,277 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-02-28 12:47:50,280 - app_logger - DEBUG - Rendering leaderboard for race: christmas race, with 0 results
+2025-02-28 12:48:59,440 - app_logger - INFO - Accessing the landing page view
+2025-02-28 12:49:01,322 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 12:57:53,564 - app_logger - INFO - Accessing the landing page view
+2025-02-28 12:57:57,286 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 12:57:57,290 - app_logger - INFO - No races found in the database based on search criteria
+2025-02-28 13:00:15,792 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 13:00:15,795 - app_logger - INFO - No races found in the database based on search criteria
+2025-02-28 13:00:19,253 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 13:00:19,254 - app_logger - INFO - No races found in the database based on search criteria
+2025-02-28 13:01:15,648 - app_logger - INFO - Accessing the landing page view
+2025-02-28 13:01:17,539 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 13:01:17,540 - app_logger - INFO - No races found in the database based on search criteria
+2025-02-28 13:01:27,615 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 13:01:27,619 - app_logger - INFO - No races found in the database based on search criteria
+2025-02-28 13:01:29,799 - app_logger - INFO - Accessing the landing page view
+2025-02-28 13:01:31,369 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 13:01:31,372 - app_logger - INFO - No races found in the database based on search criteria
+2025-02-28 13:03:25,676 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 13:03:25,679 - app_logger - INFO - No races found in the database based on search criteria
+2025-02-28 13:03:28,668 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 13:03:28,670 - app_logger - INFO - No races found in the database based on search criteria
+2025-02-28 13:03:37,808 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 13:03:37,814 - app_logger - INFO - No races found in the database based on search criteria
+2025-02-28 13:03:50,901 - app_logger - INFO - Accessing the landing page view
+2025-02-28 13:03:52,131 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 13:03:52,133 - app_logger - INFO - No races found in the database based on search criteria
+2025-02-28 13:03:54,382 - app_logger - INFO - Accessing the landing page view
+2025-02-28 13:03:56,095 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 13:03:56,097 - app_logger - INFO - No races found in the database based on search criteria
+2025-02-28 13:04:21,837 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 13:04:21,841 - app_logger - INFO - No races found in the database based on search criteria
+2025-02-28 13:06:21,936 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 13:06:21,940 - app_logger - INFO - No races found in the database based on search criteria
+2025-02-28 13:07:15,131 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 13:07:45,141 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 13:08:42,478 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 13:08:42,482 - app_logger - INFO - No races found in the database based on search or completion criteria
+2025-02-28 13:09:45,437 - app_logger - INFO - Accessing the landing page view
+2025-02-28 13:09:47,437 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 13:09:47,439 - app_logger - INFO - No races found in the database based on search or completion criteria
+2025-02-28 13:13:02,683 - app_logger - INFO - Accessing results upload view
+2025-02-28 13:15:19,160 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 13:15:21,639 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-02-28 13:15:21,644 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-02-28 15:30:37,055 - app_logger - INFO - Accessing the landing page view
+2025-02-28 15:48:56,793 - app_logger - INFO - Accessing the landing page view
+2025-02-28 15:49:00,164 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 15:49:05,911 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 15:49:05,915 - app_logger - INFO - No races found in the database based on search or completion criteria
+2025-02-28 15:49:08,784 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 15:49:31,419 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 15:49:57,060 - app_logger - INFO - Accessing the landing page view
+2025-02-28 15:51:28,967 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 15:52:49,587 - app_logger - INFO - Accessing the dashboard view
+2025-02-28 15:52:56,239 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-02-28 15:52:56,246 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-03-03 08:19:04,773 - app_logger - INFO - Accessing the dashboard view
+2025-03-03 08:19:07,777 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-03-03 08:19:07,785 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-03-03 08:19:34,424 - app_logger - INFO - Accessing the dashboard view
+2025-03-03 08:19:36,675 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-03-03 08:19:36,690 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-03-03 08:20:13,887 - app_logger - INFO - Accessing the dashboard view
+2025-03-03 08:24:47,243 - app_logger - INFO - Accessing the dashboard view
+2025-03-03 08:24:54,546 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-03-03 08:24:54,551 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-03-03 08:26:15,391 - app_logger - INFO - Accessing the landing page view
+2025-03-03 08:26:17,565 - app_logger - INFO - Accessing results upload view
+2025-03-03 08:26:21,807 - app_logger - INFO - Accessing the dashboard view
+2025-03-03 08:26:23,729 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-03-03 08:26:23,734 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-03-03 08:26:29,547 - app_logger - INFO - Accessing the dashboard view
+2025-03-03 08:26:29,549 - app_logger - INFO - No races found in the database based on search or completion criteria
+2025-03-03 08:26:31,926 - app_logger - INFO - Accessing the dashboard view
+2025-03-03 08:27:29,933 - app_logger - INFO - Accessing the dashboard view
+2025-03-03 08:27:30,990 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-03-03 08:27:30,996 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-03-03 08:30:01,644 - app_logger - INFO - Accessing the dashboard view
+2025-03-03 08:30:03,690 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-03-03 08:30:03,694 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-03-03 08:46:35,351 - app_logger - INFO - Accessing results upload view
+2025-03-03 08:46:38,781 - app_logger - INFO - Accessing the dashboard view
+2025-03-03 08:46:40,589 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-03-03 08:46:40,595 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-03-03 08:46:52,735 - app_logger - INFO - Accessing the dashboard view
+2025-03-03 08:46:53,729 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-03-03 08:46:53,732 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-03-03 08:47:37,433 - app_logger - INFO - Accessing results upload view
+2025-03-03 08:47:39,347 - app_logger - INFO - Accessing the dashboard view
+2025-03-03 08:47:40,314 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-03-03 08:47:40,317 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-03-03 08:47:54,096 - app_logger - INFO - Accessing the landing page view
+2025-03-03 08:47:55,362 - app_logger - INFO - Accessing the dashboard view
+2025-03-03 08:48:11,303 - app_logger - INFO - Accessing the dashboard view
+2025-03-03 08:48:13,167 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-03-03 08:48:13,171 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-03-03 08:49:27,281 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-03-03 08:49:27,289 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-03-03 08:49:28,593 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-03-03 08:49:28,598 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-03-03 08:49:28,847 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-03-03 08:49:28,851 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-03-03 08:49:29,163 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-03-03 08:49:29,171 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-03-03 08:50:01,293 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-03-03 08:50:01,298 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-03-03 08:50:02,790 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-03-03 08:50:02,793 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-03-03 08:50:02,994 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-03-03 08:50:02,997 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-03-03 08:50:03,161 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-03-03 08:50:03,163 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-03-03 08:51:05,665 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-03-03 08:51:05,674 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-03-03 08:51:08,059 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-03-03 08:51:08,062 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-03-03 08:51:34,875 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-03-03 08:51:34,878 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-03-03 08:52:56,416 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-03-03 08:52:56,422 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-03-03 08:56:37,071 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-03-03 08:56:37,080 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-03-03 08:56:39,336 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-03-03 08:56:39,338 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-03-03 08:58:22,206 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-03-03 08:58:22,213 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-03-03 08:58:23,404 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-03-03 08:58:23,413 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-03-03 08:58:23,627 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-03-03 08:58:23,632 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-03-03 08:58:23,910 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-03-03 08:58:23,917 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-03-03 08:58:24,150 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-03-03 08:58:24,153 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-03-03 08:58:24,158 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-03-03 08:58:24,171 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-03-03 08:58:24,359 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-03-03 08:58:24,364 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-03-03 09:05:08,819 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-03-03 09:05:08,828 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-03-03 09:05:10,718 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-03-03 09:05:10,723 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-03-03 09:05:57,611 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-03-03 09:05:57,615 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-03-03 09:05:58,512 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-03-03 09:05:58,515 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-03-03 09:05:58,794 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-03-03 09:05:58,799 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-03-03 09:05:59,049 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-03-03 09:05:59,056 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-03-03 09:05:59,413 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-03-03 09:05:59,419 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-03-03 09:06:06,036 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-03-03 09:06:06,046 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-03-03 09:06:50,198 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-03-03 09:06:50,222 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-03-03 09:15:01,753 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-03-03 09:15:01,784 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-03-03 09:16:32,383 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-03-03 09:17:24,934 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-03-03 09:17:24,955 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-03-03 09:18:37,487 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-03-03 09:18:37,512 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-03-03 09:18:40,231 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-03-03 09:18:40,241 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-03-03 09:19:41,206 - app_logger - INFO - Accessing the race detail view for race_id: 1
+2025-03-03 09:19:41,224 - app_logger - DEBUG - Rendering leaderboard for race: Christmas Run, with 0 results
+2025-03-03 09:39:06,941 - app_logger - INFO - Accessing the dashboard view
+2025-03-03 09:39:09,918 - app_logger - INFO - Accessing the dashboard view
+2025-03-03 09:39:09,919 - app_logger - INFO - No races found in the database based on search or completion criteria
+2025-03-03 09:39:12,316 - app_logger - INFO - Accessing the dashboard view
+2025-03-03 09:39:50,566 - app_logger - INFO - Accessing the dashboard view
+2025-03-03 09:39:54,422 - app_logger - INFO - Accessing the dashboard view
+2025-03-03 09:39:54,424 - app_logger - INFO - No races found in the database based on search or completion criteria
+2025-03-03 09:40:02,918 - app_logger - INFO - Accessing the dashboard view
+2025-03-03 09:41:58,710 - app_logger - INFO - Accessing the dashboard view
+2025-03-03 09:42:21,965 - app_logger - INFO - Accessing the landing page view
+2025-03-03 09:42:23,426 - app_logger - INFO - Accessing the dashboard view
+2025-03-03 09:42:33,459 - app_logger - INFO - Accessing results upload view
+2025-03-03 09:42:43,991 - app_logger - INFO - Accessing results upload view
+2025-03-03 09:42:43,993 - app_logger - DEBUG - File uploaded: example_results.csv, race_id: 1
+2025-03-03 09:42:43,994 - app_logger - DEBUG - Processing row: {'race_number': '1', 'total_time': '00:25:36'}
+2025-03-03 09:42:43,997 - app_logger - WARNING - Participant not found: 1
+2025-03-03 09:42:43,997 - app_logger - DEBUG - Processing row: {'race_number': '2', 'total_time': '00:30:45'}
+2025-03-03 09:42:43,998 - app_logger - WARNING - Participant not found: 2
+2025-03-03 09:42:43,999 - app_logger - DEBUG - Processing row: {'race_number': '3', 'total_time': '00:28:12'}
+2025-03-03 09:42:44,000 - app_logger - WARNING - Participant not found: 3
+2025-03-03 09:42:44,000 - app_logger - INFO - Results uploaded successfully
+2025-03-03 09:42:44,013 - app_logger - INFO - Accessing the dashboard view
+2025-03-03 09:42:52,715 - app_logger - INFO - Accessing results upload view
+2025-03-03 09:43:12,713 - app_logger - INFO - Accessing results upload view
+2025-03-03 09:48:33,925 - app_logger - INFO - Accessing the dashboard view
+2025-03-03 10:03:41,015 - app_logger - INFO - Accessing the landing page view
+2025-03-03 10:03:51,152 - app_logger - INFO - Accessing the landing page view
+2025-03-03 10:25:22,988 - app_logger - INFO - Accessing the landing page view
+2025-03-03 10:25:57,305 - app_logger - INFO - Accessing the landing page view
+2025-03-03 10:25:59,408 - app_logger - INFO - Accessing the dashboard view

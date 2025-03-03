@@ -1,11 +1,22 @@
+<!-- running/app/templates/app/organiser_race_detail.html -->
 {% extends 'base.html' %}
 
-{% block title %}Race Details - Organizer{% endblock %}
+{% block title %}Race Details - Organiser{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
     <h1 class="text-center">Manage Participants for {{ race.name }}</h1>
     <p class="lead text-muted text-center">Approve or deny race participants.</p>
+
+    <!-- Update Participants Button -->
+    <div class="text-center mb-4">
+        <a href="{% url 'upload_participants' %}" class="btn btn-primary">Update Participants</a>
+    </div>
+
+    <!-- Update Results Button -->
+    <div class="text-center mb-4">
+        <a href="{% url 'upload_results' %}" class="btn btn-secondary">Update Results</a>
+    </div>
 
     <table class="table table-bordered">
         <thead>

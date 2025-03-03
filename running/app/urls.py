@@ -1,12 +1,13 @@
 #  running/app/urls.py
 
 # -------------------------------------------------- Import Libraries --------------------------------------------------
-from django.contrib import admin
-from django.urls import path, include
 from . import views
 from django.contrib.auth import views as auth_views
+from django.conf import settings
+from django.conf.urls.static import static
+from django.urls import path, include
 
-#  define url patterns
+# -------------------------------------------------- Define URL Patterns --------------------------------------------------
 urlpatterns = [
 
     #  landing page
@@ -18,32 +19,57 @@ urlpatterns = [
     #  race configuration page
     path('race-config/', views.race_config, name='race_config'),
 
-    #  participants page
+    #  participants upload page
     path('upload-participants/', views.upload_participants, name='upload_participants'),
 
-    #  manual results upload page
+    #  results upload page
     path('upload-results/', views.upload_results, name='upload_results'),
 
+    #  user registration page
     path('register/', views.user_register, name='register'),
 
+    #  user login page
     path('login/', views.user_login, name='login'),
 
+    #  user password reset page
     path('password-reset/', views.password_reset_request, name='password-reset'),
 
+    #  user logout route
     path('logout/', views.user_logout, name='logout'),
 
-    path('register_for_race/', views.register_for_race, name='register_for_race'),
+    #  organiser management page
     path('manage_participants/<int:race_id>/', views.manage_participants, name='manage_participants'),
 
+    #  registering for races page
     path('register-race/', views.register_for_race, name='register_for_race'),
 
+    #  race history page
     path('race-history/', views.race_history, name='race_history'),
 
-    path('race-results/<int:race_id>/', views.race_results, name='race_results'),
+    #  organiser dashboard page
+    path('organiser-dashboard/', views.race_organiser_dashboard, name='race_organiser_dashboard'),
 
-    path('organiser-approval/', views.race_organiser_dashboard, name='race_organiser_dashboard'),
-
+    #  race details page, including leaderboard
     path('race/<int:race_id>/', views.race_detail, name='race_detail'),
 
+    #  upcoming races page
     path('upcoming-races', views.upcoming_races, name='upcoming_races'),
+
+    #  user settings page
+    path('settings', views.settings_view, name='settings'),
+
+    #  user logged in password change pages
+    path('accounts/password_change/', auth_views.PasswordChangeView.as_view(), name='password_change'),
+
+    #  successful password reset page
+    path('accounts/password_change/done/', auth_views.PasswordChangeDoneView.as_view(), name='password_change_done'),
+
+    #  user profile page
+    path("profile/", views.profile_view, name="profile"),
+
+    #  organiser race view page
+    path('organiser/race/<int:race_id>/', views.organiser_race_detail, name='organiser_race_detail'),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

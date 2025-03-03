@@ -1,4 +1,4 @@
-# forms.py
+# running/app/forms.py
 from django import forms
 from .models import Participant, Race
 import datetime
