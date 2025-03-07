@@ -6,9 +6,13 @@ from django.contrib.auth import views as auth_views
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path, include
+from .views import upload_json
 
 # -------------------------------------------------- Define URL Patterns --------------------------------------------------
 urlpatterns = [
+
+    # upload json of data
+    path('race/<int:race_id>/upload/', upload_json, name='upload_json'),
 
     #  landing page
     path('', views.landing_page, name='landing'),
