@@ -17,7 +17,85 @@ from django.contrib.auth.models import User
 from functools import wraps
 import re
 import io
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+import os
+from django.utils.dateparse import parse_time
+from .models import Race, Participant, RaceResult
+from datetime import datetime, date, timedelta
 
+# --------------------------------------------------- RESTful API ------------------------------------------------------
+
+# CSV version
+#
+# @csrf_exempt
+# def upload_json(request, race_id):
+#     if request.method == 'POST':
+#         data = json.loads(request.body)
+#         process_data(data, race_id)
+#         return JsonResponse({"message": "Data processed and written to CSV."})
+#     return JsonResponse({"error": "Invalid request method"}, status=400)
+
+# def process_data(data, race_id):
+#     bib_number = data.get('bib_number')
+#     time = data.get('time')
+
+#     # Specify the folder and CSV file name based on the race_id
+#     folder = 'race_results'
+#     if not os.path.exists(folder):
+#         os.makedirs(folder)
+#     csv_file = os.path.join(folder, f'race_{race_id}.csv')
+
+#     # Write data to CSV file
+#     with open(csv_file, mode='a', newline='') as file:
+#         writer = csv.writer(file)
+#         writer.writerow([bib_number, time])
+
+#     print(f"Data written to {csv_file}: Bib Number - {bib_number}, Time - {time}")
+
+
+# Objects version
+#
+@csrf_exempt
+def upload_json(request, race_id):
+    if request.method == 'POST':
+        try:
+            race = Race.objects.get(pk=race_id)
+        except Race.DoesNotExist:
+            return JsonResponse({"error": "Race not found"}, status=404)
+        
+        data = json.loads(request.body)
+        bib_number = data.get('bib_number')
+        result_time = data.get('time')
+
+        # Fetch the participant based on race_id and bib_number (race_number)
+        try:
+            participant = Participant.objects.get(race=race, race_number=bib_number)
+        except Participant.DoesNotExist:
+            return JsonResponse({"error": "Participant not found"}, status=404)
+
+        # Calculate the time difference between the start time and the given time
+        start_time = race.start_time
+        result_time_obj = parse_time(result_time)
+
+        start_time_datetime = datetime.combine(date.min, start_time)
+        result_time_datetime = datetime.combine(date.min, result_time_obj)
+
+        if result_time_datetime < start_time_datetime:
+            result_time_datetime += timedelta(days=1)
+
+        time_difference = result_time_datetime - start_time_datetime
+
+        # Create a RaceResult object
+        RaceResult.objects.create(
+            participant=participant,
+            race=race,
+            total_time=str(time_difference)
+        )
+
+        return JsonResponse({"message": "Data processed and race result created."})
+    return JsonResponse({"error": "Invalid request method"}, status=400)
 
 # -------------------------------------------------- Setup Logging -----------------------------------------------------
 logger = setup_logging()
