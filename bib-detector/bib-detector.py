@@ -7,6 +7,7 @@ import cv2
 import time
 import easyocr
 import argparse
+import website_api
 
 # Config
 device = "cpu"
@@ -14,13 +15,19 @@ OCR_CONFIDENCE_THRESHOLD = 0.7
 MIN_BIB_WIDTH = 60
 MIN_BIB_HEIGHT = 60
 
+# Threshold (s) after which bib is considered to have left the screen
+OCR_TIMESTAMP_THRESHOLD = 1
+# Minimum identical OCR entries
+MIN_OCR_ENTRIES = 5
+
 # CLI Arguments
 parser = argparse.ArgumentParser()
-parser.add_argument("-d", "--device", help="Select Device")
-parser.add_argument("-i", "--input", help="Input file")
+parser.add_argument("-d", "--device", help="Select CUDA Device")
+parser.add_argument("-i", "--input", help="Input stream (file or device)")
 parser.add_argument("-o", "--output", help="Output file")
 parser.add_argument("-v", "--verbose", help="Verbose mode", action="store_true")
 parser.add_argument("-dg", "--debug", help="Debug Commands")
+parser.add_argument("-u", "--url", help="URL to Race Timing Website")
 args = parser.parse_args()
 
 if args.device:
@@ -29,10 +36,15 @@ video_input = args.input if args.input else 0
 output_video = args.output if args.output else None
 verbose = args.verbose
 debug = args.debug.split(',') if args.debug else None
+url = args.url if args.url else None
 
 # Load YOLO model and OCR reader
 model = YOLO("best.pt")
 reader = easyocr.Reader(['en'], gpu=(device != "cpu"))
+
+# Create API object
+
+api = website_api.WebsiteAPI(url)
 
 # For output video settings we need to know frame dimensions;
 # so we open the video capture momentarily.
@@ -92,7 +104,7 @@ for result in results:
         _, roi_thresh = cv2.threshold(bib_box_gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
         bib_result = reader.readtext(roi_thresh, detail=1)
 
-        # Process OCR results: choose the text detection with the largest height (as a proxy for clarity)
+        # Process OCR results: choose the text detection with the largest height (Bib number will be the largest font size)
         bib_text = ""
         largest_height = 0
         final_confidence = 0
@@ -107,7 +119,7 @@ for result in results:
 
         # If a confident OCR result is obtained, store it in the history for this tracker
         if bib_text and final_confidence > OCR_CONFIDENCE_THRESHOLD:
-            bib_ocr_history[track_id].append(bib_text)
+            bib_ocr_history[track_id].append((bib_text, time.time()))
 
     # Draw side panel with tracker and OCR information
     y_offset = 20
@@ -119,7 +131,8 @@ for result in results:
         cv2.line(frame, line_start, line_end, (255, 0, 0), 1)
 
         # Choose the most common OCR reading for this tracker ID
-        mode_bib_text = Counter(bib_ocr_history[track_id]).most_common(1)[0][0] if bib_ocr_history[track_id] else "Unknown"
+        ocr_texts = [entry[0] for entry in bib_ocr_history[track_id]]
+        mode_bib_text = Counter(ocr_texts).most_common(1)[0][0] if bib_ocr_history[track_id] else "Unknown"
         cv2.putText(side_panel, f"Tracker ID: {track_id}", (10, y_offset),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
         y_offset += 20
@@ -134,6 +147,24 @@ for result in results:
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 1)
             y_offset += 20
         y_offset += 10
+
+    current_time = time.time()
+    expired_tracker_ids = []
+    for tracker_id, entries in bib_ocr_history.items():
+        if entries:
+            last_timestamp = max(timestamp for _, timestamp in entries)
+        if entries and (current_time - last_timestamp) > OCR_TIMESTAMP_THRESHOLD:
+            if tracker_id is not None:
+                mode_value, count = Counter([text for text, _ in entries]).most_common(1)[0]
+                if count >= MIN_OCR_ENTRIES:
+                    api.send_result(last_timestamp, mode_value, tracker_id, count, None)
+                else:
+                    api.send_result(last_timestamp, "", tracker_id, count, None)
+
+            expired_tracker_ids.append(tracker_id)
+
+    for tracker_id in expired_tracker_ids:
+        del bib_ocr_history[tracker_id]
 
     # Combine the main frame and side panel
     combined_frame = np.hstack((frame, side_panel))
