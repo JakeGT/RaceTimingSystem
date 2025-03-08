@@ -10,16 +10,14 @@ class WebsiteAPIDemo:
         self.url = url
         self.token = token
 
-    def send_result(timestamp, bib_number, tracker_id, num_entries):
+    def send_result(self, timestamp, bib_number, tracker_id, num_entries, image):
         print("---------------------------------------------------------")
-        print("Good confidence bib:")
-        print(f"Timestamp: {timestamp}, bib_number: {bib_number}, tracker_id: {tracker_id}, num_entries: {num_entries}")
-        print("---------------------------------------------------------\n")
-
-    def send_unsure_result(timestamp, tracker_id, num_entries):
-        print("---------------------------------------------------------")
-        print(f"Low confidence bib")
-        print(f"Timestamp: {timestamp}, tracker_id: {tracker_id}, num_entries: {num_entries}")
+        if bib_number != "":
+            print("Good confidence bib:")
+            print(f"Timestamp: {timestamp}, bib_number: {bib_number}, tracker_id: {tracker_id}, num_entries: {num_entries}")
+        else:
+            print(f"Low confidence bib")
+            print(f"Timestamp: {timestamp}, tracker_id: {tracker_id}, num_entries: {num_entries}")
         print("---------------------------------------------------------\n")
 
 
