@@ -27,3 +27,71 @@ Nevertheless, it is important to take into account certain niche cases where min
     ```bash
     python manage.py runserver
     ```
+   
+# Requirements
+
+### Development Requirements
+To develop and maintain this project, the following hardware and software resources are required:
+
+#### Hardware Requirements:
+- Laptop or Desktop with GPU-enabled hardware. For optimal performance, especially for building the computer vision models, the development machine should have a dedicated GPU.
+
+Recommended Specifications:
+- CPU: Intel i5 or equivalent (for general development tasks)
+- RAM: Minimum 8GB (16GB or more preferred for heavier tasks like model training)
+- GPU: NVIDIA GPU with CUDA support (e.g., GTX 1060 or above for GPU accelerated model building)
+- Storage: At least 1GB, for storing the website/user data, as well as storing video footage/images (for larger races
+more storage could be required)
+- OS: Any OS may be used
+
+#### Software Requirements:
+- Operating System: There are no specific requirements for the operating system
+- Python 3.6.x: Required for running Django and other Python libraries. Ensure you are using Python 3.6 or later.
+- Django 5.x: The core framework for web development, may work on earlier versions.
+  Install Django using pip:
+```python 
+pip install django
+```
+- Database: SQLite
+- Other python dependencies must be installed using:
+```python
+pip install -r requirements.txt
+```
+- CUDA Toolkit (or other GPU-Acceleration enabling libraries): Required for GPU-accelerated tasks (e.g., for training the computer vision model).
+
+### Operational Requirements
+#### Hardware Requirements:
+
+- Laptop/PC with GPU enabled: The system will run on a machine with GPU enabled for better processing, especially for
+tasks such as running the computer vision models. The laptop must also have access to the internet in order to upload
+the results data to the website live.
+
+#### Software Requirements:
+- **Python 3.x**: Same as development, to run the Django application.
+- **Django**: To serve the web application and manage routes, users, and other backend logic.
+- **CUDA-enabled GPU** (or other alternatives): For intensive image processing with computer vision models.
+
+### Estimated Operational Costs
+- Hardware Costs (Laptop/PC with GPU enabled):
+  Laptop with NVIDIA GPU (e.g., NVIDIA GTX 1060 or 1660 series): Around £600 - £800 for a mid-range laptop with a decent GPU for development and basic tasks.
+  For heavier operations (such as computer vision model training), the cost might increase for higher-end laptops or desktop builds with more modern GPUs (in such cases cloud subscription may be more appropriate).
+- Cloud Subscription Costs (if applicable):
+  Cloud Service (AWS, Google Cloud, or Azure): For GPU for Computer Vision model training would cost approximately £10 per month (taken from a Collab pro subscription)
+- Software Licenses:
+  - Django: Free and open-source.
+  - CUDA and cuDNN: Free and open-source (for NVIDIA GPUs).
+  - Other Libraries: Python-based libraries like TensorFlow, PyTorch, etc., are free.
+- Labour Costs (Maintenance and Updates):
+  Regular Maintenance (e.g., checking server health, updating dependencies or dealing with client issues):
+      Estimated time: 5-10 person days per year.
+      Cost per hour: £15/day (depending on the region, seniority of the developer, and market).
+      Total Annual Cost: Between £675 - £1350/year for maintaining the system.
+
+### Summary of Estimated Costs:
+- Hardware:
+  - Laptop with GPU: **£600 - £800** (one-time cost)
+  - Cloud Hosting: **£10 - £45/month** (depending on usage, it unlikely any more than the £10 subscription is required)
+- Software:
+  - Free for Django, CUDA, and open-source libraries.
+- Labor Costs:
+  - Maintenance: **£675 - £1350/year** for a developer or system admin.

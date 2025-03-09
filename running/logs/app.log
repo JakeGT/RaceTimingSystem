@@ -925,3 +925,13 @@
 2025-03-09 18:25:09,280 - app_logger - INFO - Participants fetched: <QuerySet [<Participant: John Doe (Christmas Run) - pending>, <Participant: Jane Smith (Christmas Run) - pending>, <Participant: Michael Johnson (Christmas Run) - pending>, <Participant: Emily Davis (Christmas Run) - pending>, <Participant: Chris Brown (Christmas Run) - pending>, <Participant: Sarah Wilson (Christmas Run) - pending>]>
 2025-03-09 18:31:04,302 - app_logger - INFO - Accessing the landing page view
 2025-03-09 18:31:07,551 - app_logger - INFO - Accessing the dashboard view
+2025-03-09 18:45:37,907 - app_logger - INFO - Accessing the landing page view
+2025-03-09 18:45:50,341 - app_logger - INFO - Accessing the landing page view
+2025-03-09 18:45:52,648 - app_logger - INFO - Accessing the dashboard view
+2025-03-09 18:45:56,369 - app_logger - INFO - Accessing the dashboard view
+2025-03-09 18:46:08,677 - app_logger - INFO - Accessing the dashboard view
+2025-03-09 18:47:11,257 - app_logger - INFO - Accessing the dashboard view
+2025-03-09 18:47:15,265 - app_logger - INFO - Accessing the dashboard view
+2025-03-09 18:47:18,419 - app_logger - INFO - Accessing the dashboard view
+2025-03-09 18:47:18,420 - app_logger - INFO - No races found in the database based on search or completion criteria
+2025-03-09 18:47:19,819 - app_logger - INFO - Accessing the dashboard view

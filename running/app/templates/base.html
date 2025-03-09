@@ -1,4 +1,3 @@
-<!-- running/app/templates/base.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -82,8 +81,25 @@
             font-size: 20px; /* Adjust the icon size */
             padding: 10px;
         }
-    </style>
 
+        /* Style for the notification bell */
+        .notification-bell {
+            font-size: 24px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .notification-bell .badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: red;
+            color: white;
+            font-size: 12px;
+            padding: 3px 7px;
+            border-radius: 50%;
+        }
+    </style>
 </head>
 <body>
 
@@ -96,6 +112,7 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
+
                     <!-- Always show Dashboard button -->
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a>
@@ -117,11 +134,19 @@
                         <a class="nav-link" href="{% url 'logout' %}">Logout</a>
                     </li>
                     {% else %}
+
                     <!-- If the user is not logged in, show the login button -->
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'login' %}">Login</a>
                     </li>
                     {% endif %}
+                    <!-- Notification Bell -->
+                    <li class="nav-item">
+                        <a class="nav-link nav-icon notification-bell" data-bs-toggle="modal" data-bs-target="#notificationModal">
+                            <i class="bi bi-bell"></i>
+                            <span class="badge">0</span> <!-- Badge for new notifications -->
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -136,6 +161,24 @@
     <footer>
         <p>2024 Race Timing System</p>
     </footer>
+
+    <!-- Notification Modal -->
+    <div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="notificationModalLabel">Notifications</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    You have no new notifications.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>

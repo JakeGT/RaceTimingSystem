@@ -8,6 +8,7 @@ The usage of such data provides a benefit to both the organiser and the runner. 
 
 GDPR requires the act of data minimisation. This means the removal of any data that is not essential. While one could argue that there is no need to record the faces of runners, there may be the need for alternative identification if the bibs are unreadable. In the case that the computer vision system and a human are unable to read the bib number, using the runner's face may be the only method of identification.
 
+
 Should the bib number still be obscured, there may be a need for the human to identify the runner by their face. Additionally, there would be no need to record any audio from the camera systems. Furthermore, it is recommended that the organisers seek consent from each runner when they register for the race regarding the collection of such images and videos from the finishing line. This should also include the standard information that a race organiser would collect such as name, age, gender, etc.
 
 However, one thing that needs to be taken into consideration is the recording of the crowd. There is no reasonable justification to record identifiable data of the crowd from the race which means that such data needs to be eliminated. However, as the video does not focus on the crowd in such a way that they are individually identifiable, it is likely that this would not violate GDPR.
@@ -17,3 +18,14 @@ There will need to be a policy regarding the retention of the videos from the fi
 Overall, race organisers will need explicit consent from participants for the processing of their personal data. This would need to be in the form of a consent form or privacy policy. Additionally, all of this data has to be kept secure and can only be accessible to those who need it. This means that the database system that stores the runner data needs to ensure proper data security and encryption. Additionally, race organisers must be completely transparent about the recording of runners and the fact that their data is being processed by AI to handle the timing of the races. Furthermore, organisers must respond to requests from runners regarding access, corrections and deletion of their personal data from the system.
 
 Regarding the process of training the computer vision solutions, there will need to be considerations regarding the collection of such data from events. Thankfully, there exist datasets that contain images of runners and their bibs along with data regarding the bounding box of the race number along with the number of the bibs. Additionally, the collection of data from such events without any other personal data may be permissible as we only need to be able to detect runners and their respective bibs. 
+
+## CA2 - Update of Ethical and Lgeal Considerations
+After reviewing the Ethical and Legal Considerations from CA1, it has been determined that the earlier considerations remain appropriate and do not require any significant updates for the current state of the prototype.
+
+The legal and ethical guidelines provided in CA1 still align with the operation and functionality of the project, ensuring that all necessary protections for personal data and rights are in place. This includes considerations around GDPR compliance, data minimisation, consent collection, the right to access and deletion, and the secure handling of video data.
+
+The system continues to operate under the assumption that race organisers will inform participants about the use of AI for race timing, the collection of images/videos, and the storage and potential sharing of such data. Additionally, the existing policy regarding the retention and deletion of video data after a one-week period remains intact.
+
+No new ethical or legal risks have been identified at this stage, and the existing approach continues to address all legal obligations related to data protection, privacy, and the rights of individuals involved in the races.
+
+In conclusion, the previous ethical and legal considerations are still valid and require no further amendments.
