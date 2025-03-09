@@ -914,3 +914,14 @@
 2025-03-03 10:25:59,408 - app_logger - INFO - Accessing the dashboard view
 2025-03-09 18:10:14,049 - app_logger - INFO - Accessing the landing page view
 2025-03-09 18:15:37,842 - app_logger - INFO - Accessing the landing page view
+2025-03-09 18:22:46,599 - app_logger - INFO - Accessing the dashboard view
+2025-03-09 18:22:54,517 - app_logger - INFO - Accessing the dashboard view
+2025-03-09 18:22:59,132 - app_logger - INFO - Accessing the dashboard view
+2025-03-09 18:23:00,271 - app_logger - INFO - Participants fetched: <QuerySet [<Participant: John Doe (Christmas Run) - pending>, <Participant: Jane Smith (Christmas Run) - pending>, <Participant: Michael Johnson (Christmas Run) - pending>, <Participant: Emily Davis (Christmas Run) - pending>, <Participant: Chris Brown (Christmas Run) - pending>, <Participant: Sarah Wilson (Christmas Run) - pending>]>
+2025-03-09 18:24:14,095 - app_logger - INFO - Participants fetched: <QuerySet [<Participant: John Doe (Christmas Run) - pending>, <Participant: Jane Smith (Christmas Run) - pending>, <Participant: Michael Johnson (Christmas Run) - pending>, <Participant: Emily Davis (Christmas Run) - pending>, <Participant: Chris Brown (Christmas Run) - pending>, <Participant: Sarah Wilson (Christmas Run) - pending>]>
+2025-03-09 18:24:28,093 - app_logger - INFO - Accessing the dashboard view
+2025-03-09 18:25:02,380 - app_logger - INFO - Accessing the landing page view
+2025-03-09 18:25:03,770 - app_logger - INFO - Accessing the dashboard view
+2025-03-09 18:25:09,280 - app_logger - INFO - Participants fetched: <QuerySet [<Participant: John Doe (Christmas Run) - pending>, <Participant: Jane Smith (Christmas Run) - pending>, <Participant: Michael Johnson (Christmas Run) - pending>, <Participant: Emily Davis (Christmas Run) - pending>, <Participant: Chris Brown (Christmas Run) - pending>, <Participant: Sarah Wilson (Christmas Run) - pending>]>
+2025-03-09 18:31:04,302 - app_logger - INFO - Accessing the landing page view
+2025-03-09 18:31:07,551 - app_logger - INFO - Accessing the dashboard view

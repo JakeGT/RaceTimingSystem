@@ -64,12 +64,8 @@
                         <label class="form-label">Sort by</label>
                         <div>
                             <label>
-                                <input type="radio" name="sort_by" value="first_name" {% if request.GET.sort_by == 'first_name' %}checked{% endif %}>
-                                First Name
-                            </label>
-                            <label>
-                                <input type="radio" name="sort_by" value="last_name" {% if request.GET.sort_by == 'last_name' %}checked{% endif %}>
-                                Last Name
+                                <input type="radio" name="sort_by" value="name" {% if request.GET.sort_by == 'name' %}checked{% endif %}>
+                                Name
                             </label>
                             <label>
                                 <input type="radio" name="sort_by" value="age" {% if request.GET.sort_by == 'age' %}checked{% endif %}>

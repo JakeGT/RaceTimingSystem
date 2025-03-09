@@ -27,6 +27,7 @@ from datetime import datetime, date, timedelta
 from django.contrib.auth.views import PasswordResetView
 from django.urls import reverse_lazy
 from django.contrib.messages.views import SuccessMessageMixin
+from django.db.models import F
 
 # --------------------------------------------------- RESTful API ------------------------------------------------------
 
@@ -500,60 +501,56 @@ def race_history(request):
     #  render the page with race history
     return render(request, 'app/race_history.html', {'participant': participant})
 
+
 def race_detail(request, race_id):
-    """
-    View for displaying the leaderboard and race details with sorting functionality.
-    """
+    race = Race.objects.get(id=race_id)
 
-    race = get_object_or_404(Race, id=race_id)
+    #  get all participants for this race
+    participants = Participant.objects.filter(race=race)
 
-    #  get the filters and sort parameters from the GET request
+    #  apply filtering by gender
     gender = request.GET.get('gender')
-    age = request.GET.get('age')
-    sort_by = request.GET.get('sort_by', 'first_name'),
-    sort_direction = request.GET.get('sort_direction', 'asc')
-
-    #  fetch participants associated with the race
-    participants = Participant.objects.filter(race_id=race.id)
-
-    participants_count = participants.count()
-
-    #  apply gender filter if provided
     if gender:
         participants = participants.filter(gender=gender)
 
-    #  apply age filter if provided
+    #  apply filtering by age
+    age = request.GET.get('age')
     if age:
-        if age == '18':
-            participants = participants.filter(age__gte=18, age__lte=25)
-        elif age == '26':
-            participants = participants.filter(age__gte=26, age__lte=35)
-        elif age == '36':
-            participants = participants.filter(age__gte=36, age__lte=45)
-        elif age == '46':
-            participants = participants.filter(age__gte=46, age__lte=60)
-        elif age == '60':
-            participants = participants.filter(age__gte=60)
+        age_ranges = {
+            '18': (18, 25),
+            '26': (26, 35),
+            '36': (36, 45),
+            '46': (46, 60),
+            '60': (60, 1000),
+        }
 
-    #  sorting logic based on the sort_by and sort_direction parameters
-    if sort_by == 'first_name':
-        participants = participants.order_by(f"{'' if sort_direction == 'asc' else '-'}name")
-    elif sort_by == 'last_name':
-        participants = participants.order_by(f"{'' if sort_direction == 'asc' else '-'}name")  # Adjust if last_name is in a separate field
-    elif sort_by == 'age':
-        participants = participants.order_by(f"{'' if sort_direction == 'asc' else '-'}age")
+        if age in age_ranges:
+            min_age, max_age = age_ranges[age]
+            participants = participants.filter(age__gte=min_age, age__lte=max_age)
 
-    #  log the fetched participants for debugging
-    logger.info(f"Participants fetched: {participants}")
+    #  apply sorting
+    sort_by = request.GET.get('sort_by')
+    sort_direction = request.GET.get('sort_direction', 'asc')
 
-    #  pass the race and participants to the template
+    #  handle sorting based on available fields
+    if sort_by:
+        if sort_by == 'name':
+            if sort_direction == 'desc':
+                participants = participants.order_by(F('name').desc())
+            else:
+                participants = participants.order_by('name')
+        elif sort_by == 'age':  # Sort by 'age' field
+            if sort_direction == 'desc':
+                participants = participants.order_by(F('age').desc())
+            else:
+                participants = participants.order_by('age')
+
+    #  count the number of participants
+    participants_count = participants.count()
+
     return render(request, 'app/race_detail.html', {
         'race': race,
         'participants': participants,
-        'gender': gender,
-        'age': age,
-        'sort_by': sort_by,
-        'sort_direction': sort_direction,
         'participants_count': participants_count,
     })
 
