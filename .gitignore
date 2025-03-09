@@ -1,1 +1,5 @@
+<<<<<<< Updated upstream
 *.log
+=======
+running/logs/app.log
+>>>>>>> Stashed changes

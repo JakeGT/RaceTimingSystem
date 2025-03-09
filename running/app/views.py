@@ -24,6 +24,9 @@ import os
 from django.utils.dateparse import parse_time
 from .models import Race, Participant, RaceResult
 from datetime import datetime, date, timedelta
+from django.contrib.auth.views import PasswordResetView
+from django.urls import reverse_lazy
+from django.contrib.messages.views import SuccessMessageMixin
 
 # --------------------------------------------------- RESTful API ------------------------------------------------------
 
@@ -195,33 +198,12 @@ def user_logout(request):
     messages.success(request, "You have been logged out.")
     return redirect("login")
 
-@logged_out_required
-def password_reset_request(request):
-    """
-    Handles password reset request.
-    """
-
-    if request.method == "POST":
-        email = request.POST.get("email")
-        form = PasswordResetForm(request.POST)
-
-        if form.is_valid():
-            user = User.objects.filter(email=email).first()
-            if user:
-                #  send password reset email
-                send_mail(
-                    "Password Reset Request",
-                    "Click the link below to reset your password.",
-                    settings.DEFAULT_FROM_EMAIL,
-                    [email],
-                    fail_silently=False,
-                )
-                messages.success(request, "Password reset email sent! Check your inbox.")
-                return redirect("login")
-            else:
-                messages.error(request, "No user found with this email.")
-
-    return render(request, "app/password_reset.html")
+class CustomPasswordResetView(SuccessMessageMixin, PasswordResetView):
+    template_name = "app/password_reset.html"
+    email_template_name = "app/password_reset_email.html"
+    subject_template_name = "app/password_reset_subject.txt"
+    success_url = reverse_lazy("password_reset_done")
+    success_message = "Password reset email sent! Check your inbox."
 
 def dashboard(request):
     """
