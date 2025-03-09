@@ -270,56 +270,75 @@ def race_config(request):
 
     return render(request, 'app/race_config.html')
 
+
 def upload_results(request):
     """
-    View for uploading race results manually or via CSV file.
+    View for uploading race results via CSV file.
     """
 
     races = Race.objects.all()
 
     if request.method == 'POST':
-        if 'upload_option' in request.POST:
+        #  handle CSV upload
+        if 'file' in request.FILES:
+            file = request.FILES['file']
 
-            #  handle manual result entry
-            if request.POST.get('upload_option') == 'manual':
+            try:
+                #  decode the CSV file and process each row
+                decoded_file = file.read().decode('utf-8').splitlines()
+                reader = csv.reader(decoded_file)
+
+                #  skip the header row if present
+                header = next(reader, None)
+
+                #  ensure race_id is provided
                 race_id = request.POST.get('race_id')
-                bib_number = request.POST.get('bib_number')
-                result_time = request.POST.get('result')
+                if not race_id:
+                    messages.error(request, 'Please select a race before uploading CSV.')
 
-                #  validate and save the result
-                if not race_id or not bib_number or not result_time:
-                    messages.error(request, 'All fields are required for manual entry.')
-                    return render(request, 'app/upload_results.html', {'races': races})
+                race = Race.objects.get(id=race_id)
 
-                try:
-                    result = RaceResult.objects.create(race_id=race_id, bib_number=bib_number, result_time=result_time)
-                    messages.success(request, 'Race result uploaded successfully!')
-                except Exception as e:
-                    messages.error(request, f'Error uploading result: {str(e)}')
+                #  process each row in the CSV file
+                for row in reader:
+                    if len(row) < 2:
+                        messages.error(request, 'CSV file format is incorrect.')
+                        break
 
-                return redirect('race_organiser_dashboard')
+                    bib_number = row[0].strip()
+                    result_time = row[1].strip()
 
-            #  handle CSV upload
-            elif request.FILES.get('file'):
-                file = request.FILES['file']
-                try:
-                    decoded_file = file.read().decode('utf-8')
-                    reader = csv.reader(decoded_file.splitlines())
-                    for row in reader:
-                        bib_number = row[0]
-                        result_time = row[1]
-                        race_id = request.POST.get('race_id')
+                    #  skip empty rows
+                    if not bib_number or not result_time:
+                        continue
 
-                        #  save each result from the CSV file
-                        RaceResult.objects.create(race_id=race_id, bib_number=bib_number, result_time=result_time)
+                    #  find the participant for this bib_number in the current race
+                    try:
+                        #  find participant by bib number and race_id
+                        participant = Participant.objects.get(race_id=race.id, race_number=bib_number)
+                    except Participant.DoesNotExist:
+                        messages.error(request, f'Participant with bib number {bib_number} not found for race {race.name}.')
+                        continue
 
-                    messages.success(request, 'CSV file uploaded successfully!')
-                except Exception as e:
-                    messages.error(request, f'Error uploading CSV: {str(e)}')
+                    #  check if the result for this participant and race already exists
+                    if RaceResult.objects.filter(race=race, participant=participant).exists():
+                        messages.error(request, f'Result already uploaded for participant {bib_number} in race {race.name}.')
+                        continue
 
-                return redirect('dashboard')
+                    #  save the result to the database
+                    RaceResult.objects.create(
+                        race=race,
+                        participant=participant,
+                        total_time=result_time
+                    )
 
+                messages.success(request, 'CSV file uploaded successfully!')
+
+            except Exception as e:
+                messages.error(request, f'Error uploading CSV: {str(e)}')
+
+    #  render the same page with all races and the messages
     return render(request, 'app/upload_results.html', {'races': races})
+
 
 @login_required(login_url="login")
 def upload_participants(request):
@@ -503,56 +522,78 @@ def race_history(request):
 
 
 def race_detail(request, race_id):
-    race = Race.objects.get(id=race_id)
+    race = get_object_or_404(Race, id=race_id)
 
-    #  get all participants for this race
+    #  get race results if they exist
+    race_results = RaceResult.objects.filter(race=race)
+
+    #  get sorting and filtering parameters
+    sort_by = request.GET.get('sort_by', '')
+    sort_direction = request.GET.get('sort_direction', 'asc')
+
+    #  apply filters to race results if they exist
+    if race_results.exists():
+        gender = request.GET.get('gender')
+        age = request.GET.get('age')
+
+        if gender:
+            race_results = race_results.filter(participant__gender=gender)
+
+        if age:
+            age_ranges = {
+                '18': (18, 25),
+                '26': (26, 35),
+                '36': (36, 45),
+                '46': (46, 60),
+                '60': (60, 1000),
+            }
+            if age in age_ranges:
+                min_age, max_age = age_ranges[age]
+                race_results = race_results.filter(participant__age__gte=min_age, participant__age__lte=max_age)
+
+        #  apply sorting
+        if sort_by:
+            if sort_by == 'name':
+                race_results = race_results.order_by('-participant__name' if sort_direction == 'desc' else 'participant__name')
+            elif sort_by == 'age':
+                race_results = race_results.order_by('-participant__age' if sort_direction == 'desc' else 'participant__age')
+            elif sort_by == 'total_time':
+                race_results = race_results.order_by('-total_time' if sort_direction == 'desc' else 'total_time')
+
+        return render(request, 'app/race_results.html', {
+            'race': race,
+            'race_results': race_results,
+        })
+
+    #  no results show participants instead
     participants = Participant.objects.filter(race=race)
 
-    #  apply filtering by gender
     gender = request.GET.get('gender')
+    age = request.GET.get('age')
+
     if gender:
         participants = participants.filter(gender=gender)
 
-    #  apply filtering by age
-    age = request.GET.get('age')
     if age:
-        age_ranges = {
-            '18': (18, 25),
-            '26': (26, 35),
-            '36': (36, 45),
-            '46': (46, 60),
-            '60': (60, 1000),
-        }
-
         if age in age_ranges:
             min_age, max_age = age_ranges[age]
             participants = participants.filter(age__gte=min_age, age__lte=max_age)
 
     #  apply sorting
-    sort_by = request.GET.get('sort_by')
-    sort_direction = request.GET.get('sort_direction', 'asc')
-
-    #  handle sorting based on available fields
     if sort_by:
         if sort_by == 'name':
-            if sort_direction == 'desc':
-                participants = participants.order_by(F('name').desc())
-            else:
-                participants = participants.order_by('name')
-        elif sort_by == 'age':  # Sort by 'age' field
-            if sort_direction == 'desc':
-                participants = participants.order_by(F('age').desc())
-            else:
-                participants = participants.order_by('age')
+            participants = participants.order_by('-name' if sort_direction == 'desc' else 'name')
+        elif sort_by == 'age':
+            participants = participants.order_by('-age' if sort_direction == 'desc' else 'age')
 
-    #  count the number of participants
     participants_count = participants.count()
 
     return render(request, 'app/race_detail.html', {
         'race': race,
         'participants': participants,
-        'participants_count': participants_count,
+        'participants_count': participants_count
     })
+
 
 @login_required
 def race_organiser_dashboard(request):
@@ -563,6 +604,7 @@ def race_organiser_dashboard(request):
     # TODO - currently assume the user is a race organiser
     races = Race.objects.filter(organiser=request.user)
     return render(request, 'app/race_organiser_dashboard.html', {'races': races})
+
 
 @login_required(login_url="login")
 def upcoming_races(request):

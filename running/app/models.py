@@ -48,7 +48,6 @@ class Participant(models.Model):
         return f"{self.name} ({self.race.name}) - {self.status}"
 
 
-
 class RaceResult(models.Model):
     """
     Model representing the results of a race.
