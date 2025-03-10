@@ -82,7 +82,7 @@ self-hosting this could be done in two different ways:
 - Hardware Costs (Laptop/PC with GPU enabled):
   Laptop with NVIDIA GPU (e.g., NVIDIA GTX 1060 or 1660 series): Around £600 - £800 for a mid-range laptop with a decent GPU for development and basic tasks.
   For heavier operations (such as computer vision model training), the cost might increase for higher-end laptops or desktop builds with more modern GPUs (in such cases cloud subscription may be more appropriate).
-- High-resolution camera: £300 however most modern phones have high resolution camedrs which would be appropriate
+- High-resolution camera: £300 however most modern phones have high resolution cameras which would be appropriate
 - Cloud Subscription Costs (if applicable):
   Cloud Service (AWS, Google Cloud, or Azure): For GPU for Computer Vision model training would cost approximately £10 per month (taken from a Collab pro subscription)
 - Software Licenses:
