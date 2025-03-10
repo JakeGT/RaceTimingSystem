@@ -15,7 +15,7 @@ from django.contrib.auth import views as auth_views
 urlpatterns = [
 
     # upload json of data
-    path('race/<int:race_id>/upload/', upload_json, name='upload_json'),
+    path('race/<int:race_id>/upload', upload_json, name='upload_json'),
 
     #  landing page
     path('', views.landing_page, name='landing'),
