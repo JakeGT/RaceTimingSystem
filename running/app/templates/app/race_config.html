@@ -1,0 +1,62 @@
+<!-- running/app/templates/app/race_config.html -->
+{% extends 'base.html' %}
+
+{% block title %}Race Configuration - Race Timing System{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+
+    <!-- Page Header -->
+    <div class="row">
+        <div class="col-12">
+            <h1 class="display-4 text-center">Race Configuration</h1>
+            <p class="lead text-center text-muted">Set up an empty race configuration below</p>
+        </div>
+    </div>
+
+    <!-- Form Section -->
+    <div class="row">
+        <div class="col-12 col-md-8 offset-md-2">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title mb-0">Configure Your Race</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {% csrf_token %}
+
+                        <!-- Race Name -->
+                        <div class="form-group mb-4">
+                            <label for="race_name">Race Name</label>
+                            <input type="text" name="race_name" id="race_name" class="form-control" placeholder="Enter the name of your race (e.g., 'Spring 5k')" required>
+                        </div>
+
+                        <!-- Race Date -->
+                        <div class="form-group mb-4">
+                            <label for="race_date">Race Date</label>
+                            <input type="date" name="race_date" id="race_date" class="form-control" required>
+                        </div>
+
+                        <!-- Race Start Time -->
+                        <div class="form-group mb-4">
+                            <label for="start_time">Start Time</label>
+                            <input type="time" name="start_time" id="start_time" class="form-control" required>
+                        </div>
+
+                        <!-- Optional: Add race categories later -->
+                        <div class="form-group mb-4">
+                            <label for="race_categories">Race Categories (Optional)</label>
+                            <p class="form-text text-muted">You can add categories later after the race is created.</p>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="form-group text-center">
+                            <input type="submit" value="Create Race" class="btn btn-success btn-lg">
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

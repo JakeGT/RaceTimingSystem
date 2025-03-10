@@ -1,0 +1,24 @@
+<!-- running/app/templates/app/race_organiser_dashboard.html -->
+
+{% extends 'base.html' %}
+
+{% block title %}Race Organiser Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center">Race Organiser Dashboard</h1>
+    <p class="lead text-muted text-center">Manage race participants and view race details.</p>
+
+    <div class="list-group">
+        {% for race in races %}
+            <a href="{% url 'organiser_race_detail' race.id %}" class="list-group-item list-group-item-action">
+                <h5 class="mb-1">{{ race.name }}</h5>
+                <p class="mb-1">Date: {{ race.date }}</p>
+                <p class="mb-1">Total Participants: {{ race.participants.count }}</p>
+            </a>
+        {% empty %}
+            <p class="text-center">You are not managing any races yet.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

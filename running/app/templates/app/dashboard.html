@@ -1,0 +1,86 @@
+<!-- running/app/templates/app/dashboard.html -->
+{% extends 'base.html' %}
+
+{% block title %}Race Dashboard - Race Timing System{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+
+    <!-- Page Header -->
+    <div class="row">
+        <div class="col-12 text-center">
+            <h1 class="display-4">Race Dashboard</h1>
+            <p class="lead text-muted">Search for races and view their leaderboards</p>
+        </div>
+    </div>
+
+    <!-- Navigation Links Section -->
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            <div class="btn-group" role="group" aria-label="Dashboard Links">
+
+                {% if user.is_authenticated %}
+                    <!-- If the user is logged in, show the following links -->
+                    <a href="{% url 'race_history' %}" class="btn btn-info btn-lg">Race History</a>
+                    <a href="{% url 'race_organiser_dashboard' %}" class="btn btn-success btn-lg">Organiser Dashboard</a>
+                    <a href="{% url 'register_for_race' %}" class="btn btn-primary btn-lg">Register for Race</a>
+                    <a href="{% url 'upcoming_races' %}" class="btn btn-warning btn-lg">Upcoming Races</a>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Race Button (for authenticated users) -->
+    {% if user.is_authenticated %}
+    <div class="row">
+        <div class="col-12 text-end mt-4">
+            <a href="{% url 'race_config' %}" class="btn btn-danger btn-lg">Create Race</a>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Search and Filter Section -->
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            <form method="get" action="{% url 'dashboard' %}">
+                <div class="d-flex justify-content-between">
+                    <!-- Race Search -->
+                    <div class="form-group">
+                        <label for="race-search" class="form-label">Search for a Race:</label>
+                        <input type="text" id="race-search" name="race_search" class="form-control w-auto" placeholder="Search by race name">
+                    </div>
+
+                    <!-- Filter by Completion Status -->
+                    <div class="form-group">
+                        <label for="completed" class="form-label">Show Completed Races Only:</label>
+                        <input type="checkbox" id="completed" name="completed" {% if request.GET.completed %} checked {% endif %}>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="form-group align-self-end">
+                        <button type="submit" class="btn btn-primary">Search</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Race Selection Section -->
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            <h3>Select a Race:</h3>
+            <div class="list-group">
+                {% for race in races %}
+                    <a href="{% url 'race_detail' race.id %}" class="list-group-item list-group-item-action">
+                        {{ race.name }} - {{ race.date }}
+                    </a>
+                {% empty %}
+                    <p>No races found. Please add a race.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

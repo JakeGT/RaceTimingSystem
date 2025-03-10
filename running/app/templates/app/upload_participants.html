@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload Participants - Race Timing System{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+
+    <!-- Page Header -->
+    <div class="row">
+        <div class="col-12">
+            <h1 class="display-4 text-center">Upload Participant Data</h1>
+            <p class="lead text-center text-muted">Choose how you want to add participant data</p>
+        </div>
+    </div>
+
+    <!-- Options Section (Radio Buttons for Manual or CSV Upload) -->
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            <label for="upload_option" class="form-label">Choose an Option</label><br>
+            <input type="radio" id="manual" name="upload_option" value="manual" class="form-check-input" onclick="toggleForms()" checked>
+            <label for="manual" class="form-check-label">Manual Entry</label>
+            <input type="radio" id="csv_upload" name="upload_option" value="csv_upload" class="form-check-input" onclick="toggleForms()">
+            <label for="csv_upload" class="form-check-label">Upload CSV File</label>
+        </div>
+    </div>
+
+    <!-- Manual Entry Form -->
+    <div id="manual_form" class="row mt-4">
+        <div class="col-12 col-md-8 offset-md-2">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title mb-0">Add Participants Manually</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {% csrf_token %}
+
+                        <!-- Race Selection Dropdown -->
+                        <div class="form-group mb-4">
+                            <label for="race_manual" class="form-label">Select Race</label>
+                            <select name="race_id" id="race_manual" class="form-control" required>
+                                <option value="" disabled selected>Select a Race</option>
+                                {% for race in races %}
+                                    <option value="{{ race.id }}">{{ race.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Bib Number (Required) -->
+                        <div class="form-group mb-4">
+                            <label for="bib_number" class="form-label">Bib Number</label>
+                            <input type="text" name="bib_number" id="bib_number" class="form-control" placeholder="Enter Bib Number" required>
+                        </div>
+
+                        <!-- First Name -->
+                        <div class="form-group mb-4">
+                            <label for="firstname" class="form-label">First Name</label>
+                            <input type="text" name="firstname" id="firstname" class="form-control" placeholder="Enter First Name" required>
+                        </div>
+
+                        <!-- Last Name -->
+                        <div class="form-group mb-4">
+                            <label for="lastname" class="form-label">Last Name</label>
+                            <input type="text" name="lastname" id="lastname" class="form-control" placeholder="Enter Last Name" required>
+                        </div>
+
+                        <!-- Gender -->
+                        <div class="form-group mb-4">
+                            <label for="gender" class="form-label">Gender</label>
+                            <select name="gender" id="gender" class="form-control" required>
+                                <option value="" disabled selected>Select Gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+
+                        <!-- Club Name -->
+                        <div class="form-group mb-4">
+                            <label for="club_name" class="form-label">Club Name</label>
+                            <input type="text" name="club_name" id="club_name" class="form-control" placeholder="Enter Club Name">
+                        </div>
+
+                        <!-- Team Name -->
+                        <div class="form-group mb-4">
+                            <label for="team_name" class="form-label">Team Name</label>
+                            <input type="text" name="team_name" id="team_name" class="form-control" placeholder="Enter Team Name" required>
+                        </div>
+
+                        <!-- Age Category -->
+                        <div class="form-group mb-4">
+                            <label for="age_category" class="form-label">Age Category</label>
+                            <input type="text" name="age_category" id="age_category" class="form-control" placeholder="Enter Age Category" required>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="form-group text-center">
+                            <input type="submit" value="Add Participant" class="btn btn-success btn-lg">
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CSV Upload Form -->
+    <div id="csv_form" class="row mt-4" style="display: none;">
+        <div class="col-12 col-md-8 offset-md-2">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title mb-0">Upload CSV File</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <!-- Race Selection Dropdown -->
+                        <div class="form-group mb-4">
+                            <label for="race_csv" class="form-label">Select Race</label>
+                            <select name="race_id" id="race_csv" class="form-control" required>
+                                <option value="" disabled selected>Select a Race</option>
+                                {% for race in races %}
+                                    <option value="{{ race.id }}">{{ race.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- File Upload Input -->
+                        <div class="form-group mb-4">
+                            <label for="file" class="form-label">Select CSV File</label>
+                            <input type="file" name="file" id="file" class="form-control" required>
+                            <small class="form-text text-muted">Please upload a valid CSV file containing the following fields: BibNumber, Firstname, Lastname, Gender, TeamName, and AgeCategory.</small>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="form-group text-center">
+                            <input type="submit" value="Upload CSV" class="btn btn-success btn-lg">
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleForms() {
+        const manualForm = document.getElementById('manual_form');
+        const csvForm = document.getElementById('csv_form');
+        
+        if (document.getElementById('manual').checked) {
+            manualForm.style.display = 'block';
+            csvForm.style.display = 'none';
+        } else {
+            manualForm.style.display = 'none';
+            csvForm.style.display = 'block';
+        }
+    }
+</script>
+
+{% endblock %}

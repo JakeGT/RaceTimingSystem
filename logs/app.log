@@ -1,0 +1,66 @@
+2025-01-20 10:19:01,280 - app_logger - INFO - Accessing the dashboard view
+2025-01-20 10:19:01,280 - app_logger - DEBUG - Parsed race_id: None
+2025-01-20 10:19:01,282 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-01-20 10:19:02,307 - app_logger - INFO - Accessing the dashboard view
+2025-01-20 10:19:02,307 - app_logger - DEBUG - Parsed race_id: None
+2025-01-20 10:19:02,309 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-01-20 10:19:03,354 - app_logger - INFO - Accessing the dashboard view
+2025-01-20 10:19:03,354 - app_logger - DEBUG - Parsed race_id: None
+2025-01-20 10:19:03,355 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-01-20 10:19:04,317 - app_logger - INFO - Accessing the dashboard view
+2025-01-20 10:19:04,317 - app_logger - DEBUG - Parsed race_id: None
+2025-01-20 10:19:04,318 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-01-20 10:19:05,285 - app_logger - INFO - Accessing race configuration view
+2025-01-20 10:19:05,286 - app_logger - DEBUG - Received race configuration: Invalid Race, , , []
+2025-01-20 10:19:05,288 - app_logger - ERROR - Error saving race configuration: ['“” value has an invalid date format. It must be in YYYY-MM-DD format.']
+2025-01-20 10:19:06,254 - app_logger - INFO - Accessing race configuration view
+2025-01-20 10:19:06,255 - app_logger - DEBUG - Received race configuration: New Year, 2025-01-25, 12:00:00, ['5k', '10k']
+2025-01-20 10:19:06,255 - app_logger - INFO - Race configuration saved: New Year
+2025-01-20 10:19:07,250 - app_logger - INFO - Accessing participants upload view
+2025-01-20 10:19:07,251 - app_logger - ERROR - Race ID not provided in the form
+2025-01-20 10:19:08,216 - app_logger - INFO - Accessing participants upload view
+2025-01-20 10:19:08,216 - app_logger - ERROR - Race ID not provided in the form
+2025-01-20 10:25:11,956 - app_logger - INFO - Accessing the dashboard view
+2025-01-20 10:25:11,958 - app_logger - DEBUG - Parsed race_id: None
+2025-01-20 10:25:11,962 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-01-20 10:25:13,094 - app_logger - INFO - Accessing the dashboard view
+2025-01-20 10:25:13,095 - app_logger - DEBUG - Parsed race_id: None
+2025-01-20 10:25:13,096 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-01-20 10:25:14,235 - app_logger - INFO - Accessing the dashboard view
+2025-01-20 10:25:14,235 - app_logger - DEBUG - Parsed race_id: None
+2025-01-20 10:25:14,237 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-01-20 10:25:15,314 - app_logger - INFO - Accessing the dashboard view
+2025-01-20 10:25:15,314 - app_logger - DEBUG - Parsed race_id: None
+2025-01-20 10:25:15,316 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-01-20 10:25:16,533 - app_logger - INFO - Accessing race configuration view
+2025-01-20 10:25:16,534 - app_logger - DEBUG - Received race configuration: Invalid Race, , , []
+2025-01-20 10:25:16,537 - app_logger - ERROR - Error saving race configuration: ['“” value has an invalid date format. It must be in YYYY-MM-DD format.']
+2025-01-20 10:25:17,546 - app_logger - INFO - Accessing race configuration view
+2025-01-20 10:25:17,547 - app_logger - DEBUG - Received race configuration: New Year, 2025-01-25, 12:00:00, ['5k', '10k']
+2025-01-20 10:25:17,548 - app_logger - INFO - Race configuration saved: New Year
+2025-01-20 10:25:18,702 - app_logger - INFO - Accessing participants upload view
+2025-01-20 10:25:18,703 - app_logger - ERROR - Race ID not provided in the form
+2025-01-20 10:25:19,710 - app_logger - INFO - Accessing participants upload view
+2025-01-20 10:25:19,711 - app_logger - ERROR - Race ID not provided in the form
+2025-02-17 13:15:37,595 - app_logger - INFO - Accessing the dashboard view
+2025-02-17 13:15:37,597 - app_logger - DEBUG - Parsed race_id: None
+2025-02-17 13:15:37,599 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-17 13:15:38,640 - app_logger - INFO - Accessing the dashboard view
+2025-02-17 13:15:38,641 - app_logger - DEBUG - Parsed race_id: None
+2025-02-17 13:15:38,641 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-17 13:15:39,637 - app_logger - INFO - Accessing the dashboard view
+2025-02-17 13:15:39,637 - app_logger - DEBUG - Parsed race_id: None
+2025-02-17 13:15:39,639 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-17 13:15:40,613 - app_logger - INFO - Accessing the dashboard view
+2025-02-17 13:15:40,613 - app_logger - DEBUG - Parsed race_id: None
+2025-02-17 13:15:40,614 - app_logger - DEBUG - Rendering dashboard with race_id: 1
+2025-02-17 13:15:41,593 - app_logger - INFO - Accessing race configuration view
+2025-02-17 13:15:41,594 - app_logger - DEBUG - Received race configuration: Invalid Race, , , []
+2025-02-17 13:15:41,596 - app_logger - ERROR - Error saving race configuration: ['“” value has an invalid date format. It must be in YYYY-MM-DD format.']
+2025-02-17 13:15:42,573 - app_logger - INFO - Accessing race configuration view
+2025-02-17 13:15:42,574 - app_logger - DEBUG - Received race configuration: New Year, 2025-01-25, 12:00:00, ['5k', '10k']
+2025-02-17 13:15:42,574 - app_logger - INFO - Race configuration saved: New Year
+2025-02-17 13:15:43,554 - app_logger - INFO - Accessing participants upload view
+2025-02-17 13:15:43,554 - app_logger - ERROR - Race ID not provided in the form
+2025-02-17 13:15:44,564 - app_logger - INFO - Accessing participants upload view
+2025-02-17 13:15:44,565 - app_logger - ERROR - Race ID not provided in the form

@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+
+{% block title %}Leaderboard - {{ race.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+
+    <!-- Page Header -->
+    <div class="row">
+        <div class="col-12 text-center">
+            <h1 class="display-4">Leaderboard for {{ race.name }}</h1>
+            <p class="lead text-muted">View the leaderboard and race results</p>
+        </div>
+    </div>
+
+    <!-- Race Details Section -->
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h3 class="card-title mb-0">Race Information</h3>
+                </div>
+                <div class="card-body">
+                    <p><strong>Date:</strong> {{ race.date }}</p>
+                    <p><strong>Category:</strong> {{ race.categories }}</p>
+                    <p><strong>Location:</strong> {{ race.location }}</p>
+                    <p><strong>Start Time:</strong> {{ race.start_time }}</p>
+                    <p><strong>Total Participants:</strong> {{ participants_count }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            <form method="get" action="{% url 'race_detail' race.id %}">
+                <div class="d-flex justify-content-between">
+                    <!-- Gender Filter -->
+                    <div class="form-group">
+                        <label for="gender-select" class="form-label">Filter by Gender</label>
+                        <select id="gender-select" name="gender" class="form-select w-auto">
+                            <option value="">All Genders</option>
+                            <option value="male" {% if request.GET.gender == 'male' %}selected{% endif %}>Male</option>
+                            <option value="female" {% if request.GET.gender == 'female' %}selected{% endif %}>Female</option>
+                        </select>
+                    </div>
+
+                    <!-- Age Filter -->
+                    <div class="form-group">
+                        <label for="age-select" class="form-label">Filter by Age</label>
+                        <select id="age-select" name="age" class="form-select w-auto">
+                            <option value="">All Ages</option>
+                            <option value="18" {% if request.GET.age == '18' %}selected{% endif %}>18-25</option>
+                            <option value="26" {% if request.GET.age == '26' %}selected{% endif %}>26-35</option>
+                            <option value="36" {% if request.GET.age == '36' %}selected{% endif %}>36-45</option>
+                            <option value="46" {% if request.GET.age == '46' %}selected{% endif %}>46-60</option>
+                            <option value="60" {% if request.GET.age == '60' %}selected{% endif %}>60+</option>
+                        </select>
+                    </div>
+
+                    <!-- Sorting by (Radio Buttons) -->
+                    <div class="form-group">
+                        <label class="form-label">Sort by</label>
+                        <div>
+                            <label>
+                                <input type="radio" name="sort_by" value="name" {% if request.GET.sort_by == 'name' %}checked{% endif %}>
+                                Name
+                            </label>
+                            <label>
+                                <input type="radio" name="sort_by" value="age" {% if request.GET.sort_by == 'age' %}checked{% endif %}>
+                                Age
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Sort Direction (Radio Buttons) -->
+                    <div class="form-group">
+                        <label class="form-label">Sort Direction</label>
+                        <div>
+                            <label>
+                                <input type="radio" name="sort_direction" value="asc" {% if request.GET.sort_direction == 'asc' %}checked{% endif %}>
+                                Ascending
+                            </label>
+                            <label>
+                                <input type="radio" name="sort_direction" value="desc" {% if request.GET.sort_direction == 'desc' %}checked{% endif %}>
+                                Descending
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="form-group align-self-end">
+                        <button type="submit" class="btn btn-primary">Apply</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Participants Section -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-white">
+                    <h3 class="card-title mb-0">Participants</h3>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Here are the participants for the race:</p>
+                    <div class="list-group list-group-flush">
+                        {% for participant in participants %}
+                            <div class="list-group-item p-3 mb-2 rounded border participant-row">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="fw-bold participant-name">{{ participant.name }}</div>
+                                    <div class="additional-info">
+                                        <span class="badge bg-info me-2">{{ participant.age }} years old</span>
+                                        <span class="badge bg-info me-2">{{ participant.gender }}</span>
+                                        <span class="badge bg-info me-2">{{ participant.age_category }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% empty %}
+                            <p>No participants found.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Hover Tooltip CSS -->
+<style>
+    .participant-row {
+        position: relative;
+    }
+
+    .additional-info {
+        display: none;
+        position: absolute;
+        top: 50%;
+        right: 0;
+        transform: translateY(-50%);
+        background-color: #ffc107;
+        padding: 10px;
+        border-radius: 5px;
+        z-index: 10;
+    }
+
+    .participant-row:hover .additional-info {
+        display: block;
+    }
+
+    .participant-name {
+        cursor: pointer;
+    }
+</style>
+
+{% endblock %}
