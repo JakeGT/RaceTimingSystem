@@ -58,8 +58,13 @@
             background-color: #ffffff;
         }
 
-        .navbar-nav .nav-item + .nav-item {
-            margin-left: 10px; /* Add spacing between navbar items */
+        /* To make the navbar items shrink and align side by side */
+        .navbar-nav {
+            display: flex;
+            flex-direction: row;  /* Ensure the navbar items stay in a row */
+            flex-wrap: wrap; /* Allow the navbar items to wrap when the screen size is too small */
+            justify-content: flex-end; /* Align the navbar items to the right */
+            gap: 10px; /* Space between navbar items */
         }
 
         .content-area {

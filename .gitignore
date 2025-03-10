@@ -12,3 +12,10 @@ bib-detector/Queensland2024_output.mp4
 bib-detector/__pycache__/website_api.cpython-313.pyc
 running/db.sqlite3
 *.sqlite3
+
+# Playwright
+node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
