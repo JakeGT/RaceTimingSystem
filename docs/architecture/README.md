@@ -71,4 +71,4 @@ SQLite database.
 ## Architecture Diagram
 Below is a block diagram illustrating the system components and their interactions.
 
-![Architecture Diagram](architecture.JPG)
+![Architecture Diagram](runningsysdiag.png)
