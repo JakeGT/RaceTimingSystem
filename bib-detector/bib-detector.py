@@ -119,6 +119,7 @@ for result in results:
 
         # If a confident OCR result is obtained, store it in the history for this tracker
         if bib_text and final_confidence > OCR_CONFIDENCE_THRESHOLD:
+            # Extract all numbers, combine and convert to integer
             bib_final = "".join(re.findall(r"\d+", bib_text))
             if bib_final != "":
                 try:
@@ -156,6 +157,8 @@ for result in results:
 
     current_time = time.time()
     expired_tracker_ids = []
+    # Find all tracked bibs that have not been detected longer than the threshold and send
+    # bib number to server and remove from tracked bibs
     for tracker_id, entries in bib_ocr_history.items():
         if entries:
             last_timestamp = max(timestamp for _, timestamp in entries)
@@ -181,6 +184,7 @@ for result in results:
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
+# Saves video for user to review
 if output_video:
     out.release()
 cv2.destroyAllWindows()
