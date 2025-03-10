@@ -963,3 +963,11 @@
 2025-03-09 23:29:34,270 - app_logger - INFO - Accessing the dashboard view
 2025-03-09 23:32:47,371 - app_logger - INFO - Accessing the landing page view
 2025-03-09 23:32:48,564 - app_logger - INFO - Accessing the dashboard view
+2025-03-10 08:58:30,667 - app_logger - INFO - Accessing the landing page view
+2025-03-10 08:58:39,559 - app_logger - INFO - Accessing the landing page view
+2025-03-10 08:58:41,867 - app_logger - INFO - Accessing the landing page view
+2025-03-10 09:00:22,035 - app_logger - INFO - Accessing the landing page view
+2025-03-10 09:01:55,115 - app_logger - INFO - Accessing the landing page view
+2025-03-10 09:02:08,258 - app_logger - INFO - Accessing the dashboard view
+2025-03-10 09:02:08,262 - app_logger - INFO - No races found in the database based on search or completion criteria
+2025-03-10 09:03:02,900 - app_logger - INFO - Accessing the dashboard view

@@ -41,8 +41,8 @@
                         <label for="gender-select" class="form-label">Filter by Gender</label>
                         <select id="gender-select" name="gender" class="form-select w-auto">
                             <option value="">All Genders</option>
-                            <option value="male" {% if request.GET.gender =='male' %}selected{% endif %}>Male</option>
-                            <option value="female" {% if request.GET.gender =='female' %}selected{% endif %}>Female</option>
+                            <option value="male" {% if request.GET.gender == 'male' %}selected{% endif %}>Male</option>
+                            <option value="female" {% if request.GET.gender == 'female' %}selected{% endif %}>Female</option>
                         </select>
                     </div>
 
@@ -51,11 +51,11 @@
                         <label for="age-select" class="form-label">Filter by Age</label>
                         <select id="age-select" name="age" class="form-select w-auto">
                             <option value="">All Ages</option>
-                            <option value="18" {% if request.GET.age =='18' %}selected{% endif %}>18-25</option>
-                            <option value="26" {% if request.GET.age =='26' %}selected{% endif %}>26-35</option>
-                            <option value="36" {% if request.GET.age =='36' %}selected{% endif %}>36-45</option>
-                            <option value="46" {% if request.GET.age =='46' %}selected{% endif %}>46-60</option>
-                            <option value="60" {% if request.GET.age =='60' %}selected{% endif %}>60+</option>
+                            <option value="18" {% if request.GET.age == '18' %}selected{% endif %}>18-25</option>
+                            <option value="26" {% if request.GET.age == '26' %}selected{% endif %}>26-35</option>
+                            <option value="36" {% if request.GET.age == '36' %}selected{% endif %}>36-45</option>
+                            <option value="46" {% if request.GET.age == '46' %}selected{% endif %}>46-60</option>
+                            <option value="60" {% if request.GET.age == '60' %}selected{% endif %}>60+</option>
                         </select>
                     </div>
 
@@ -64,15 +64,15 @@
                         <label class="form-label">Sort by</label>
                         <div>
                             <label>
-                                <input type="radio" name="sort_by" value="name" {% if request.GET.sort_by =='name' %}checked{% endif %}>
+                                <input type="radio" name="sort_by" value="name" {% if request.GET.sort_by == 'name' %}checked{% endif %}>
                                 Name
                             </label>
                             <label>
-                                <input type="radio" name="sort_by" value="age" {% if request.GET.sort_by =='age' %}checked{% endif %}>
+                                <input type="radio" name="sort_by" value="age" {% if request.GET.sort_by == 'age' %}checked{% endif %}>
                                 Age
                             </label>
                             <label>
-                                <input type="radio" name="sort_by" value="total_time" {% if request.GET.sort_by =='total_time' %}checked{% endif %}>
+                                <input type="radio" name="sort_by" value="total_time" {% if request.GET.sort_by == 'total_time' %}checked{% endif %}>
                                 Total Time
                             </label>
                         </div>
@@ -83,11 +83,11 @@
                         <label class="form-label">Sort Direction</label>
                         <div>
                             <label>
-                                <input type="radio" name="sort_direction" value="asc" {% if request.GET.sort_direction =='asc' %}checked{% endif %}>
+                                <input type="radio" name="sort_direction" value="asc" {% if request.GET.sort_direction == 'asc' %}checked{% endif %}>
                                 Ascending
                             </label>
                             <label>
-                                <input type="radio" name="sort_direction" value="desc" {% if request.GET.sort_direction =='desc' %}checked{% endif %}>
+                                <input type="radio" name="sort_direction" value="desc" {% if request.GET.sort_direction == 'desc' %}checked{% endif %}>
                                 Descending
                             </label>
                         </div>
