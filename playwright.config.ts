@@ -10,6 +10,21 @@ import { defineConfig, devices } from '@playwright/test';
 
 const isWindows = process.platform === 'win32';
 
+const webServer = {
+  command: isWindows
+    ? 'cd running && call venv\\Scripts\\activate && python manage.py runserver > NUL 2>&1'
+    : 'cd running && . venv/bin/activate && python manage.py runserver > /dev/null 2>&1',
+  url: 'http://127.0.0.1:8000',
+  timeout: 120_000,
+  reuseExistingServer: !process.env.CI,
+};
+
+// Use configuration for Playwright
+const use = {
+  baseURL: 'http://127.0.0.1:8000',
+  headless: true,
+};
+
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
