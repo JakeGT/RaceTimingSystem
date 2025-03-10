@@ -7,7 +7,7 @@ use. The system includes the following primary components:
 1. **Frontend Client**  
 2. **Backend Server (Django)**  
 3. **Database (SQLite)**  
-4. **Computer Vision Script**  
+4. **Computer Vision Script (YOLOv11 model)**  
 5. **Cloud Storage and Hosting Services (via University hosting)**
 
 The architecture diagram at the end of this document provides a visual representation of the components and how they
@@ -48,13 +48,13 @@ information
   - Stores race event details (race date, participants, results)
   - Provides simple and efficient querying for retrieving race data
   
-### 4. Computer Vision Script
+### 4. Computer Vision Script (YOLOv11 model)
 A script which takes in camera input, processes using the computer vision models, in order to recognise bibs.
 Uses OCR (Optical Character Recognition) in order to extract the bib number, and accurately calculates the time for that 
 runner.
 
 - **Key Features**:
-  - Takes input from a users camera
+  - Takes input from a user's camera
   - Detects runners in video footage
   - Identifies and reads bib numbers using image processing techniques
   - Provides time stamps for each runner crossing the finish line
