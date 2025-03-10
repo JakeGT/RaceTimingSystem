@@ -8,6 +8,8 @@ import { defineConfig, devices } from '@playwright/test';
 // import path from 'path';
 // dotenv.config({ path: path.resolve(__dirname, '.env') });
 
+const isWindows = process.platform === 'win32';
+
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
@@ -72,15 +74,18 @@ export default defineConfig({
   ],
 
 webServer: {
-    command: 'cd running && call venv\\Scripts\\activate && python manage.py runserver > NUL 2>&1',
-    url: 'http://127.0.0.1:8000',
-    timeout: 120_000,
-    reuseExistingServer: !process.env.CI,
-  },
-  use: {
-    baseURL: 'http://127.0.0.1:8000',
-    headless: true,
-  },
+  command: isWindows
+    ? 'cd running && call venv\\Scripts\\activate && python manage.py runserver > NUL 2>&1'
+    : 'cd running && source venv/bin/activate && python manage.py runserver > /dev/null 2>&1',
+  url: 'http://127.0.0.1:8000',
+  timeout: 120_000,
+  reuseExistingServer: !process.env.CI,
+},
+use: {
+  baseURL: 'http://127.0.0.1:8000',
+  headless: true,
+},
+
 
 
 });
