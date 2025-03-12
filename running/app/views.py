@@ -23,6 +23,9 @@ from django.contrib.auth.views import PasswordResetView
 from django.urls import reverse_lazy
 from django.contrib.messages.views import SuccessMessageMixin
 from .forms import ParticipantCategoryForm, RaceCategoryForm
+from django.http import HttpResponseNotFound
+from django.shortcuts import render
+from django.conf.urls import handler500
 
 # --------------------------------------------------- RESTful API ------------------------------------------------------
 
@@ -784,3 +787,27 @@ def race_category_create(request):
     else:
         form = RaceCategoryForm()
     return render(request, 'app/race_category_create.html', {'form': form})
+
+
+def custom_404(request, exception):
+    """
+    Define a custom 404 page
+    """
+
+    return render(request, '404.html', status=404)
+
+
+def custom_500(request):
+    """
+    Define a custom 500 page
+    """
+
+    return render(request, '500.html', status=500)
+
+
+def custom_403(request, exception):
+    """
+    Define a custome 403 page
+    """
+
+    return render(request, '403.html', status=403)
