@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Landing Page Tests', () => {
     test.beforeEach(async ({ page }) => {
-        // Navigate to the landing page
+        //  navigate to the landing page
         await page.goto('http://127.0.0.1:8000');
     });
 
@@ -56,23 +56,23 @@ test.describe('Landing Page Tests', () => {
         await expect(loginNav).toHaveAttribute('href', '/login/');
     });
 
-    // Check if hamburger menu is visible and click it if necessary
+    //  check if hamburger menu is visible and click it if necessary
     test('should open the hamburger menu if the three lines are visible', async ({ page }) => {
         const hamburgerMenu = page.locator('.navbar-toggler'); // Hamburger menu
         const navbarItems = page.locator('nav .navbar-nav');
 
-        // Check if the hamburger menu (three lines icon) is visible
+        //  check if the hamburger menu is visible
         const isHamburgerVisible = await hamburgerMenu.isVisible();
 
         if (isHamburgerVisible) {
-            // Click the hamburger menu to reveal the navbar items
+            //  click the hamburger menu to reveal the navbar items
             await hamburgerMenu.click();
         }
 
-        // Now check if the navbar items are visible
+        //  now check if the navbar items are visible
         await expect(navbarItems).toBeVisible();
 
-        // Verify that Dashboard button and Login button are in the navbar
+        //  verify that Dashboard button and Login button are in the navbar
         const dashboardNav = page.locator('nav a:has-text("Dashboard")');
         const loginNav = page.locator('nav a:has-text("Login")');
 

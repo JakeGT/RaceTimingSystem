@@ -71,3 +71,25 @@ class Profile(models.Model):
 
     def __str__(self):
         return self.user.username
+
+
+class ParticipantCategory(models.Model):
+    """
+    Model for custom Participant category (e.g., "verteran" or "junior")
+    """
+
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
+
+
+class RaceCategory(models.Model):
+    """
+    Model for custom Race Category (e.g., "5k", "10k", "Half-Marathon")
+    """
+
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name

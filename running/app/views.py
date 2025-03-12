@@ -3,16 +3,13 @@
 # -------------------------------------------------- Import Libraries --------------------------------------------------
 import csv
 from django.shortcuts import get_object_or_404
-from .models import Participant, RaceResult, Race
+from .models import Participant, RaceResult, Race, ParticipantCategory, RaceCategory
 from .utils.logger import setup_logging
 from django.utils import timezone
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.contrib.auth.forms import PasswordResetForm
-from django.core.mail import send_mail
-from django.conf import settings
 from django.contrib.auth.models import User
 from functools import wraps
 import re
@@ -20,14 +17,12 @@ import io
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
-import os
 from django.utils.dateparse import parse_time
-from .models import Race, Participant, RaceResult
 from datetime import datetime, date, timedelta
 from django.contrib.auth.views import PasswordResetView
 from django.urls import reverse_lazy
 from django.contrib.messages.views import SuccessMessageMixin
-from django.db.models import F
+from .forms import ParticipantCategoryForm, RaceCategoryForm
 
 # --------------------------------------------------- RESTful API ------------------------------------------------------
 
@@ -60,7 +55,6 @@ from django.db.models import F
 
 
 # Objects version
-#
 @csrf_exempt
 def upload_json(request, race_id):
     if request.method == 'POST':
@@ -73,13 +67,13 @@ def upload_json(request, race_id):
         bib_number = data.get('bib_number')
         result_time = data.get('time')
 
-        # Fetch the participant based on race_id and bib_number (race_number)
+        #  fetch the participant based on race_id and bib_number (race_number)
         try:
             participant = Participant.objects.get(race=race, race_number=bib_number)
         except Participant.DoesNotExist:
             return JsonResponse({"error": "Participant not found"}, status=404)
 
-        # Calculate the time difference between the start time and the given time
+        #  calculate the time difference between the start time and the given time
         start_time = race.start_time
         result_time_obj = parse_time(result_time)
 
@@ -91,7 +85,7 @@ def upload_json(request, race_id):
 
         time_difference = result_time_datetime - start_time_datetime
 
-        # Create a RaceResult object
+        #  create a RaceResult object
         RaceResult.objects.create(
             participant=participant,
             race=race,
@@ -101,8 +95,19 @@ def upload_json(request, race_id):
         return JsonResponse({"message": "Data processed and race result created."})
     return JsonResponse({"error": "Invalid request method"}, status=400)
 
+
 # -------------------------------------------------- Setup Logging -----------------------------------------------------
 logger = setup_logging()
+
+
+# ------------------------------------------------- Class Declarations -------------------------------------------------
+class CustomPasswordResetView(SuccessMessageMixin, PasswordResetView):
+    template_name = "app/password_reset.html"
+    email_template_name = "app/password_reset_email.html"
+    subject_template_name = "app/password_reset_subject.txt"
+    success_url = reverse_lazy("password_reset_done")
+    success_message = "Password reset email sent! Check your inbox."
+
 
 # ------------------------------------------------ Function Definitions ------------------------------------------------
 def logged_out_required(view_func):
@@ -117,6 +122,7 @@ def logged_out_required(view_func):
         return view_func(request, *args, **kwargs)
     return _wrapped_view
 
+
 def landing_page(request):
     """
     View for the landing page of the Race Timing System.
@@ -125,6 +131,7 @@ def landing_page(request):
     logger.info("Accessing the landing page view")
 
     return render(request, 'app/landing.html', {})
+
 
 @logged_out_required
 def user_register(request):
@@ -169,6 +176,7 @@ def user_register(request):
 
     return render(request, "app/register.html")
 
+
 @logged_out_required
 def user_login(request):
     """
@@ -189,6 +197,7 @@ def user_login(request):
 
     return render(request, "app/login.html")
 
+
 @login_required(login_url="login")
 def user_logout(request):
     """
@@ -199,12 +208,6 @@ def user_logout(request):
     messages.success(request, "You have been logged out.")
     return redirect("login")
 
-class CustomPasswordResetView(SuccessMessageMixin, PasswordResetView):
-    template_name = "app/password_reset.html"
-    email_template_name = "app/password_reset_email.html"
-    subject_template_name = "app/password_reset_subject.txt"
-    success_url = reverse_lazy("password_reset_done")
-    success_message = "Password reset email sent! Check your inbox."
 
 def dashboard(request):
     """
@@ -245,30 +248,56 @@ def dashboard(request):
         'races': races,
     })
 
+
 @login_required
 def race_config(request):
     """
-    View for the race configuration page.
+    Views for race configuration page
     """
 
-    if request.method == 'POST':
-        #  handle form submission
-        race_name = request.POST.get('race_name')
-        race_date = request.POST.get('race_date')
-        start_time = request.POST.get('start_time')
+    #  get all race categories and participant categories
+    race_categories = RaceCategory.objects.all()
+    participant_categories = ParticipantCategory.objects.all()
 
-        #  create a new race object and assign the current user as the organiser
+    if request.method == 'POST':
+        #  process the form data
+        race_name = request.POST['race_name']
+        race_date = request.POST['race_date']
+        start_time = request.POST['start_time']
+
+        #  get the selected race category
+        race_category_id = request.POST.get('race_category', None)
+        if race_category_id:
+            race_category = RaceCategory.objects.get(id=race_category_id)
+        else:
+            race_category = None
+
+        #  get the selected participant categories
+        participant_category_ids = request.POST.getlist('participant_categories')
+
+        #  create a new race object
         race = Race.objects.create(
             name=race_name,
             date=race_date,
             start_time=start_time,
+            categories=race_category.name if race_category else 'None',
             organiser=request.user
         )
 
-        #  after saving the race, redirect to the upload participants page
-        return redirect('upload_participants')
+        #  add participant categories
+        if participant_category_ids:
+            for category_id in participant_category_ids:
+                participant_category = ParticipantCategory.objects.get(id=category_id)
+                race.participants.add(participant_category)
 
-    return render(request, 'app/race_config.html')
+        #  redirect to the dashboard
+        return redirect('/dashboard')
+
+    #  render the race configuration form
+    return render(request, 'app/race_config.html', {
+        'race_categories': race_categories,
+        'participant_categories': participant_categories
+    })
 
 
 def upload_results(request):
@@ -395,7 +424,7 @@ def upload_participants(request):
                     try:
                         age = int(row.get('Age', '').strip())
                     except ValueError:
-                        age = None  #  default to None if Age is not a valid number
+                        age = None
 
                     #  skip rows with missing or invalid fields
                     if not all([bib_number, firstname, lastname, gender, team_name, age_category]) or age is None:
@@ -437,6 +466,7 @@ def upload_participants(request):
     races = Race.objects.all()
     return render(request, 'app/upload_participants.html', {'races': races})
 
+
 def user_logout(request):
     """
     Logs out the user and redirects to the homepage.
@@ -448,6 +478,7 @@ def user_logout(request):
 
     #  redirect the user to the homepage
     return redirect('/')
+
 
 @login_required
 def register_for_race(request):
@@ -479,6 +510,7 @@ def register_for_race(request):
 
     return render(request, 'app/register_for_race.html', {'races': races})
 
+
 @login_required
 def manage_participants(request, race_id):
     """
@@ -502,6 +534,7 @@ def manage_participants(request, race_id):
         return redirect('manage_participants', race_id=race.id)
 
     return render(request, 'app/manage_participants.html', {'race': race, 'participants': participants})
+
 
 @login_required(login_url="login")
 def race_history(request):
@@ -601,7 +634,6 @@ def race_organiser_dashboard(request):
     Defines the view for a race organiser dashboard
     """
 
-    # TODO - currently assume the user is a race organiser
     races = Race.objects.filter(organiser=request.user)
     return render(request, 'app/race_organiser_dashboard.html', {'races': races})
 
@@ -620,6 +652,7 @@ def upcoming_races(request):
     upcoming = Race.objects.filter(date__gte=current_time.date()).order_by('date', 'start_time')
 
     return render(request, 'app/upcoming_races.html', {'upcoming_races': upcoming})
+
 
 @login_required
 def organiser_race_detail(request, race_id):
@@ -641,6 +674,7 @@ def organiser_race_detail(request, race_id):
     participants = race.participants.all()
     return render(request, 'app/organiser_race_detail.html', {'race': race, 'participants': participants})
 
+
 @login_required(login_url="login")
 def race_results(request, race_id):
     """
@@ -655,6 +689,7 @@ def race_results(request, race_id):
 
     #  render the race results page with race and results context
     return render(request, 'app/race_results.html', {'race': race, 'results': results})
+
 
 @login_required
 def settings_view(request):
@@ -682,6 +717,7 @@ def settings_view(request):
 
     return render(request, "app/settings.html")
 
+
 @login_required
 def profile_view(request):
     """
@@ -700,6 +736,7 @@ def profile_view(request):
 
     return render(request, "app/profile.html", {"participant": participant, "races": races})
 
+
 @login_required
 def organiser_race_detail(request, race_id):
     """
@@ -711,3 +748,39 @@ def organiser_race_detail(request, race_id):
     return render(request, 'app/organiser_race_detail.html', {
         'race': race
     })
+
+
+@login_required
+def participant_category_list(request):
+    categories = ParticipantCategory.objects.all()
+    return render(request, 'app/participant_category_list.html', {'categories': categories})
+
+
+@login_required
+def participant_category_create(request):
+    if request.method == 'POST':
+        form = ParticipantCategoryForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('category_list')
+    else:
+        form = ParticipantCategoryForm()
+    return render(request, 'app/participant_category_form.html', {'form': form})
+
+
+@login_required
+def race_category_list(request):
+    categories = RaceCategory.objects.all()
+    return render(request, 'app/race_category_list.html', {'categories': categories})
+
+
+@login_required
+def race_category_create(request):
+    if request.method == 'POST':
+        form = RaceCategoryForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('race_category_list')
+    else:
+        form = RaceCategoryForm()
+    return render(request, 'app/race_category_create.html', {'form': form})
