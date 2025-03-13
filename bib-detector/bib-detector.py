@@ -9,6 +9,16 @@ import easyocr
 import argparse
 import website_api
 
+# Custom VideoCapture class to set resolution to 1080x1920
+class CustomVideoCapture(cv2.VideoCapture):
+    def __init__(self, src, apiPreference=cv2.CAP_ANY):
+        super().__init__(src, apiPreference)
+        self.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+        self.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+
+# Monkey-patch cv2.VideoCapture with our custom class
+cv2.VideoCapture = CustomVideoCapture
+
 # Config
 device = "cpu"
 OCR_CONFIDENCE_THRESHOLD = 0.7
@@ -32,6 +42,7 @@ args = parser.parse_args()
 
 if args.device:
     device = args.device
+# video_input is either the provided input stream or 0 (default camera)
 video_input = args.input if args.input else 0
 output_video = args.output if args.output else None
 verbose = args.verbose
@@ -43,28 +54,17 @@ model = YOLO("best.pt")
 reader = easyocr.Reader(['en'], gpu=(device != "cpu"))
 
 # Create API object
-
 api = website_api.WebsiteAPI(url)
-
-# For output video settings we need to know frame dimensions;
-# so we open the video capture momentarily.
-cap = cv2.VideoCapture(video_input)
-frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-fps = int(cap.get(cv2.CAP_PROP_FPS))
-cap.release()
-
-output_frame_width = frame_width + 300
-out = None
-if output_video:
-    out = cv2.VideoWriter(output_video, cv2.VideoWriter_fourcc(*'mp4v'), fps, (output_frame_width, frame_height))
 
 # Dictionary to hold OCR history for each tracker ID
 bib_ocr_history = defaultdict(list)
 
-# Use YOLO's Tracking with ByteTrack
-# The track() method automatically assigns a unique ID to each detected object.
+# Use YOLO's Tracking with ByteTrack.
+# Since video_input is an integer (or file path), the internal cv2.VideoCapture will now use our custom version.
 results = model.track(source=video_input, device=device, stream=True, verbose=verbose, tracker="bytetrack.yaml")
+
+# Prepare output video writer (initialized later)
+out = None
 
 prev_time = time.time()
 frame_count = 0
@@ -72,7 +72,13 @@ frame_count = 0
 for result in results:
     frame_count += 1
     frame = result.orig_img  # original frame from the tracker result
+    frame_height, frame_width, _ = frame.shape
+    output_frame_width = frame_width + 300
     side_panel = np.ones((frame_height, 300, 3), dtype=np.uint8) * 50
+
+    # Initialize VideoWriter once when first frame is processed
+    if output_video and out is None:
+        out = cv2.VideoWriter(output_video, cv2.VideoWriter_fourcc(*'mp4v'), fps, (output_frame_width, frame_height))
 
     # Dictionary to keep track of bib boxes using their tracker IDs
     tracked_bibs = {}
@@ -119,7 +125,6 @@ for result in results:
 
         # If a confident OCR result is obtained, store it in the history for this tracker
         if bib_text and final_confidence > OCR_CONFIDENCE_THRESHOLD:
-            # Extract all numbers, combine and convert to integer
             bib_final = "".join(re.findall(r"\d+", bib_text))
             if bib_final != "":
                 try:
@@ -157,8 +162,6 @@ for result in results:
 
     current_time = time.time()
     expired_tracker_ids = []
-    # Find all tracked bibs that have not been detected longer than the threshold and send
-    # bib number to server and remove from tracked bibs
     for tracker_id, entries in bib_ocr_history.items():
         if entries:
             last_timestamp = max(timestamp for _, timestamp in entries)
@@ -184,7 +187,6 @@ for result in results:
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
-# Saves video for user to review
 if output_video:
     out.release()
 cv2.destroyAllWindows()
