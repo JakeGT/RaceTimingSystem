@@ -567,7 +567,6 @@ def race_detail(request, race_id):
     sort_by = request.GET.get('sort_by', '')
     sort_direction = request.GET.get('sort_direction', 'asc')
 
-    #  apply filters to race results if they exist
     if race_results.exists():
         gender = request.GET.get('gender')
         age = request.GET.get('age')
@@ -602,7 +601,7 @@ def race_detail(request, race_id):
         })
 
     #  no results show participants instead
-    participants = Participant.objects.filter(race=race)
+    participants = Participant.objects.filter(race=race).values('name', 'age', 'gender', 'age_category', 'race_number')
 
     gender = request.GET.get('gender')
     age = request.GET.get('age')
