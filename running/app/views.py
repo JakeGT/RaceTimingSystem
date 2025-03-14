@@ -636,8 +636,23 @@ def race_organiser_dashboard(request):
     Defines the view for a race organiser dashboard
     """
 
+    #  get races where the logged-in user is the organiser
     races = Race.objects.filter(organiser=request.user)
-    return render(request, 'app/race_organiser_dashboard.html', {'races': races})
+
+    #  calculate the total number of participants
+    race_data = []
+    for race in races:
+        participants = Participant.objects.filter(race=race)
+
+        #  count the filtered participants
+        participants_count = participants.count()
+
+        race_data.append({
+            'race': race,
+            'participants_count': participants_count
+        })
+
+    return render(request, 'app/race_organiser_dashboard.html', {'race_data': race_data})
 
 
 @login_required(login_url="login")
