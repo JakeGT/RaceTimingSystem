@@ -3,8 +3,9 @@ name: Django CI
 on:
   push:
     branches:
-      - main, feature/ui
+      - main
       - dev
+      - feature/ui
   pull_request:
     branches:
       - main
