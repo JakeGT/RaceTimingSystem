@@ -46,7 +46,6 @@ EMAIL_HOST_PASSWORD = "-- insert google app password here"
 DEFAULT_FROM_EMAIL = "-- insert email address here --"
 
 # Application definition
-
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -133,15 +132,12 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# Internationalization
+# Internationalisation
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = 'UTC'
-
+LANGUAGE_CODE = 'en-gb'
+TIME_ZONE = 'Europe/London'
 USE_I18N = True
-
 USE_TZ = True
 
 

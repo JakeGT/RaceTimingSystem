@@ -6,7 +6,7 @@
 {% block content %}
 <div class="container mt-5">
     <h1 class="text-center">Manage Participants for {{ race.name }}</h1>
-    <p class="lead text-muted text-center">Approve or deny race participants.</p>
+    <p class="lead text-muted text-center">Manage race details and participants.</p>
 
     <!-- Update Participants Button -->
     <div class="text-center mb-4">
@@ -18,12 +18,17 @@
         <a href="{% url 'upload_results' %}" class="btn btn-secondary">Update Results</a>
     </div>
 
+    <!-- Adjust Start Time Button -->
+    <div class="text-center mb-4">
+        <a href="{% url 'adjust_start_time' race.id %}" class="btn btn-warning">Adjust Start Time</a>
+    </div>
+
+    <!-- Participants Table -->
     <table class="table table-bordered">
         <thead>
             <tr>
                 <th>Name</th>
                 <th>Status</th>
-                <th>Action</th>
             </tr>
         </thead>
         <tbody>
@@ -31,14 +36,6 @@
                 <tr>
                     <td>{{ participant.name }}</td>
                     <td>{{ participant.status }}</td>
-                    <td>
-                        <form method="POST">
-                            {% csrf_token %}
-                            <input type="hidden" name="participant_id" value="{{ participant.id }}">
-                            <button type="submit" name="status" value="approved" class="btn btn-success">Approve</button>
-                            <button type="submit" name="status" value="denied" class="btn btn-danger">Deny</button>
-                        </form>
-                    </td>
                 </tr>
             {% endfor %}
         </tbody>

@@ -59,9 +59,6 @@ urlpatterns = [
     #  organiser management page
     path('manage_participants/<int:race_id>/', views.manage_participants, name='manage_participants'),
 
-    #  registering for races page
-    path('register-race/', views.register_for_race, name='register_for_race'),
-
     #  race history page
     path('race-history/', views.race_history, name='race_history'),
 
@@ -100,6 +97,8 @@ urlpatterns = [
 
     #  creating new participants category page
     path('participants-categories/new/', views.participant_category_create, name='category_create'),
+
+    path('race/<int:race_id>/adjust_start_time/', views.adjust_start_time, name='adjust_start_time'),
 ]
 
 if settings.DEBUG:

@@ -22,7 +22,7 @@ from datetime import datetime, date, timedelta
 from django.contrib.auth.views import PasswordResetView
 from django.urls import reverse_lazy
 from django.contrib.messages.views import SuccessMessageMixin
-from .forms import ParticipantCategoryForm, RaceCategoryForm
+from .forms import ParticipantCategoryForm, RaceCategoryForm, AdjustStartTimeForm
 from django.http import HttpResponseNotFound
 from django.shortcuts import render
 from django.conf.urls import handler500
@@ -484,37 +484,6 @@ def user_logout(request):
 
 
 @login_required
-def register_for_race(request):
-    """
-    Defines the user registration for races page.
-    """
-
-    #  get the current date and time
-    current_time = timezone.now()
-
-    #  filter races to future races
-    races = Race.objects.filter(date__gte=current_time.date()).filter(start_time__gte=current_time.time())
-
-    if request.method == 'POST':
-        race_id = request.POST.get('race_id')
-        race = get_object_or_404(Race, id=race_id)
-
-        #  ensure the user has a Participant instance
-        if hasattr(request.user, 'participant'):
-            participant = request.user.participant
-
-            #  register the participant for the race
-            participant.races.add(race)
-            participant.save()
-            return render(request, 'app/registration_success.html', {'race': race})
-        else:
-            #  handle the case where the user doesn't have a participant record yet
-            return render(request, 'app/error.html', {'message': 'You must have a participant record to register for a race.'})
-
-    return render(request, 'app/register_for_race.html', {'races': races})
-
-
-@login_required
 def manage_participants(request, race_id):
     """
     Loads a page where organisers can approve or deny participants.
@@ -801,6 +770,27 @@ def race_category_create(request):
     else:
         form = RaceCategoryForm()
     return render(request, 'app/race_category_create.html', {'form': form})
+
+
+def adjust_start_time(request, race_id):
+    # Get the race object based on the provided ID
+    race = get_object_or_404(Race, id=race_id)
+
+    # If the form is submitted
+    if request.method == 'POST':
+        # Handle the form submission
+        form = AdjustStartTimeForm(request.POST)
+        if form.is_valid():
+            # Get the new start time from the form data
+            new_start_time = form.cleaned_data['start_time']
+            race.start_time = new_start_time  # Update the race start time
+            race.save()  # Save the changes
+            return redirect('organiser_race_detail', race_id=race.id)  # Redirect back to race details
+    else:
+        # Prepopulate the form with the current start time
+        form = AdjustStartTimeForm(initial={'start_time': race.start_time})
+
+    return render(request, 'app/adjust_start_time.html', {'form': form, 'race': race})
 
 
 def custom_404(request, exception):

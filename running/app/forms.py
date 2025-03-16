@@ -4,22 +4,10 @@
 from django import forms
 from .models import Participant, Race, RaceCategory, ParticipantCategory
 import datetime
+from django.utils import timezone
 
 
 # ------------------------------------------------- Class Declarations -------------------------------------------------
-class RegisterRaceForm(forms.ModelForm):
-    """
-    Class for the registering for a race form
-    """
-
-    class Meta:
-        model = Participant
-        fields = ['name', 'race_number', 'age', 'gender', 'race']
-
-    race = forms.ModelChoiceField(queryset=Race.objects.filter(date__gte=datetime.date.today()), empty_label="Select "
-                                                                                                             "Race")
-
-
 class ParticipantCategoryForm(forms.ModelForm):
     """
     Class for the participant category creation form
@@ -38,3 +26,11 @@ class RaceCategoryForm(forms.ModelForm):
     class Meta:
         model = RaceCategory
         fields = ['name']
+
+
+class AdjustStartTimeForm(forms.Form):
+    start_time = forms.DateTimeField(
+        label='New Start Time',
+        initial=timezone.now,
+        widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+    )
