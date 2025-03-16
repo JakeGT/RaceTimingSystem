@@ -26,14 +26,15 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          cd running
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r running/requirements.txt
 
       - name: Run Migrations
+        working-directory: running
         run: |
           python manage.py migrate
 
       - name: Run Tests
+        working-directory: running
         run: |
           python manage.py test
