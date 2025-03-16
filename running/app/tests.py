@@ -8,6 +8,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from .models import Participant, Race
 import io
 
+
 # -------------------------------------------------- Test Definitions --------------------------------------------------
 class RaceTimingSystemTests(TestCase):
 
