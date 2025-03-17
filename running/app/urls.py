@@ -98,7 +98,11 @@ urlpatterns = [
     #  creating new participants category page
     path('participants-categories/new/', views.participant_category_create, name='category_create'),
 
+    #  page for adjusting the start time from which race times are calculated
     path('race/<int:race_id>/adjust_start_time/', views.adjust_start_time, name='adjust_start_time'),
+
+    #  google sign in page
+    path('google-login/callback/', views.google_callback, name='google_callback')
 ]
 
 if settings.DEBUG:

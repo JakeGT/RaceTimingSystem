@@ -6,7 +6,6 @@ from django.shortcuts import get_object_or_404
 from .models import Participant, RaceResult, Race, ParticipantCategory, RaceCategory
 from .utils.logger import setup_logging
 from django.utils import timezone
-from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -23,9 +22,17 @@ from django.contrib.auth.views import PasswordResetView
 from django.urls import reverse_lazy
 from django.contrib.messages.views import SuccessMessageMixin
 from .forms import ParticipantCategoryForm, RaceCategoryForm, AdjustStartTimeForm
-from django.http import HttpResponseNotFound
 from django.shortcuts import render
-from django.conf.urls import handler500
+from django.shortcuts import redirect
+from django.contrib.auth import login
+from django.http import HttpResponse
+from google.auth.transport.requests import Request
+from google.oauth2.id_token import verify_oauth2_token
+from django.conf import settings
+
+#  define custom user
+from django.contrib.auth import get_user_model
+User = get_user_model()
 
 # --------------------------------------------------- RESTful API ------------------------------------------------------
 
@@ -773,24 +780,70 @@ def race_category_create(request):
 
 
 def adjust_start_time(request, race_id):
-    # Get the race object based on the provided ID
+    """
+    Define the view for adjusting the start time of races (from which the results will be calculated)
+    """
+
+    #  get the race object
     race = get_object_or_404(Race, id=race_id)
 
-    # If the form is submitted
     if request.method == 'POST':
-        # Handle the form submission
+
+        #  handle form submission
         form = AdjustStartTimeForm(request.POST)
+
         if form.is_valid():
-            # Get the new start time from the form data
+            #  update  to the new start time
             new_start_time = form.cleaned_data['start_time']
-            race.start_time = new_start_time  # Update the race start time
-            race.save()  # Save the changes
-            return redirect('organiser_race_detail', race_id=race.id)  # Redirect back to race details
+            race.start_time = new_start_time
+            race.save()
+            return redirect('organiser_race_detail', race_id=race.id)
     else:
-        # Prepopulate the form with the current start time
         form = AdjustStartTimeForm(initial={'start_time': race.start_time})
 
     return render(request, 'app/adjust_start_time.html', {'form': form, 'race': race})
+
+
+def google_callback(request):
+    """
+    Handles the callback from Google after the user logs in.
+    """
+
+    #  get the token from the URL parameters
+    token = request.GET.get('credential')
+    if not token:
+        return HttpResponse("Error: No token provided", status=400)
+
+    try:
+        #  verify the token
+        id_info = verify_oauth2_token(token, Request(), settings.GOOGLE_CLIENT_ID)
+
+        #  check if the token's audience matches your client ID
+        if id_info['aud'] != settings.GOOGLE_CLIENT_ID:
+            return HttpResponse("Error: Invalid token", status=400)
+
+        #  get the user's Google account info
+        user_email = id_info['email']
+        user_name = id_info.get('given_name', '')
+        user_picture = id_info.get('picture', '')
+
+        #  handle user sign-in or registration
+        user, created = User.objects.get_or_create(email=user_email, defaults={'name': user_name, 'profile_picture': user_picture})
+
+        #  update the user with any new information
+        if not created:
+            user.name = user_name
+            user.profile_picture = user_picture
+            user.save()
+
+        #  log the user in
+        login(request, user)
+
+        #  redirect to the landing page
+        return redirect('/')
+
+    except Exception as e:
+        return HttpResponse(f"Error: {str(e)}", status=400)
 
 
 def custom_404(request, exception):

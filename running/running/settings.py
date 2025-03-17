@@ -44,6 +44,7 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "-- insert email address here --"
 EMAIL_HOST_PASSWORD = "-- insert google app password here"
 DEFAULT_FROM_EMAIL = "-- insert email address here --"
+SOCIALACCOUNT_ADAPTER = 'your_project.social_account.adapter.CustomSocialAccountAdapter'
 
 # Application definition
 LOGGING = {
@@ -150,3 +151,22 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+GOOGLE_CLIENT_ID = '-- insert google client id --'
+AUTH_USER_MODEL = 'app.CustomUser'
+
+import os
+from dotenv import load_dotenv
+from pathlib import Path
+
+load_dotenv()
+
+GOOGLE_OAUTH_CLIENT_ID = os.environ.get('GOOGLE_OAUTH_CLIENT_ID')
+if not GOOGLE_OAUTH_CLIENT_ID:
+    raise ValueError(
+        'GOOGLE_OAUTH_CLIENT_ID is missing.'
+        'Have you put it in a file at core/.env ?'
+    )
+
+# We need these lines below to allow the Google sign in popup to work.
+SECURE_REFERRER_POLICY = 'no-referrer-when-downgrade'
+SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin-allow-popups"
