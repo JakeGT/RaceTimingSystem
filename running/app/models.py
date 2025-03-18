@@ -33,7 +33,7 @@ class Participant(models.Model):
     Model representing the Participant of a race.
     """
 
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, blank=True, null=True)
     race = models.ForeignKey(Race, on_delete=models.CASCADE, related_name='race_participants')
     name = models.CharField(max_length=100)
     race_number = models.CharField(max_length=10)
@@ -158,3 +158,17 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return self.username
+
+
+class Image(models.Model):
+    """
+    Model representing an image associated with a race.
+    """
+
+    name = models.CharField(max_length=100)
+    image = models.ImageField(upload_to='images/')
+    race = models.ForeignKey(Race, on_delete=models.CASCADE, related_name='race_images')  # Link to a specific race
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.race.name}) - {self.timestamp}"

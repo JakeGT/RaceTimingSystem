@@ -2,9 +2,9 @@
 
 # -------------------------------------------------- Import Libraries --------------------------------------------------
 from django import forms
-from .models import Participant, Race, RaceCategory, ParticipantCategory
-import datetime
+from .models import RaceCategory, ParticipantCategory
 from django.utils import timezone
+from .models import Image
 
 
 # ------------------------------------------------- Class Declarations -------------------------------------------------
@@ -29,8 +29,22 @@ class RaceCategoryForm(forms.ModelForm):
 
 
 class AdjustStartTimeForm(forms.Form):
+    """
+    Class for adjusting race start time form
+    """
+
     start_time = forms.DateTimeField(
         label='New Start Time',
         initial=timezone.now,
         widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}),
     )
+
+
+class ImageUploadForm(forms.ModelForm):
+    """
+    Class for upload images
+    """
+
+    class Meta:
+        model = Image
+        fields = ['name', 'image']
