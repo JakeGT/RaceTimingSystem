@@ -1,106 +1,36 @@
 import { defineConfig, devices } from '@playwright/test';
 
-/**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
-// import dotenv from 'dotenv';
-// import path from 'path';
-// dotenv.config({ path: path.resolve(__dirname, '.env') });
-
 const isWindows = process.platform === 'win32';
 
 const webServer = {
   command: isWindows
-    ? 'cd running && call venv\\Scripts\\activate && python manage.py runserver > NUL 2>&1'
-    : 'cd running && . venv/bin/activate && python manage.py runserver > /dev/null 2>&1',
+    ? 'cd running && call venv\\Scripts\\activate && pip install -r requirements.txt && python manage.py runserver > NUL 2>&1'
+    : 'cd running && . venv/bin/activate && pip install -r requirements.txt && python manage.py runserver > /dev/null 2>&1',
   url: 'http://127.0.0.1:8000',
-  timeout: 120_000,
-  reuseExistingServer: !process.env.CI,
+  timeout: 120_000, // Wait up to 2 minutes for the server to start
+  reuseExistingServer: !process.env.CI, // Reuse server if not in CI
 };
 
-// Use configuration for Playwright
-const use = {
-  baseURL: 'http://127.0.0.1:8000',
-  headless: true,
-};
-
-/**
- * See https://playwright.dev/docs/test-configuration.
- */
 export default defineConfig({
   testDir: './tests',
   retries: 2,
-  /* Run tests in files in parallel */
   fullyParallel: true,
-  /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
-  /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: 'html',
-  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
-  use: {
-    /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: 'http://127.0.0.1:8000/',
 
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
+  use: {
+    baseURL: 'http://127.0.0.1:8000',
+    headless: true,
     trace: 'on-first-retry',
   },
 
-  /* Configure projects for major browsers */
+  webServer, // Ensures server starts before tests
+
   projects: [
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
-
-//     {
-//       name: 'firefox',
-//       use: { ...devices['Desktop Firefox'] },
-//     },
-//
-//     {
-//       name: 'webkit',
-//       use: { ...devices['Desktop Safari'] },
-//     },
-//
-//     /* Test against mobile viewports. */
-//     {
-//       name: 'Mobile Chrome',
-//       use: { ...devices['Pixel 5'] },
-//     },
-//     {
-//       name: 'Mobile Safari',
-//       use: { ...devices['iPhone 12'] },
-//     },
-//
-//     /* Test against branded browsers. */
-//     {
-//       name: 'Microsoft Edge',
-//       use: { ...devices['Desktop Edge'], channel: 'msedge' },
-//     },
-//     {
-//       name: 'Google Chrome',
-//       use: { ...devices['Desktop Chrome'], channel: 'chrome' },
-//     },
   ],
-
-webServer: {
-  command: isWindows
-    ? 'cd running && call venv\\Scripts\\activate && python manage.py runserver > NUL 2>&1'
-    : 'cd running && source venv/bin/activate && python manage.py runserver > /dev/null 2>&1',
-  url: 'http://127.0.0.1:8000',
-  timeout: 120_000,
-  reuseExistingServer: !process.env.CI,
-},
-use: {
-  baseURL: 'http://127.0.0.1:8000',
-  headless: true,
-},
-
-
-
 });
