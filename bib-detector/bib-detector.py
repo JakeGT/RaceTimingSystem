@@ -1,12 +1,11 @@
 import re
-from collections import defaultdict, Counter
-
-import numpy as np
-from ultralytics import YOLO
-import cv2
 import time
-import easyocr
+import cv2
+import numpy as np
 import argparse
+from collections import defaultdict, Counter
+from ultralytics import YOLO
+import easyocr
 import website_api
 
 # Custom VideoCapture class to set resolution to 1080x1920
@@ -16,177 +15,163 @@ class CustomVideoCapture(cv2.VideoCapture):
         self.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
         self.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
 
+
 # Monkey-patch cv2.VideoCapture with our custom class
 cv2.VideoCapture = CustomVideoCapture
 
-# Config
-device = "cpu"
-OCR_CONFIDENCE_THRESHOLD = 0.7
-MIN_BIB_WIDTH = 60
-MIN_BIB_HEIGHT = 60
 
-# Threshold (s) after which bib is considered to have left the screen
-OCR_TIMESTAMP_THRESHOLD = 1
-# Minimum identical OCR entries
-MIN_OCR_ENTRIES = 5
 
-# CLI Arguments
-parser = argparse.ArgumentParser()
-parser.add_argument("-d", "--device", help="Select CUDA Device")
-parser.add_argument("-i", "--input", help="Input stream (file or device)")
-parser.add_argument("-o", "--output", help="Output file")
-parser.add_argument("-v", "--verbose", help="Verbose mode", action="store_true")
-parser.add_argument("-dg", "--debug", help="Debug Commands")
-parser.add_argument("-u", "--url", help="URL to Race Timing Website")
-args = parser.parse_args()
+class BibDetector:
+    def __init__(self, model_path, device):
+        self.model = YOLO(model_path)
+        self.reader = easyocr.Reader(['en'], gpu=(device != "cpu"))
+        self.device = device
 
-if args.device:
-    device = args.device
-# video_input is either the provided input stream or 0 (default camera)
-video_input = args.input if args.input else 0
-output_video = args.output if args.output else None
-verbose = args.verbose
-debug = args.debug.split(',') if args.debug else None
-url = args.url if args.url else None
+    def detect(self, source, verbose=False):
+        return self.model.track(source=source, device=self.device, stream=True, verbose=True, tracker="bytetrack.yaml")
 
-# Load YOLO model and OCR reader
-model = YOLO("best.pt")
-reader = easyocr.Reader(['en'], gpu=(device != "cpu"))
+    def extract_bib_text(self, image):
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        results = self.reader.readtext(thresh, detail=1)
 
-# Create API object
-api = website_api.WebsiteAPI(url)
+        best_text, largest_height, final_conf = "", 0, 0
+        for detection in results:
+            bbox, text, conf = detection
+            pts = np.array(bbox, dtype=np.int32)
+            _, _, _, h = cv2.boundingRect(pts)
+            if h > largest_height:
+                best_text, largest_height, final_conf = text.strip(), h, conf
+        return best_text, final_conf
 
-# Dictionary to hold OCR history for each tracker ID
-bib_ocr_history = defaultdict(list)
 
-# Use YOLO's Tracking with ByteTrack.
-# Since video_input is an integer (or file path), the internal cv2.VideoCapture will now use our custom version.
-results = model.track(source=video_input, device=device, stream=True, verbose=verbose, tracker="bytetrack.yaml")
+class BibTracker:
+    OCR_CONFIDENCE_THRESHOLD = 0.7
+    MIN_BIB_WIDTH = 60
+    MIN_BIB_HEIGHT = 60
+    OCR_TIMESTAMP_THRESHOLD = 1
+    MIN_OCR_ENTRIES = 5
 
-# Prepare output video writer (initialized later)
-out = None
+    def __init__(self, api):
+        self.ocr_history = defaultdict(list)
+        self.api = api
 
-prev_time = time.time()
-frame_count = 0
-
-for result in results:
-    frame_count += 1
-    frame = result.orig_img  # original frame from the tracker result
-    frame_height, frame_width, _ = frame.shape
-    output_frame_width = frame_width + 300
-    side_panel = np.ones((frame_height, 300, 3), dtype=np.uint8) * 50
-
-    # Initialize VideoWriter once when first frame is processed
-    if output_video and out is None:
-        out = cv2.VideoWriter(output_video, cv2.VideoWriter_fourcc(*'mp4v'), fps, (output_frame_width, frame_height))
-
-    # Dictionary to keep track of bib boxes using their tracker IDs
-    tracked_bibs = {}
-
-    # Iterate over all detected boxes in the current frame
-    for box in result.boxes:
-        # Get box coordinates and confidence
-        x1, y1, x2, y2 = map(int, box.xyxy[0])
-        confidence = float(box.conf[0])
-        # Retrieve tracker ID (assumes the tracker returns an 'id' attribute)
-        track_id = int(box.id[0]) if hasattr(box, "id") and box.id is not None else None
-
-        # Check that the detected region meets minimum size requirements
-        bib_width = x2 - x1
-        bib_height = y2 - y1
-        if bib_width < MIN_BIB_WIDTH or bib_height < MIN_BIB_HEIGHT:
-            cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
-            continue
-
-        # Draw a bounding box around the detected bib
-        cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-        tracked_bibs[track_id] = (x1, y1, x2, y2)
-
-        # Extract the bib region for OCR processing
-        bib_box = frame[y1:y2, x1:x2]
+    def update(self, track_id, bib_box, detector):
         if bib_box.size == 0:
-            continue
-        bib_box_gray = cv2.cvtColor(bib_box, cv2.COLOR_BGR2GRAY)
-        _, roi_thresh = cv2.threshold(bib_box_gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-        bib_result = reader.readtext(roi_thresh, detail=1)
-
-        # Process OCR results: choose the text detection with the largest height (Bib number will be the largest font size)
-        bib_text = ""
-        largest_height = 0
-        final_confidence = 0
-        for detection in bib_result:
-            bbox_points, text, conf = detection
-            pts = np.array(bbox_points, dtype=np.int32)
-            rx, ry, rw, rh = cv2.boundingRect(pts)
-            if rh > largest_height:
-                largest_height = rh
-                bib_text = text.strip()
-                final_confidence = conf
-
-        # If a confident OCR result is obtained, store it in the history for this tracker
-        if bib_text and final_confidence > OCR_CONFIDENCE_THRESHOLD:
-            bib_final = "".join(re.findall(r"\d+", bib_text))
-            if bib_final != "":
+            return
+        text, conf = detector.extract_bib_text(bib_box)
+        if text and conf > self.OCR_CONFIDENCE_THRESHOLD:
+            numbers = "".join(re.findall(r"\d+", text))
+            if numbers:
                 try:
-                    bib_final = int(bib_final)
-                    bib_ocr_history[track_id].append((bib_final, time.time()))
-                finally:
+                    self.ocr_history[track_id].append((int(numbers), time.time()))
+                except ValueError:
                     pass
 
-    # Draw side panel with tracker and OCR information
-    y_offset = 20
-    for track_id, box in tracked_bibs.items():
-        x1, y1, x2, y2 = box
-        # Draw a line connecting the detection to its info on the side panel
-        line_start = (x2, (y1 + y2) // 2)
-        line_end = (frame_width + 10, y_offset + 5)
-        cv2.line(frame, line_start, line_end, (255, 0, 0), 1)
+    def get_summary(self, track_id):
+        entries = self.ocr_history[track_id]
+        return Counter([e[0] for e in entries]).most_common(1)[0][0] if entries else "Unknown"
 
-        # Choose the most common OCR reading for this tracker ID
-        ocr_texts = [entry[0] for entry in bib_ocr_history[track_id]]
-        mode_bib_text = Counter(ocr_texts).most_common(1)[0][0] if bib_ocr_history[track_id] else "Unknown"
-        cv2.putText(side_panel, f"Tracker ID: {track_id}", (10, y_offset),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
-        y_offset += 20
-        cv2.putText(side_panel, f"Bib Number: {mode_bib_text}", (10, y_offset),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
-        y_offset += 20
-        cv2.putText(side_panel, "OCR Instances:", (10, y_offset),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
-        y_offset += 20
-        for instance in bib_ocr_history[track_id][-5:]:
-            cv2.putText(side_panel, f"- {instance}", (10, y_offset),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 1)
+    def draw_info(self, panel, tracked_bibs, frame_width):
+        y_offset = 20
+        for track_id, (x1, y1, x2, y2) in tracked_bibs.items():
+            cv2.line(panel, (x2, (y1 + y2) // 2), (frame_width + 10, y_offset + 5), (255, 0, 0), 1)
+            ocr_texts = [entry[0] for entry in self.ocr_history[track_id]]
+            mode_text = Counter(ocr_texts).most_common(1)[0][0] if ocr_texts else "Unknown"
+            cv2.putText(panel, f"Tracker ID: {track_id}", (10, y_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
             y_offset += 20
-        y_offset += 10
+            cv2.putText(panel, f"Bib Number: {mode_text}", (10, y_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0),
+                        1)
+            y_offset += 20
+            cv2.putText(panel, "OCR Instances:", (10, y_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
+            y_offset += 20
+            for instance in self.ocr_history[track_id][-5:]:
+                cv2.putText(panel, f"- {instance}", (10, y_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 1)
+                y_offset += 20
+            y_offset += 10
 
-    current_time = time.time()
-    expired_tracker_ids = []
-    for tracker_id, entries in bib_ocr_history.items():
-        if entries:
-            last_timestamp = max(timestamp for _, timestamp in entries)
-        if entries and (current_time - last_timestamp) > OCR_TIMESTAMP_THRESHOLD:
-            if tracker_id is not None:
-                mode_value, count = Counter([text for text, _ in entries]).most_common(1)[0]
-                if count >= MIN_OCR_ENTRIES:
-                    api.send_result(last_timestamp, mode_value, tracker_id, count, None)
+    def expire_old_entries(self):
+        current_time = time.time()
+        expired = []
+        for track_id, entries in self.ocr_history.items():
+            if entries and (current_time - max(ts for _, ts in entries)) > self.OCR_TIMESTAMP_THRESHOLD:
+                count = len(entries)
+                if count >= self.MIN_OCR_ENTRIES:
+                    mode_val = Counter([text for text, _ in entries]).most_common(1)[0][0]
                 else:
-                    api.send_result(last_timestamp, "", tracker_id, count, None)
+                    mode_val = ""
+                self.api.send_result(time.time(), mode_val, track_id, count, None)
+                expired.append(track_id)
+        for tid in expired:
+            del self.ocr_history[tid]
 
-            expired_tracker_ids.append(tracker_id)
 
-    for tracker_id in expired_tracker_ids:
-        del bib_ocr_history[tracker_id]
+class VideoProcessor:
+    def __init__(self, detector, tracker, input_source, output_file=None, verbose=False):
+        self.detector = detector
+        self.tracker = tracker
+        self.input_source = input_source
+        self.output_file = output_file
+        self.verbose = verbose
+        self.out = None
 
-    # Combine the main frame and side panel
-    combined_frame = np.hstack((frame, side_panel))
-    if output_video:
-        out.write(combined_frame)
+    def run(self):
+        results = self.detector.detect(source=self.input_source, verbose=self.verbose)
+        for result in results:
+            frame = result.orig_img
+            frame_h, frame_w, _ = frame.shape
+            side_panel = np.ones((frame_h, 300, 3), dtype=np.uint8) * 50
+            combined_w = frame_w + 300
 
-    cv2.imshow("Bib-Detector", combined_frame)
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+            if self.output_file and self.out is None:
+                self.out = cv2.VideoWriter(self.output_file, cv2.VideoWriter_fourcc(*'mp4v'), 30, (combined_w, frame_h))
 
-if output_video:
-    out.release()
-cv2.destroyAllWindows()
+            tracked_bibs = {}
+
+            for box in result.boxes:
+                x1, y1, x2, y2 = map(int, box.xyxy[0])
+                if (x2 - x1 < BibTracker.MIN_BIB_WIDTH or y2 - y1 < BibTracker.MIN_BIB_HEIGHT):
+                    cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
+                    continue
+
+                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                track_id = int(box.id[0]) if hasattr(box, "id") and box.id is not None else None
+                tracked_bibs[track_id] = (x1, y1, x2, y2)
+
+                bib_box = frame[y1:y2, x1:x2]
+                self.tracker.update(track_id, bib_box, self.detector)
+
+            self.tracker.draw_info(side_panel, tracked_bibs, frame_w)
+            self.tracker.expire_old_entries()
+
+            combined = np.hstack((frame, side_panel))
+            if self.output_file:
+                self.out.write(combined)
+
+            cv2.imshow("Bib-Detector", combined)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+
+        if self.out:
+            self.out.release()
+        cv2.destroyAllWindows()
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-d", "--device", help="Select CUDA Device", default="cpu")
+    parser.add_argument("-i", "--input", help="Input stream (file or device)", default=0)
+    parser.add_argument("-o", "--output", help="Output file")
+    parser.add_argument("-v", "--verbose", help="Verbose mode", action="store_true")
+    parser.add_argument("-u", "--url", help="URL to Race Timing Website")
+    args = parser.parse_args()
+
+    api = website_api.WebsiteAPI(args.url)
+    detector = BibDetector("best.pt", args.device)
+    tracker = BibTracker(api)
+    processor = VideoProcessor(detector, tracker, args.input, args.output, args.verbose)
+    processor.run()
+
+
+if __name__ == "__main__":
+    main()

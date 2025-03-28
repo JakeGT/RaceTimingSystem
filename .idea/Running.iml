@@ -17,7 +17,7 @@
       <sourceFolder url="file://$MODULE_DIR$/running" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/running/venv" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.12 (ACO)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.13 (Running)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="bootstrap" level="application" />
   </component>
