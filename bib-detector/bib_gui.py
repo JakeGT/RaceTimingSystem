@@ -1,6 +1,7 @@
 import sys
 import cv2
 import threading
+import torch
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QLineEdit, QPushButton,
     QFileDialog, QComboBox, QCheckBox, QVBoxLayout, QHBoxLayout, QMessageBox
@@ -18,12 +19,15 @@ class BibDetectorApp(QWidget):
 
         self.device_label = QLabel("Device:")
         self.device_combo = QComboBox()
-        self.device_combo.addItems(["cpu", "cuda:0", "cuda:1"])
+        self.populate_device_list()
 
         self.camera_label = QLabel("Camera Input:")
         self.camera_combo = QComboBox()
         self.populate_camera_inputs()
         self.camera_combo.currentIndexChanged.connect(self.change_camera_preview)
+
+        self.refresh_button = QPushButton("Refresh Cameras")
+        self.refresh_button.clicked.connect(self.populate_camera_inputs)
 
         self.output_label = QLabel("Output File:")
         self.output_line = QLineEdit()
@@ -52,7 +56,7 @@ class BibDetectorApp(QWidget):
 
     def add_widgets(self):
         self.layout.addLayout(self.row(self.device_label, self.device_combo))
-        self.layout.addLayout(self.row(self.camera_label, self.camera_combo))
+        self.layout.addLayout(self.row(self.camera_label, self.camera_combo, self.refresh_button))
         self.layout.addLayout(self.row(self.output_label, self.output_line, self.output_browse))
         self.layout.addLayout(self.row(self.url_label, self.url_line))
         self.layout.addWidget(self.verbose_check)
@@ -65,13 +69,25 @@ class BibDetectorApp(QWidget):
             h.addWidget(w)
         return h
 
+    def populate_device_list(self):
+        self.device_combo.clear()
+        self.device_combo.addItem("cpu")
+        if torch.cuda.is_available():
+            for i in range(torch.cuda.device_count()):
+                self.device_combo.addItem(f"cuda:{i}")
+
     def populate_camera_inputs(self):
         self.camera_combo.clear()
-        for i in range(5):  # check first 5 camera indices
+        for i in range(10):
             cap = cv2.VideoCapture(i)
             if cap.isOpened():
-                self.camera_combo.addItem(f"Camera {i}", i)
+                ret, _ = cap.read()
+                if ret:
+                    self.camera_combo.addItem(f"Camera {i}", i)
                 cap.release()
+
+        if self.camera_combo.count() > 0:
+            self.change_camera_preview()
 
     def browse_output(self):
         filename, _ = QFileDialog.getSaveFileName(self, "Select Output File", filter="MP4 files (*.mp4)")
@@ -82,17 +98,22 @@ class BibDetectorApp(QWidget):
         index = self.camera_combo.currentData()
         if self.cap:
             self.cap.release()
-        self.cap = cv2.VideoCapture(index)
+        if index is not None:
+            self.cap = cv2.VideoCapture(index)
+            if not self.cap.isOpened():
+                QMessageBox.critical(self, "Camera Error", f"Could not open camera {index}.")
+                self.cap = None
 
     def update_preview(self):
         if self.cap and self.cap.isOpened():
             ret, frame = self.cap.read()
-            if ret:
-                frame = cv2.resize(frame, (640, 360))
-                rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                qt_img = QImage(rgb_image.data, rgb_image.shape[1], rgb_image.shape[0],
-                                rgb_image.strides[0], QImage.Format_RGB888)
-                self.preview_label.setPixmap(QPixmap.fromImage(qt_img))
+            if not ret:
+                return
+            frame = cv2.resize(frame, (640, 360))
+            rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            qt_img = QImage(rgb_image.data, rgb_image.shape[1], rgb_image.shape[0],
+                            rgb_image.strides[0], QImage.Format_RGB888)
+            self.preview_label.setPixmap(QPixmap.fromImage(qt_img))
 
     def start_detection(self):
         device = self.device_combo.currentText()
