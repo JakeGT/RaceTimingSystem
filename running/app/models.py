@@ -14,7 +14,7 @@ class Race(models.Model):
     Model representing a race configuration.
     """
 
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
     date = models.DateField()
     start_time = models.TimeField()
     race_category = models.ForeignKey('RaceCategory', on_delete=models.SET_NULL, null=True, blank=True)

@@ -349,6 +349,14 @@ def race_config(request):
             f"Race configuration submitted by {request.user.username} with name: {race_name},"
             f" date: {race_date}, start time: {start_time}, location: {race_location if race_location else 'No location'}")
 
+        if Race.objects.filter(name=race_name).exists():
+            messages.error(request, f"A race named '{race_name}' already exists. Please choose a different name.")
+            return render(request, 'app/race_config.html', {
+                'race_categories': race_categories,
+                'participant_categories': participant_categories,
+                'saved_data': request.POST
+            })
+
         #  create the race without organiser assignment
         race = Race.objects.create(
             name=race_name,
