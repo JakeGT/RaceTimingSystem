@@ -1374,6 +1374,9 @@ def apply_as_organiser(request):
     Applies to be the organiser of a race.
     """
 
+    #  fetch races where the user is not the organiser
+    available_races = Race.objects.exclude(organiser=request.user)
+
     if request.method == 'POST':
         form = OrganiserApplicationForm(request.POST)
         if form.is_valid():
@@ -1384,7 +1387,9 @@ def apply_as_organiser(request):
             return redirect('race_organiser_dashboard')
     else:
         form = OrganiserApplicationForm()
-    return render(request, 'app/apply_as_organiser.html', {'form': form})
+
+    return render(request, 'app/apply_as_organiser.html', {'form': form, 'available_races': available_races})
+
 
 
 @login_required
