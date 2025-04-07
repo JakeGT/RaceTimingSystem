@@ -34,14 +34,14 @@
                         <!-- Race Date -->
                         <div class="form-group mb-4">
                             <label for="race_date">Race Date</label>
-                            <input type="date" name="race_date" id="race_date" class="form-control" 
+                            <input type="text" name="race_date" id="race_date" class="form-control" 
                                 value="{{ saved_data.race_date|default:'' }}" required>
                         </div>
 
                         <!-- Race Start Time -->
                         <div class="form-group mb-4">
                             <label for="start_time">Start Time</label>
-                            <input type="time" name="start_time" id="start_time" class="form-control" 
+                            <input type="text" name="start_time" id="start_time" class="form-control" 
                                 value="{{ saved_data.start_time|default:'' }}" required>
                         </div>
 
@@ -84,12 +84,31 @@
     </div>
 </div>
 
-<!-- Auto-Save Form to localStorage -->
+<!-- Flatpickr styles and scripts -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<!-- Auto-Save Form to localStorage and Flatpickr setup -->
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const form = document.querySelector('form');
     const fields = ['race_name', 'race_date', 'start_time', 'race_category', 'participant_categories'];
 
+    // Init Flatpickr
+    flatpickr("#race_date", {
+        dateFormat: "Y-m-d",
+        allowInput: true
+    });
+
+    flatpickr("#start_time", {
+        enableTime: true,
+        noCalendar: true,
+        dateFormat: "H:i",
+        time_24hr: true,
+        allowInput: true
+    });
+
+    // Load saved data from localStorage
     fields.forEach(field => {
         const element = document.getElementById(field);
         if (!element) return;
@@ -117,6 +136,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    // Clear saved form on submit
     form.addEventListener('submit', () => {
         fields.forEach(field => localStorage.removeItem(field));
     });
