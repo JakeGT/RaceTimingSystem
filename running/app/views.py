@@ -22,6 +22,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.dateparse import parse_time
 from datetime import datetime, date, timedelta
+from django.utils.timezone import make_aware
 from django.contrib.auth.views import PasswordResetView
 from django.urls import reverse_lazy
 from django.contrib.messages.views import SuccessMessageMixin
@@ -306,36 +307,30 @@ def race_config(request):
     """
     Views for race configuration page
     """
-
     logger.info(f"Accessing race configuration page by user: {request.user.username}")
 
-    #  get all race categories and participant categories
     race_categories = RaceCategory.objects.all()
     participant_categories = ParticipantCategory.objects.all()
-
-    #  retrieve any saved progress from the session
     saved_data = request.session.get('race_config_data', {})
 
-    #  if the user submits the form (POST request)
     if request.method == 'POST':
         race_name = request.POST['race_name']
-        race_date = request.POST['race_date']
+        race_date_str = request.POST['race_date']
         start_time = request.POST['start_time']
         no_location = request.POST.get('no_location', False)
         race_location = request.POST.get('race_location', '')
         latitude = request.POST.get('latitude')
         longitude = request.POST.get('longitude')
 
-        #  if box is checked don't use location data
         if no_location:
             race_location = None
             latitude = None
             longitude = None
 
-        #  save the data to the session
+        #  save form values in session
         request.session['race_config_data'] = {
             'race_name': race_name,
-            'race_date': race_date,
+            'race_date': race_date_str,
             'start_time': start_time,
             'race_category': request.POST.get('race_category', None),
             'participant_categories': request.POST.getlist('participant_categories'),
@@ -345,9 +340,29 @@ def race_config(request):
             'no_location': no_location
         }
 
+        #  validate race date
+        try:
+            race_date = make_aware(datetime.strptime(race_date_str, "%Y-%m-%d"))
+            now = datetime.now().astimezone()
+            if race_date.date() < now.date():
+                messages.error(request, "Race date cannot be in the past.")
+                return render(request, 'app/race_config.html', {
+                    'race_categories': race_categories,
+                    'participant_categories': participant_categories,
+                    'saved_data': request.POST
+                })
+        except ValueError:
+            messages.error(request, "Invalid race date format. Please use YYYY-MM-DD.")
+            return render(request, 'app/race_config.html', {
+                'race_categories': race_categories,
+                'participant_categories': participant_categories,
+                'saved_data': request.POST
+            })
+
         logger.info(
             f"Race configuration submitted by {request.user.username} with name: {race_name},"
-            f" date: {race_date}, start time: {start_time}, location: {race_location if race_location else 'No location'}")
+            f" date: {race_date_str}, start time: {start_time}, location: {race_location or 'No location'}"
+        )
 
         if Race.objects.filter(name=race_name).exists():
             messages.error(request, f"A race named '{race_name}' already exists. Please choose a different name.")
@@ -357,7 +372,6 @@ def race_config(request):
                 'saved_data': request.POST
             })
 
-        #  create the race without organiser assignment
         race = Race.objects.create(
             name=race_name,
             date=race_date,
@@ -366,14 +380,10 @@ def race_config(request):
             longitude=longitude,
             address=race_location
         )
-
-        #  assign the organiser
         race.organiser.add(request.user)
-
         logger.info(f"New race created: {race.name} with ID: {race.id} by {request.user.username}")
 
-        #  add selected race category
-        race_category_id = request.POST.get('race_category', None)
+        race_category_id = request.POST.get('race_category')
         if race_category_id:
             try:
                 race_category = RaceCategory.objects.get(id=race_category_id)
@@ -383,27 +393,22 @@ def race_config(request):
             except RaceCategory.DoesNotExist:
                 logger.error(f"Race category with ID {race_category_id} does not exist.")
 
-        #  add participant categories (use the many-to-many relationship)
-        participant_category_ids = request.POST.getlist('participant_categories')
-        if participant_category_ids:
-            for category_id in participant_category_ids:
-                try:
-                    participant_category = ParticipantCategory.objects.get(id=category_id)
-                    race.categories.add(participant_category)  # Adds the category properly to the many-to-many field
-                    logger.info(f"Added participant category {participant_category.name} to race {race.name}")
-                except ParticipantCategory.DoesNotExist:
-                    logger.error(f"Participant category with ID {category_id} does not exist.")
+        for category_id in request.POST.getlist('participant_categories'):
+            try:
+                participant_category = ParticipantCategory.objects.get(id=category_id)
+                race.categories.add(participant_category)
+                logger.info(f"Added participant category {participant_category.name} to race {race.name}")
+            except ParticipantCategory.DoesNotExist:
+                logger.error(f"Participant category with ID {category_id} does not exist.")
 
-        #  clear the session data after the form is submitted
         request.session.pop('race_config_data', None)
-
-        #  redirect to the dashboard
         logger.info(f"Redirecting user {request.user.username} to the dashboard after race creation.")
         return redirect('/dashboard')
 
     logger.info(
         f"Rendering race configuration form with {len(race_categories)} race categories"
-        f" and {len(participant_categories)} participant categories.")
+        f" and {len(participant_categories)} participant categories."
+    )
 
     return render(request, 'app/race_config.html', {
         'race_categories': race_categories,

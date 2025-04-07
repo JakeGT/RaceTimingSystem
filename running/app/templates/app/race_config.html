@@ -104,7 +104,7 @@
                         <div id="location-fields" class="mt-4">
                             <div class="form-group">
                                 <label for="race_location">Race Location</label>
-                                <input type="text" id="race_location" class="form-control" placeholder="Select the race location" 
+                                <input type="text" id="race_location" class="form-control" placeholder="Select the race location"
                                     value="{{ saved_data.race_location|default:'' }}" readonly required>
                             </div>
 
@@ -134,22 +134,25 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        
-        //  initialise Flatpickr for date and time
+
+        // Initialise Flatpickr for date
         flatpickr("#race_date", {
-            dateFormat: "Y-m-d",
-            allowInput: true
+            dateFormat: "Y-m-d", 
+            allowInput: true, 
+            minDate: "today" 
         });
-
+        
+        // Initialise Flatpickr for start time
         flatpickr("#start_time", {
-            enableTime: true,
+            enableTime: true, 
             noCalendar: true,
-            dateFormat: "H:i",
+            dateFormat: "H:i", 
             time_24hr: true,
-            allowInput: true
+            allowInput: true,
+            minTime: new Date().toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit'}) 
         });
 
-        //  toggle location fields visibility based on 'No location required' checkbox
+        
         const noLocationCheckbox = document.getElementById('no_location');
         const locationFields = document.getElementById('location-fields');
         const mapDiv = document.getElementById('map');
@@ -191,7 +194,7 @@
             const position = e.target.getLatLng();
             document.getElementById("latitude").value = position.lat;
             document.getElementById("longitude").value = position.lng;
-            
+
             fetch(`https://nominatim.openstreetmap.org/reverse?lat=${position.lat}&lon=${position.lng}&format=json`)
                 .then(response => response.json())
                 .then(data => {
