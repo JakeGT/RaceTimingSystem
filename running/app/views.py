@@ -852,7 +852,7 @@ def race_detail(request, race_id):
         location_info = "None"
 
     #  check if the race has a category
-    category_info = race.categories if race.categories else "None"
+    category_info = race.race_category if race.race_category else "None"
 
     return render(request, 'app/race_detail.html', {
         'race': race,
@@ -918,35 +918,25 @@ def upcoming_races(request):
 
 def organiser_race_detail(request, race_id):
     """
-    Defines the view for an organiser viewing a specific race.
+    View for an organiser to see a specific race and its participants.
     """
 
     logger.info(f"Accessing organiser race detail view for race_id={race_id}")
 
-    #  get the race object
+    #  fetch the race object
     race = get_object_or_404(Race, id=race_id)
-    logger.info(f"Race details fetched: {race.name} - {race.date} with {race.participants.count()} participants")
+    logger.info(f"Race details fetched: {race.name} - {race.date}")
 
-    if request.method == 'POST':
-        participant_id = request.POST.get('participant_id')
-        status = request.POST.get('status')
+    #  fetch all participants for the race
+    participants = Participant.objects.filter(race=race)
+    participants_count = participants.count()
+    logger.info(f"Displaying {participants_count} participants for race: {race.name}")
 
-        try:
-            #  get the participant and update status
-            participant = race.participants.get(id=participant_id)
-            logger.info(f"Updating status for participant {participant.name} (ID: {participant_id}) to {status}")
-
-            participant.status = status
-            participant.save()
-            logger.info(f"Participant {participant.name} (ID: {participant_id}) status updated to {status}")
-        except race.participants.model.DoesNotExist:
-            logger.error(f"Participant with ID {participant_id} not found in race {race.name}")
-
-    participants = race.participants.all()
-    logger.info(f"Rendering race detail page with {participants.count()} participants")
-
-    return render(request, 'app/organiser_race_detail.html',
-                  {'race': race, 'participants': participants})
+    return render(request, 'app/organiser_race_detail.html', {
+        'race': race,
+        'participants': participants,
+        'participants_count': participants_count,
+    })
 
 
 @login_required(login_url="login")
@@ -1034,23 +1024,6 @@ def profile_view(request):
     logger.info(f"User {request.user.username} (ID: {request.user.id}) is registered for {races.count()} races.")
 
     return render(request, "app/profile.html", {"participant": participant, "races": races})
-
-
-@login_required
-def organiser_race_detail(request, race_id):
-    """
-    Defines the organiser view for a single race.
-    """
-
-    logger.info(f"Organiser {request.user.username} (ID: {request.user.id}) is viewing details for race {race_id}.")
-
-    race = get_object_or_404(Race, id=race_id)
-
-    logger.info(f"Race details loaded for race ID {race.id}, race name: {race.name}")
-
-    return render(request, 'app/organiser_race_detail.html', {
-        'race': race
-    })
 
 
 @login_required

@@ -14,6 +14,12 @@
             {{ form.start_time }}
         </div>
 
+        {% if form.errors %}
+            <div class="alert alert-danger mt-3">
+                {{ form.errors }}
+            </div>
+        {% endif %}
+
         <div class="text-center mt-4">
             <button type="submit" class="btn btn-primary">Save Changes</button>
         </div>

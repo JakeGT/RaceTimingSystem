@@ -1,4 +1,3 @@
-<!-- running/app/templates/app/organiser_race_detail.html -->
 {% extends 'base.html' %}
 
 {% block title %}Race Details - Organiser{% endblock %}
@@ -13,14 +12,17 @@
         <a href="{% url 'upload_participants' %}" class="btn btn-primary btn-lg">Update Participants</a>
         <a href="{% url 'upload_results' %}" class="btn btn-secondary btn-lg">Update Results</a>
         <a href="{% url 'adjust_start_time' race.id %}" class="btn btn-warning btn-lg">Adjust Start Time</a>
+        <a href="{% url 'gallery_view' race.id %}" class="btn btn-info btn-lg">Manual Bib Validation</a>
     </div>
 
-    <!-- Participants Table or No Participants Message -->
+    <!-- Participants Table -->
     {% if participants %}
-        <table class="table table-bordered">
-            <thead>
+        <table class="table table-bordered align-middle">
+            <thead class="table-light">
                 <tr>
                     <th>Name</th>
+                    <th>Age</th>
+                    <th>Gender</th>
                     <th>Status</th>
                 </tr>
             </thead>
@@ -28,7 +30,9 @@
                 {% for participant in participants %}
                     <tr>
                         <td>{{ participant.name }}</td>
-                        <td>{{ participant.status }}</td>
+                        <td>{{ participant.age }}</td>
+                        <td>{{ participant.gender|capfirst }}</td>
+                        <td>{{ participant.status|capfirst }}</td>
                     </tr>
                 {% endfor %}
             </tbody>
