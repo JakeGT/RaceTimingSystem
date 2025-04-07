@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}Apply to Manage a Race{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h2>Apply to Become a Race Organiser</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Submit Application</button>
+    </form>
+</div>
+{% endblock %}

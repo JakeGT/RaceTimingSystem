@@ -9,7 +9,7 @@ from django.core.files.base import ContentFile
 from django.shortcuts import get_object_or_404
 from google.auth.transport import requests
 
-from .models import Participant, RaceResult, Race, ParticipantCategory, RaceCategory, Image
+from .models import Participant, RaceResult, Race, ParticipantCategory, RaceCategory, Image, OrganiserApplication
 from .utils.logger import setup_logging
 from django.contrib.sessions.models import Session
 from django.utils import timezone
@@ -25,7 +25,7 @@ from datetime import datetime, date, timedelta
 from django.contrib.auth.views import PasswordResetView
 from django.urls import reverse_lazy
 from django.contrib.messages.views import SuccessMessageMixin
-from .forms import ParticipantCategoryForm, RaceCategoryForm, ImageUploadForm, AdjustStartTimeForm
+from .forms import ParticipantCategoryForm, RaceCategoryForm, ImageUploadForm, AdjustStartTimeForm, OrganiserApplicationForm
 from django.shortcuts import render
 from django.shortcuts import redirect
 from django.contrib.auth import login
@@ -305,7 +305,7 @@ def race_config(request):
     """
     Views for race configuration page
     """
-    
+
     logger.info(f"Accessing race configuration page by user: {request.user.username}")
 
     #  get all race categories and participant categories
@@ -348,17 +348,20 @@ def race_config(request):
             f"Race configuration submitted by {request.user.username} with name: {race_name},"
             f" date: {race_date}, start time: {start_time}, location: {race_location if race_location else 'No location'}")
 
-        #  create a new race object
+        #  create the race without organiser assignment
         race = Race.objects.create(
             name=race_name,
             date=race_date,
             start_time=start_time,
             categories=",".join(request.POST.getlist('participant_categories')),
-            organiser=request.user,
             latitude=latitude,
             longitude=longitude,
             address=race_location
         )
+
+        #  assign the organiser
+        race.organiser.add(request.user)
+
         logger.info(f"New race created: {race.name} with ID: {race.id} by {request.user.username}")
 
         #  add selected race category
@@ -1345,3 +1348,75 @@ def custom_403(request, exception):
 
     #  render the custom 403 page
     return render(request, '403.html', status=403)
+
+
+@login_required
+def organiser_delete_race(request, race_id):
+    """
+    Deletes a race that the logged-in user is organising.
+    """
+
+    race = get_object_or_404(Race, id=race_id)
+
+    #  check if the user is in the organisers list
+    if request.user not in race.organiser.all():
+        messages.error(request, "You are not authorised to delete this race.")
+        return redirect('race_organiser_dashboard')
+
+    #  delete the race
+    race.delete()
+    messages.success(request, "Race has been deleted successfully.")
+    return redirect('race_organiser_dashboard')
+
+@login_required
+def apply_as_organiser(request):
+    """
+    Applies to be the organiser of a race.
+    """
+
+    if request.method == 'POST':
+        form = OrganiserApplicationForm(request.POST)
+        if form.is_valid():
+            app = form.save(commit=False)
+            app.user = request.user
+            app.save()
+            messages.success(request, "Your application has been submitted.")
+            return redirect('race_organiser_dashboard')
+    else:
+        form = OrganiserApplicationForm()
+    return render(request, 'app/apply_as_organiser.html', {'form': form})
+
+
+@login_required
+def view_applications(request):
+    """
+    views the organiser applications for a race.
+    """
+
+    races = request.user.organised_races.all()
+    applications = OrganiserApplication.objects.filter(race__in=races, status='pending')
+    return render(request, 'app/organiser_applications.html', {'applications': applications})
+
+
+@login_required
+def handle_application(request, app_id, action):
+    """
+    approves or denies an application to become the race organiser.
+    """
+
+    app = get_object_or_404(OrganiserApplication, id=app_id)
+
+    #  ensure current user is an organiser of the race
+    if request.user not in app.race.organiser.all():
+        return redirect('organiser_dashboard')
+
+    if action == 'approve':
+        app.status = 'approved'
+        app.race.organiser.add(app.user)
+        messages.success(request, f"{app.user.username} is now an organiser for {app.race.name}.")
+    elif action == 'deny':
+        app.status = 'denied'
+        messages.info(request, f"Application by {app.user.username} has been denied.")
+
+    app.save()
+    return redirect('view_applications')

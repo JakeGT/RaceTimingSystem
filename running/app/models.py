@@ -19,7 +19,11 @@ class Race(models.Model):
     start_time = models.TimeField()
     categories = models.TextField()
 
-    organiser = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    organiser = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name='organised_races',
+        blank=True
+    )
     participants = models.ManyToManyField('Participant', related_name='races', blank=True)
 
     is_completed = models.BooleanField(default=False)
@@ -178,3 +182,40 @@ class Image(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.race.name}) - {self.timestamp}"
+
+
+class OrganiserApplication(models.Model):
+    """
+    Model representing an application to become a race organiser.
+    """
+
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('denied', 'Denied'),
+    ]
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='organiser_applications'
+    )
+    race = models.ForeignKey(
+        Race,
+        on_delete=models.CASCADE,
+        related_name='organiser_applications'
+    )
+    message = models.TextField(blank=True)
+    status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default='pending'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'race')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user} - {self.race} ({self.status})"

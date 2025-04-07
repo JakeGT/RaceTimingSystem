@@ -8,37 +8,33 @@
     <h1 class="text-center">Manage Participants for {{ race.name }}</h1>
     <p class="lead text-muted text-center">Manage race details and participants.</p>
 
-    <!-- Update Participants Button -->
-    <div class="text-center mb-4">
-        <a href="{% url 'upload_participants' %}" class="btn btn-primary">Update Participants</a>
+    <!-- Button row -->
+    <div class="d-flex justify-content-center gap-3 mb-4">
+        <a href="{% url 'upload_participants' %}" class="btn btn-primary btn-lg">Update Participants</a>
+        <a href="{% url 'upload_results' %}" class="btn btn-secondary btn-lg">Update Results</a>
+        <a href="{% url 'adjust_start_time' race.id %}" class="btn btn-warning btn-lg">Adjust Start Time</a>
     </div>
 
-    <!-- Update Results Button -->
-    <div class="text-center mb-4">
-        <a href="{% url 'upload_results' %}" class="btn btn-secondary">Update Results</a>
-    </div>
-
-    <!-- Adjust Start Time Button -->
-    <div class="text-center mb-4">
-        <a href="{% url 'adjust_start_time' race.id %}" class="btn btn-warning">Adjust Start Time</a>
-    </div>
-
-    <!-- Participants Table -->
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for participant in participants %}
+    <!-- Participants Table or No Participants Message -->
+    {% if participants %}
+        <table class="table table-bordered">
+            <thead>
                 <tr>
-                    <td>{{ participant.name }}</td>
-                    <td>{{ participant.status }}</td>
+                    <th>Name</th>
+                    <th>Status</th>
                 </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                {% for participant in participants %}
+                    <tr>
+                        <td>{{ participant.name }}</td>
+                        <td>{{ participant.status }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="text-center text-muted">There are no participants for this race yet.</p>
+    {% endif %}
 </div>
 {% endblock %}

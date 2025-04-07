@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Organiser Applications{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h2>Pending Organiser Applications</h2>
+    {% if applications %}
+        <ul class="list-group">
+            {% for app in applications %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>{{ app.user.username }}</strong> applied to manage <em>{{ app.race.name }}</em><br>
+                        <small>{{ app.message }}</small>
+                    </div>
+                    <div>
+                        <a href="{% url 'handle_application' app.id 'approve' %}" class="btn btn-success btn-sm">Approve</a>
+                        <a href="{% url 'handle_application' app.id 'deny' %}" class="btn btn-danger btn-sm">Deny</a>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="text-muted">No pending applications.</p>
+    {% endif %}
+</div>
+{% endblock %}

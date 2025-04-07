@@ -109,6 +109,18 @@ urlpatterns = [
 
     #  manual bib validation
     path('gallery/<int:race_id>/', views.gallery_view, name='gallery_view'),
+
+    #  race deletion route
+    path('race/<int:race_id>/delete/', views.organiser_delete_race, name='organiser_delete_race'),
+
+    #  organiser application page
+    path('organiser/apply/', views.apply_as_organiser, name='apply_as_organiser'),
+
+    #  organiser application viewing page
+    path('organiser/applications/', views.view_applications, name='view_applications'),
+
+    #  individual organiser application page
+    path('organiser/applications/<int:app_id>/<str:action>/', views.handle_application, name='handle_application'),
 ]
 
 if settings.DEBUG:
