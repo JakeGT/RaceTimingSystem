@@ -115,6 +115,7 @@
                             <thead class="bg-dark text-white">
                                 <tr>
                                     <th>Rank</th>
+                                    <th>Bib Number</th>  <!-- Added Bib Number Column -->
                                     <th>Name</th>
                                     <th>Age</th>
                                     <th>Gender</th>
@@ -125,6 +126,7 @@
                                 {% for result in race_results %}
                                     <tr>
                                         <td>{{ forloop.counter }}</td>
+                                        <td>{{ result.participant.race_number }}</td>  <!-- Display Bib Number -->
                                         <td>{{ result.participant.name }}</td>
                                         <td>{{ result.participant.age }}</td>
                                         <td>{{ result.participant.gender }}</td>

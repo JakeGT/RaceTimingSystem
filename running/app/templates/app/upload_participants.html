@@ -5,6 +5,20 @@
 {% block content %}
 <div class="container mt-5">
 
+    <!-- Message Box -->
+    {% if messages %}
+        <div class="row mt-3">
+            <div class="col-12">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
     <!-- Page Header -->
     <div class="row">
         <div class="col-12">

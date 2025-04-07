@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}Add New Category{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <!-- Page Header -->
+    <h2 class="text-center mb-4">Add New Category</h2>
+
+    <!-- Card for Form -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h4 class="card-title mb-0">Category Details</h4>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group mb-4">
+                    {{ form.as_p }}
+                </div>
+
+                <!-- Submit Button -->
+                <div class="text-center">
+                    <button type="submit" class="btn btn-success btn-lg">Save Category</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Back Buttons -->
+    <div class="text-center mt-4">
+        <a href="{% url 'category_list' %}" class="btn btn-secondary btn-lg">Back to Categories</a>
+        <a href="{% url 'race_config' %}" class="btn btn-secondary btn-lg ml-2">Back to Race Configuration</a>
+    </div>
+</div>
+{% endblock %}

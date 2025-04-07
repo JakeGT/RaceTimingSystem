@@ -1,4 +1,3 @@
-<!-- running/app/templates/app/race_config.html -->
 {% extends 'base.html' %}
 
 {% block title %}Race Configuration - Race Timing System{% endblock %}
@@ -43,10 +42,32 @@
                             <input type="time" name="start_time" id="start_time" class="form-control" required>
                         </div>
 
-                        <!-- Optional: Add race categories later -->
+                        <!-- Select Race Category (Single Selection) -->
                         <div class="form-group mb-4">
-                            <label for="race_categories">Race Categories (Optional)</label>
-                            <p class="form-text text-muted">You can add categories later after the race is created.</p>
+                            <label for="race_category">Race Category</label>
+                            <select name="race_category" id="race_category" class="form-control">
+                                <option value="" selected>None</option>  <!-- Default option for no category -->
+                                {% for category in race_categories %}
+                                    <option value="{{ category.id }}">{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Select Participant Categories (Multiple Selection) -->
+                        <div class="form-group mb-4">
+                            <label for="participant_categories">Participant Categories</label>
+                            <select name="participant_categories" id="participant_categories" class="form-control" multiple>
+                                <option value="" disabled>None</option>  <!-- Default option for no category -->
+                                {% for category in participant_categories %}
+                                    <option value="{{ category.id }}">{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Buttons to Manage Categories -->
+                        <div class="d-flex justify-content-between mb-4">
+                            <a href="{% url 'category_list' %}" class="btn btn-info">Manage Participant Categories</a>
+                            <a href="{% url 'race_category_list' %}" class="btn btn-warning">Manage Race Categories</a>
                         </div>
 
                         <!-- Submit Button -->

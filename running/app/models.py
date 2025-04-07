@@ -2,7 +2,10 @@
 
 # -------------------------------------------------- Import Libraries --------------------------------------------------
 from django.db import models
-from django.contrib.auth.models import User
+from django.conf import settings
+from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import BaseUserManager
+from django.utils.translation import gettext_lazy as _
 
 
 # ------------------------------------------------- Class Declarations -------------------------------------------------
@@ -16,7 +19,7 @@ class Race(models.Model):
     start_time = models.TimeField()
     categories = models.TextField()
 
-    organiser = models.ForeignKey(User, on_delete=models.CASCADE, related_name='organised_races')
+    organiser = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     participants = models.ManyToManyField('Participant', related_name='races', blank=True)
 
     is_completed = models.BooleanField(default=False)
@@ -27,10 +30,10 @@ class Race(models.Model):
 
 class Participant(models.Model):
     """
-    Model representing the Participant of a race
+    Model representing the Participant of a race.
     """
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='participant', null=True, blank=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, blank=True, null=True)
     race = models.ForeignKey(Race, on_delete=models.CASCADE, related_name='race_participants')
     name = models.CharField(max_length=100)
     race_number = models.CharField(max_length=10)
@@ -39,7 +42,9 @@ class Participant(models.Model):
     club_name = models.CharField(max_length=100, blank=True, null=True)
     team_name = models.CharField(max_length=100, blank=True, null=True)
     age_category = models.CharField(max_length=50, blank=True, null=True)
-    status = models.CharField(max_length=10, choices=[('pending', 'Pending'), ('approved', 'Approved'), ('denied', 'Denied')], default='pending')
+    status = models.CharField(max_length=10,
+                              choices=[('pending', 'Pending'), ('approved', 'Approved'), ('denied', 'Denied')],
+                              default='pending')
 
     class Meta:
         unique_together = ('race', 'race_number')
@@ -66,8 +71,104 @@ class Profile(models.Model):
     Model for storing additional user profile settings.
     """
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     notify_race_updates = models.BooleanField(default=True)
 
     def __str__(self):
-        return self.user.username
+        return self.user.name
+
+
+class ParticipantCategory(models.Model):
+    """
+    Model for custom Participant category (e.g., "veteran" or "junior").
+    """
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
+
+
+class RaceCategory(models.Model):
+    """
+    Model for custom Race Category (e.g., "5k", "10k", "Half-Marathon").
+    """
+
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
+
+
+class CustomUserManager(BaseUserManager):
+    """
+    Custom manager for CustomUser model.
+    """
+
+    def create_user(self, username, email, password=None, **extra_fields):
+        """
+        Creates and returns a regular user with an email, username, and password.
+        """
+
+        if not email:
+            raise ValueError(_('The Email field must be set'))
+
+        email = self.normalize_email(email)
+        user = self.model(username=username, email=email, **extra_fields)
+
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, username, email, password=None, **extra_fields):
+        """
+        Creates and returns a superuser with an email, username, and password.
+        """
+
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError(_('Superuser must have is_staff=True.'))
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError(_('Superuser must have is_superuser=True.'))
+
+        return self.create_user(username, email, password, **extra_fields)
+
+
+class CustomUser(AbstractUser):
+    """
+    Custom User model with additional fields like profile picture and name.
+    """
+
+    name = models.CharField(max_length=255, blank=True, null=True)
+    profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
+    objects = CustomUserManager()
+
+    def save(self, *args, **kwargs):
+        """
+        Automatically set the `name` field to combine `first_name` and `last_name`.
+        """
+
+        if self.first_name and self.last_name:
+            self.name = f"{self.first_name} {self.last_name}"
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.username
+
+
+class Image(models.Model):
+    """
+    Model representing an image associated with a race.
+    """
+
+    name = models.CharField(max_length=100)
+    image = models.ImageField(upload_to='images/')
+    race = models.ForeignKey(Race, on_delete=models.CASCADE, related_name='race_images')  # Link to a specific race
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.race.name}) - {self.timestamp}"

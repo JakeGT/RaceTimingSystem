@@ -7,6 +7,7 @@ from django.contrib import admin
 #  used for admin record management
 from .models import Participant, RaceResult
 
+
 # ------------------------------------------------- Class Declarations -------------------------------------------------
 @admin.register(Participant)
 class ParticipantAdmin(admin.ModelAdmin):
