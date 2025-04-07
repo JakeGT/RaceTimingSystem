@@ -396,7 +396,7 @@ def race_config(request):
         for category_id in request.POST.getlist('participant_categories'):
             try:
                 participant_category = ParticipantCategory.objects.get(id=category_id)
-                race.categories.add(participant_category)
+                race.participant_categories.add(participant_category)
                 logger.info(f"Added participant category {participant_category.name} to race {race.name}")
             except ParticipantCategory.DoesNotExist:
                 logger.error(f"Participant category with ID {category_id} does not exist.")
