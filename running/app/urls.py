@@ -121,6 +121,12 @@ urlpatterns = [
 
     #  individual organiser application page
     path('organiser/applications/<int:app_id>/<str:action>/', views.handle_application, name='handle_application'),
+
+    #  log in with facebook account route
+    path('facebook-login/', lambda request: redirect('/accounts/facebook/login/'), name='facebook_login'),
+
+    #  log in with apple account route
+    path('apple-login/', lambda request: redirect('/accounts/apple/login/'), name='apple_login'),
 ]
 
 if settings.DEBUG:

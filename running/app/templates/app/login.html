@@ -51,13 +51,25 @@
                         <a href="{% url 'password_reset' %}">Forgot your password?</a>
                     </p>
 
-                    <!-- Google Sign-In Integration -->
-                    {% if not request.session.user_data %}
+                    <!-- Social Sign-In Buttons -->
                     <div class="text-center mt-4">
-                        <p>Or sign in with Google:</p>
-                        <div id="google-signin-button"></div>
+                        <p>Or sign in with:</p>
+
+                        <!-- Google -->
+                        <div id="google-signin-button" class="mb-2"></div>
+
+                        <!-- Facebook -->
+                        <a href="{% url 'facebook_login' %}" class="btn btn-primary w-100 mb-2" style="background-color: #3b5998;">
+                            <i class="bi bi-facebook me-2"></i> Sign in with Facebook
+                        </a>
+
+                        <!-- Apple -->
+                        <a href="{% url 'apple_login' %}" class="btn btn-dark w-100">
+                            <i class="bi bi-apple me-2"></i> Sign in with Apple
+                        </a>
                     </div>
-                    {% else %}
+
+                    {% if request.session.user_data %}
                     <div class="text-center mt-4">
                         <p>Hi {{ request.session.user_data.given_name }} 🙂</p>
                         <p>Your email is {{ request.session.user_data.email }}</p>
@@ -72,7 +84,7 @@
     </div>
 </div>
 
-<!-- Include the Google Sign-In script -->
+<!-- Google Sign-In Script -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
   window.onload = function() {
@@ -89,7 +101,6 @@
 
   function handleCredentialResponse(response) {
     const token = response.credential;
-
     window.location.href = `/google-login/callback/?credential=${token}`;
   }
 </script>
