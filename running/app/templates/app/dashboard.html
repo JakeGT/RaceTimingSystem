@@ -34,12 +34,12 @@
     <!-- Search and Filter Section -->
     <div class="row mt-4">
         <div class="col-12 text-center">
-            <form method="get" action="{% url 'dashboard' %}">
+            <form id="race-filter-form" method="get" action="{% url 'dashboard' %}">
                 <div class="d-flex justify-content-between">
                     <!-- Race Search -->
                     <div class="form-group">
                         <label for="race-search" class="form-label">Search for a Race:</label>
-                        <input type="text" id="race-search" name="race_search" class="form-control w-auto" placeholder="Search by race name">
+                        <input type="text" id="race-search" name="race_search" class="form-control w-auto" placeholder="Search by race name" value="{{ request.GET.race_search }}">
                     </div>
 
                     <!-- Filter by Completion Status -->
@@ -47,11 +47,7 @@
                         <label for="completed" class="form-label">Show Completed Races Only:</label>
                         <input type="checkbox" id="completed" name="completed" {% if request.GET.completed %} checked {% endif %}>
                     </div>
-
-                    <!-- Submit Button -->
-                    <div class="form-group align-self-end">
-                        <button type="submit" class="btn btn-primary">Search</button>
-                    </div>
+                
                 </div>
             </form>
         </div>
@@ -74,4 +70,38 @@
     </div>
 
 </div>
+
+<!-- Auto-submit functionality -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const checkbox = document.getElementById('completed');
+        const searchInput = document.getElementById('race-search');
+        const form = document.getElementById('race-filter-form');
+
+        // Auto-submit on checkbox toggle
+        checkbox.addEventListener('change', function () {
+            form.submit();
+        });
+
+        // Debounce function to limit form submission frequency
+        let debounceTimer;
+        searchInput.addEventListener('input', function () {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                form.submit();
+            }, 1000);
+        });
+
+        // Focus the search input after the page reloads and position the cursor at the end
+        if (searchInput) {
+            setTimeout(() => {
+                searchInput.focus();
+                // Move cursor to the end of the input field
+                searchInput.setSelectionRange(searchInput.value.length, searchInput.value.length);
+            }, 10);  // Delayed slightly to allow the page reload to complete
+        }
+    });
+</script>
+
+    
 {% endblock %}

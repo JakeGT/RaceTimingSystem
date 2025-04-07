@@ -694,13 +694,14 @@ def race_detail(request, race_id):
     sort_by = request.GET.get('sort_by', '')
     sort_direction = request.GET.get('sort_direction', 'asc')
 
+    #  initialise gender and age to None if not provided in the GET request
+    gender = request.GET.get('gender', None)
+    age = request.GET.get('age', None)
+
     if race_results.exists():
         logger.info(f"Found {len(race_results)} race results for race: {race.name}")
 
         #  apply filters
-        gender = request.GET.get('gender')
-        age = request.GET.get('age')
-
         if gender:
             race_results = race_results.filter(participant__gender=gender)
             logger.info(f"Filtering race results by gender: {gender}")

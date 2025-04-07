@@ -1,0 +1,7 @@
+{% for race in races %}
+    <a href="{% url 'race_detail' race.id %}" class="list-group-item list-group-item-action">
+        {{ race.name }} - {{ race.date }}
+    </a>
+{% empty %}
+    <p>No races found. Please add a race.</p>
+{% endfor %}
