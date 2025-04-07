@@ -17,7 +17,8 @@ class Race(models.Model):
     name = models.CharField(max_length=255)
     date = models.DateField()
     start_time = models.TimeField()
-    categories = models.TextField()
+    race_category = models.ForeignKey('RaceCategory', on_delete=models.SET_NULL, null=True, blank=True)
+    participant_categories = models.ManyToManyField('ParticipantCategory', related_name='races')
 
     organiser = models.ManyToManyField(
         settings.AUTH_USER_MODEL,

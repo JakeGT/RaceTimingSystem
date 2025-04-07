@@ -300,6 +300,7 @@ def dashboard(request):
         'races': races,
     })
 
+
 @login_required
 def race_config(request):
     """
@@ -353,7 +354,6 @@ def race_config(request):
             name=race_name,
             date=race_date,
             start_time=start_time,
-            categories=",".join(request.POST.getlist('participant_categories')),
             latitude=latitude,
             longitude=longitude,
             address=race_location
@@ -375,13 +375,13 @@ def race_config(request):
             except RaceCategory.DoesNotExist:
                 logger.error(f"Race category with ID {race_category_id} does not exist.")
 
-        #  add participant categories
+        #  add participant categories (use the many-to-many relationship)
         participant_category_ids = request.POST.getlist('participant_categories')
         if participant_category_ids:
             for category_id in participant_category_ids:
                 try:
                     participant_category = ParticipantCategory.objects.get(id=category_id)
-                    race.participants.add(participant_category)
+                    race.categories.add(participant_category)  # Adds the category properly to the many-to-many field
                     logger.info(f"Added participant category {participant_category.name} to race {race.name}")
                 except ParticipantCategory.DoesNotExist:
                     logger.error(f"Participant category with ID {category_id} does not exist.")
@@ -402,8 +402,6 @@ def race_config(request):
         'participant_categories': participant_categories,
         'saved_data': saved_data
     })
-
-
 
 
 @login_required
@@ -524,6 +522,7 @@ def upload_participants(request):
             logger.error(f"Invalid race selected. Race ID: {race_id} does not exist.")
             return redirect('upload_participants')
 
+        # Handle CSV file upload
         if 'file' in request.FILES:
             csv_file = request.FILES['file']
             logger.info(f"CSV file '{csv_file.name}' received for upload.")
@@ -619,10 +618,57 @@ def upload_participants(request):
 
             return redirect('upload_results')
 
-    #   get all available races
+        #  handle manual entry form
+        elif 'bib_number' in request.POST:
+            bib_number = request.POST.get('bib_number')
+            firstname = request.POST.get('firstname')
+            lastname = request.POST.get('lastname')
+            gender = request.POST.get('gender')
+            team_name = request.POST.get('team_name')
+            age_category = request.POST.get('age_category')
+            race_category = request.POST.get('race_category')
+            age = int(request.POST.get('age', 0))
+
+            #  validate form data
+            if not all([bib_number, firstname, lastname, gender, team_name, age_category, race_category, age]):
+                messages.error(request, "Please fill in all required fields.")
+                return redirect('upload_participants')
+
+            #  check for existing participant with the same bib number
+            existing_participant = Participant.objects.filter(race=race, race_number=bib_number).first()
+            if existing_participant:
+                messages.warning(request, f"Participant with Bib Number {bib_number} already exists for this race.")
+                return redirect('upload_participants')
+
+            #  create participant
+            participant = Participant(
+                race=race,
+                race_number=bib_number,
+                name=f"{firstname} {lastname}",
+                age=age,
+                gender=gender,
+                team_name=team_name,
+                age_category=age_category,
+                status='pending'
+            )
+
+            #  assign selected category if available
+            if race_category:
+                race_category_obj = RaceCategory.objects.filter(name=race_category).first()
+                if race_category_obj:
+                    participant.category = race_category_obj
+
+            participant.save()
+            messages.success(request, "Participant added successfully!")
+            logger.info(f"Added participant {firstname} {lastname} (Bib: {bib_number}) for race {race.name}.")
+
+            return redirect('upload_results')
+
+    #  get all available races
     races = Race.objects.all()
+    categories = RaceCategory.objects.all()  # Fetch all available race categories
     logger.info(f"Rendering upload participants page with {races.count()} races available.")
-    return render(request, 'app/upload_participants.html', {'races': races})
+    return render(request, 'app/upload_participants.html', {'races': races, 'categories': categories})
 
 
 @login_required
