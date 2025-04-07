@@ -11,6 +11,7 @@ from google.auth.transport import requests
 
 from .models import Participant, RaceResult, Race, ParticipantCategory, RaceCategory, Image
 from .utils.logger import setup_logging
+from django.contrib.sessions.models import Session
 from django.utils import timezone
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -299,7 +300,6 @@ def dashboard(request):
         'races': races,
     })
 
-
 @login_required
 def race_config(request):
     """
@@ -312,11 +312,24 @@ def race_config(request):
     race_categories = RaceCategory.objects.all()
     participant_categories = ParticipantCategory.objects.all()
 
+    #  retrieve any saved progress from the session
+    saved_data = request.session.get('race_config_data', {})
+
+    #  if the user submits the form
     if request.method == 'POST':
-        #  process the form data
+        #  save the submitted data to the session to preserve progress
         race_name = request.POST['race_name']
         race_date = request.POST['race_date']
         start_time = request.POST['start_time']
+
+        #  save to session for later use if they leave and come back
+        request.session['race_config_data'] = {
+            'race_name': race_name,
+            'race_date': race_date,
+            'start_time': start_time,
+            'race_category': request.POST.get('race_category', None),
+            'participant_categories': request.POST.getlist('participant_categories')
+        }
 
         logger.info(
             f"Race configuration submitted by {request.user.username} with name: {race_name},"
@@ -354,15 +367,19 @@ def race_config(request):
 
         #  redirect to the dashboard
         logger.info(f"Redirecting user {request.user.username} to the dashboard after race creation.")
+
+        #  clear the session data after the form is submitted
+        request.session.pop('race_config_data', None)
         return redirect('/dashboard')
 
-    #  render the form
     logger.info(
         f"Rendering race configuration form with {len(race_categories)} race categories"
         f" and {len(participant_categories)} participant categories.")
+
     return render(request, 'app/race_config.html', {
         'race_categories': race_categories,
-        'participant_categories': participant_categories
+        'participant_categories': participant_categories,
+        'saved_data': saved_data
     })
 
 

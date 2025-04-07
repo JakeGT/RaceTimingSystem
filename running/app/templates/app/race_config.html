@@ -27,28 +27,31 @@
                         <!-- Race Name -->
                         <div class="form-group mb-4">
                             <label for="race_name">Race Name</label>
-                            <input type="text" name="race_name" id="race_name" class="form-control" placeholder="Enter the name of your race (e.g., 'Spring 5k')" required>
+                            <input type="text" name="race_name" id="race_name" class="form-control" placeholder="Enter the name of your race (e.g., 'Spring 5k')" 
+                                value="{{ saved_data.race_name|default:'' }}" required>
                         </div>
 
                         <!-- Race Date -->
                         <div class="form-group mb-4">
                             <label for="race_date">Race Date</label>
-                            <input type="date" name="race_date" id="race_date" class="form-control" required>
+                            <input type="date" name="race_date" id="race_date" class="form-control" 
+                                value="{{ saved_data.race_date|default:'' }}" required>
                         </div>
 
                         <!-- Race Start Time -->
                         <div class="form-group mb-4">
                             <label for="start_time">Start Time</label>
-                            <input type="time" name="start_time" id="start_time" class="form-control" required>
+                            <input type="time" name="start_time" id="start_time" class="form-control" 
+                                value="{{ saved_data.start_time|default:'' }}" required>
                         </div>
 
                         <!-- Select Race Category (Single Selection) -->
                         <div class="form-group mb-4">
                             <label for="race_category">Race Category</label>
                             <select name="race_category" id="race_category" class="form-control">
-                                <option value="" selected>None</option>  <!-- Default option for no category -->
+                                <option value="" {% if not saved_data.race_category %}selected{% endif %}>None</option>
                                 {% for category in race_categories %}
-                                    <option value="{{ category.id }}">{{ category.name }}</option>
+                                    <option value="{{ category.id }}" {% if category.id|stringformat:"s" == saved_data.race_category|stringformat:"s" %}selected{% endif %}>{{ category.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -57,9 +60,9 @@
                         <div class="form-group mb-4">
                             <label for="participant_categories">Participant Categories</label>
                             <select name="participant_categories" id="participant_categories" class="form-control" multiple>
-                                <option value="" disabled>None</option>  <!-- Default option for no category -->
+                                <option value="" disabled>None</option>
                                 {% for category in participant_categories %}
-                                    <option value="{{ category.id }}">{{ category.name }}</option>
+                                    <option value="{{ category.id }}" {% if saved_data.participant_categories and category.id|stringformat:"s" in saved_data.participant_categories %}selected{% endif %}>{{ category.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -80,4 +83,43 @@
         </div>
     </div>
 </div>
+
+<!-- Auto-Save Form to localStorage -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.querySelector('form');
+    const fields = ['race_name', 'race_date', 'start_time', 'race_category', 'participant_categories'];
+
+    fields.forEach(field => {
+        const element = document.getElementById(field);
+        if (!element) return;
+
+        const savedValue = localStorage.getItem(field);
+
+        if (savedValue !== null) {
+            if (element.type === 'select-multiple') {
+                const values = JSON.parse(savedValue);
+                Array.from(element.options).forEach(option => {
+                    option.selected = values.includes(option.value);
+                });
+            } else {
+                element.value = savedValue;
+            }
+        }
+
+        element.addEventListener('change', () => {
+            if (element.type === 'select-multiple') {
+                const selected = Array.from(element.selectedOptions).map(option => option.value);
+                localStorage.setItem(field, JSON.stringify(selected));
+            } else {
+                localStorage.setItem(field, element.value);
+            }
+        });
+    });
+
+    form.addEventListener('submit', () => {
+        fields.forEach(field => localStorage.removeItem(field));
+    });
+});
+</script>
 {% endblock %}
