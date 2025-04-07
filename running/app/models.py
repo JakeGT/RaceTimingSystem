@@ -24,8 +24,15 @@ class Race(models.Model):
 
     is_completed = models.BooleanField(default=False)
 
+    address = models.CharField(max_length=255, blank=True, null=True)
+    latitude = models.FloatField(blank=True, null=True)
+    longitude = models.FloatField(blank=True, null=True)
+
     def __str__(self):
         return self.name
+
+    def get_location(self):
+        return f"{self.address} (Lat: {self.latitude}, Lon: {self.longitude})" if self.address else "Location not set"
 
 
 class Participant(models.Model):

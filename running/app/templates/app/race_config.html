@@ -27,21 +27,21 @@
                         <!-- Race Name -->
                         <div class="form-group mb-4">
                             <label for="race_name">Race Name</label>
-                            <input type="text" name="race_name" id="race_name" class="form-control" placeholder="Enter the name of your race (e.g., 'Spring 5k')" 
+                            <input type="text" name="race_name" id="race_name" class="form-control" placeholder="Enter the name of your race (e.g., 'Spring 5k')"
                                 value="{{ saved_data.race_name|default:'' }}" required>
                         </div>
 
                         <!-- Race Date -->
                         <div class="form-group mb-4">
                             <label for="race_date">Race Date</label>
-                            <input type="text" name="race_date" id="race_date" class="form-control" 
+                            <input type="text" name="race_date" id="race_date" class="form-control"
                                 value="{{ saved_data.race_date|default:'' }}" required>
                         </div>
 
                         <!-- Race Start Time -->
                         <div class="form-group mb-4">
                             <label for="start_time">Start Time</label>
-                            <input type="text" name="start_time" id="start_time" class="form-control" 
+                            <input type="text" name="start_time" id="start_time" class="form-control"
                                 value="{{ saved_data.start_time|default:'' }}" required>
                         </div>
 
@@ -73,8 +73,32 @@
                             <a href="{% url 'race_category_list' %}" class="btn btn-warning">Manage Race Categories</a>
                         </div>
 
+                        <!-- Checkbox to Opt Out of Location Configuration -->
+                        <div class="form-group mb-4">
+                            <label for="no_location">
+                                <input type="checkbox" id="no_location" name="no_location" {% if saved_data.no_location %}checked{% endif %}>
+                                No location required for this race
+                            </label>
+                        </div>
+
+                        <!-- OpenStreetMap for selecting the location -->
+                        <div id="map" style="height: 400px; width: 100%;"></div>
+
+                        <!-- Location Fields -->
+                        <div id="location-fields" class="mt-4">
+                            <div class="form-group">
+                                <label for="race_location">Race Location</label>
+                                <input type="text" id="race_location" class="form-control" placeholder="Select the race location" 
+                                    value="{{ saved_data.race_location|default:'' }}" readonly required>
+                            </div>
+
+                            <!-- Latitude and Longitude -->
+                            <input type="hidden" name="latitude" id="latitude" value="{{ saved_data.latitude|default:'' }}">
+                            <input type="hidden" name="longitude" id="longitude" value="{{ saved_data.longitude|default:'' }}">
+                        </div>
+
                         <!-- Submit Button -->
-                        <div class="form-group text-center">
+                        <div class="form-group text-center mt-4">
                             <input type="submit" value="Create Race" class="btn btn-success btn-lg">
                         </div>
                     </form>
@@ -88,58 +112,91 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
-<!-- Auto-Save Form to localStorage and Flatpickr setup -->
+<!-- Leaflet.js styles and scripts -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const form = document.querySelector('form');
-    const fields = ['race_name', 'race_date', 'start_time', 'race_category', 'participant_categories'];
+    document.addEventListener('DOMContentLoaded', function () {
+        
+        //  initialise Flatpickr for date and time
+        flatpickr("#race_date", {
+            dateFormat: "Y-m-d",
+            allowInput: true
+        });
 
-    // Init Flatpickr
-    flatpickr("#race_date", {
-        dateFormat: "Y-m-d",
-        allowInput: true
-    });
+        flatpickr("#start_time", {
+            enableTime: true,
+            noCalendar: true,
+            dateFormat: "H:i",
+            time_24hr: true,
+            allowInput: true
+        });
 
-    flatpickr("#start_time", {
-        enableTime: true,
-        noCalendar: true,
-        dateFormat: "H:i",
-        time_24hr: true,
-        allowInput: true
-    });
+        //  toggle location fields visibility based on 'No location required' checkbox
+        const noLocationCheckbox = document.getElementById('no_location');
+        const locationFields = document.getElementById('location-fields');
+        const mapDiv = document.getElementById('map');
 
-    // Load saved data from localStorage
-    fields.forEach(field => {
-        const element = document.getElementById(field);
-        if (!element) return;
-
-        const savedValue = localStorage.getItem(field);
-
-        if (savedValue !== null) {
-            if (element.type === 'select-multiple') {
-                const values = JSON.parse(savedValue);
-                Array.from(element.options).forEach(option => {
-                    option.selected = values.includes(option.value);
-                });
-            } else {
-                element.value = savedValue;
-            }
+        //  check the state of the checkbox when the page loads
+        if (noLocationCheckbox.checked) {
+            locationFields.style.display = 'none';
+            mapDiv.style.display = 'none';
         }
 
-        element.addEventListener('change', () => {
-            if (element.type === 'select-multiple') {
-                const selected = Array.from(element.selectedOptions).map(option => option.value);
-                localStorage.setItem(field, JSON.stringify(selected));
+        //  listen for changes to the checkbox
+        noLocationCheckbox.addEventListener('change', function () {
+            if (noLocationCheckbox.checked) {
+                locationFields.style.display = 'none';
+                mapDiv.style.display = 'none';
+                document.getElementById('latitude').disabled = true;
+                document.getElementById('longitude').disabled = true;
             } else {
-                localStorage.setItem(field, element.value);
+                locationFields.style.display = 'block';
+                mapDiv.style.display = 'block';
+                document.getElementById('latitude').disabled = false;
+                document.getElementById('longitude').disabled = false;
             }
         });
-    });
 
-    // Clear saved form on submit
-    form.addEventListener('submit', () => {
-        fields.forEach(field => localStorage.removeItem(field));
+        //  initialise Leaflet map at campus
+        const map = L.map('map').setView([50.7374, -3.5354], 15);
+
+        //  add OpenStreetMap tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        //  add draggable marker at campus
+        const marker = L.marker([50.7374, -3.5354], { draggable: true }).addTo(map);
+
+        //  update latitude and longitude fields
+        marker.on('dragend', function (e) {
+            const position = e.target.getLatLng();
+            document.getElementById("latitude").value = position.lat;
+            document.getElementById("longitude").value = position.lng;
+            
+            fetch(`https://nominatim.openstreetmap.org/reverse?lat=${position.lat}&lon=${position.lng}&format=json`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("race_location").value = data.display_name || 'Unknown Location';
+                });
+        });
+
+        //  when the user clicks on the map place marker and update fields
+        map.on('click', function (e) {
+            const position = e.latlng;
+            marker.setLatLng(position);
+            document.getElementById("latitude").value = position.lat;
+            document.getElementById("longitude").value = position.lng;
+
+            fetch(`https://nominatim.openstreetmap.org/reverse?lat=${position.lat}&lon=${position.lng}&format=json`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("race_location").value = data.display_name || 'Unknown Location';
+                });
+        });
     });
-});
 </script>
+
 {% endblock %}

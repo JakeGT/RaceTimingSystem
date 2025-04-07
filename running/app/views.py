@@ -305,7 +305,7 @@ def race_config(request):
     """
     Views for race configuration page
     """
-
+    
     logger.info(f"Accessing race configuration page by user: {request.user.username}")
 
     #  get all race categories and participant categories
@@ -315,61 +315,79 @@ def race_config(request):
     #  retrieve any saved progress from the session
     saved_data = request.session.get('race_config_data', {})
 
-    #  if the user submits the form
+    #  if the user submits the form (POST request)
     if request.method == 'POST':
-        #  save the submitted data to the session to preserve progress
         race_name = request.POST['race_name']
         race_date = request.POST['race_date']
         start_time = request.POST['start_time']
+        no_location = request.POST.get('no_location', False)
+        race_location = request.POST.get('race_location', '')
+        latitude = request.POST.get('latitude')
+        longitude = request.POST.get('longitude')
 
-        #  save to session for later use if they leave and come back
+        #  if box is checked don't use location data
+        if no_location:
+            race_location = None
+            latitude = None
+            longitude = None
+
+        #  save the data to the session
         request.session['race_config_data'] = {
             'race_name': race_name,
             'race_date': race_date,
             'start_time': start_time,
             'race_category': request.POST.get('race_category', None),
-            'participant_categories': request.POST.getlist('participant_categories')
+            'participant_categories': request.POST.getlist('participant_categories'),
+            'latitude': latitude,
+            'longitude': longitude,
+            'race_location': race_location,
+            'no_location': no_location
         }
 
         logger.info(
             f"Race configuration submitted by {request.user.username} with name: {race_name},"
-            f" date: {race_date}, start time: {start_time}")
-
-        #  get the selected race category
-        race_category_id = request.POST.get('race_category', None)
-        if race_category_id:
-            race_category = RaceCategory.objects.get(id=race_category_id)
-            logger.info(f"Selected race category: {race_category.name}")
-        else:
-            race_category = None
-            logger.info("No race category selected.")
-
-        #  get the selected participant categories
-        participant_category_ids = request.POST.getlist('participant_categories')
-        logger.info(f"Selected participant categories: {participant_category_ids}")
+            f" date: {race_date}, start time: {start_time}, location: {race_location if race_location else 'No location'}")
 
         #  create a new race object
         race = Race.objects.create(
             name=race_name,
             date=race_date,
             start_time=start_time,
-            categories=race_category.name if race_category else 'None',
-            organiser=request.user
+            categories=",".join(request.POST.getlist('participant_categories')),
+            organiser=request.user,
+            latitude=latitude,
+            longitude=longitude,
+            address=race_location
         )
         logger.info(f"New race created: {race.name} with ID: {race.id} by {request.user.username}")
 
+        #  add selected race category
+        race_category_id = request.POST.get('race_category', None)
+        if race_category_id:
+            try:
+                race_category = RaceCategory.objects.get(id=race_category_id)
+                race.category = race_category
+                race.save()
+                logger.info(f"Added race category {race_category.name} to race {race.name}")
+            except RaceCategory.DoesNotExist:
+                logger.error(f"Race category with ID {race_category_id} does not exist.")
+
         #  add participant categories
+        participant_category_ids = request.POST.getlist('participant_categories')
         if participant_category_ids:
             for category_id in participant_category_ids:
-                participant_category = ParticipantCategory.objects.get(id=category_id)
-                race.participants.add(participant_category)
-                logger.info(f"Added participant category {participant_category.name} to race {race.name}")
-
-        #  redirect to the dashboard
-        logger.info(f"Redirecting user {request.user.username} to the dashboard after race creation.")
+                try:
+                    participant_category = ParticipantCategory.objects.get(id=category_id)
+                    race.participants.add(participant_category)
+                    logger.info(f"Added participant category {participant_category.name} to race {race.name}")
+                except ParticipantCategory.DoesNotExist:
+                    logger.error(f"Participant category with ID {category_id} does not exist.")
 
         #  clear the session data after the form is submitted
         request.session.pop('race_config_data', None)
+
+        #  redirect to the dashboard
+        logger.info(f"Redirecting user {request.user.username} to the dashboard after race creation.")
         return redirect('/dashboard')
 
     logger.info(
@@ -381,6 +399,8 @@ def race_config(request):
         'participant_categories': participant_categories,
         'saved_data': saved_data
     })
+
+
 
 
 @login_required
@@ -683,29 +703,31 @@ def race_detail(request, race_id):
     View for displaying race details, including race results or participant list.
     """
 
-    #  fetch the race
+    #  fetch the race object based on the provided race_id
     race = get_object_or_404(Race, id=race_id)
     logger.info(f"Accessed race details for race: {race.name} (ID: {race.id})")
 
     #  get race results
     race_results = RaceResult.objects.filter(race=race)
 
-    #  get sorts and filters
+    #  get sorting and filtering parameters
     sort_by = request.GET.get('sort_by', '')
     sort_direction = request.GET.get('sort_direction', 'asc')
 
-    #  initialise gender and age to None if not provided in the GET request
+    #  initialise gender and age filters
     gender = request.GET.get('gender', None)
     age = request.GET.get('age', None)
 
+    #  apply filters
     if race_results.exists():
         logger.info(f"Found {len(race_results)} race results for race: {race.name}")
 
-        #  apply filters
+        #  apply gender filter
         if gender:
             race_results = race_results.filter(participant__gender=gender)
             logger.info(f"Filtering race results by gender: {gender}")
 
+        #  apply age filter
         if age:
             age_ranges = {
                 '18': (18, 25),
@@ -732,20 +754,28 @@ def race_detail(request, race_id):
                 race_results = race_results.order_by(
                     '-total_time' if sort_direction == 'desc' else 'total_time')
 
+        #  render race results page
         return render(request, 'app/race_results.html', {
             'race': race,
             'race_results': race_results,
         })
 
-    #  if no results show participants
+    #  if there are no race results, display participants
     participants = Participant.objects.filter(race=race).values('name', 'age', 'gender', 'age_category', 'race_number')
 
-    #  apply filters
+    #  apply filters for participants
     if gender:
         participants = participants.filter(gender=gender)
         logger.info(f"Filtering participants by gender: {gender}")
 
     if age:
+        age_ranges = {
+            '18': (18, 25),
+            '26': (26, 35),
+            '36': (36, 45),
+            '46': (46, 60),
+            '60': (60, 1000),
+        }
         if age in age_ranges:
             min_age, max_age = age_ranges[age]
             participants = participants.filter(age__gte=min_age, age__lte=max_age)
@@ -759,13 +789,28 @@ def race_detail(request, race_id):
         elif sort_by == 'age':
             participants = participants.order_by('-age' if sort_direction == 'desc' else 'age')
 
+    #  count participants
     participants_count = participants.count()
     logger.info(f"Displaying {participants_count} participants for race: {race.name}")
+
+    #  check if the race has a location
+    location_info = None
+    if race.address:
+        location_info = race.address
+    elif race.latitude and race.longitude:
+        location_info = f"Lat: {race.latitude}, Lon: {race.longitude}"
+    else:
+        location_info = "None"
+
+    #  check if the race has a category
+    category_info = race.categories if race.categories else "None"
 
     return render(request, 'app/race_detail.html', {
         'race': race,
         'participants': participants,
-        'participants_count': participants_count
+        'participants_count': participants_count,
+        'location_info': location_info,
+        'category_info': category_info,
     })
 
 

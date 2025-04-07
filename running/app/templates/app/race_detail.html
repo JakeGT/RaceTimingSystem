@@ -22,10 +22,16 @@
                 </div>
                 <div class="card-body">
                     <p><strong>Date:</strong> {{ race.date }}</p>
-                    <p><strong>Category:</strong> {{ race.categories }}</p>
-                    <p><strong>Location:</strong> {{ race.location }}</p>
                     <p><strong>Start Time:</strong> {{ race.start_time }}</p>
+                    <p><strong>Category:</strong> {{ category_info }}</p>
                     <p><strong>Total Participants:</strong> {{ participants_count }}</p>
+                    <p><strong>Location:</strong> 
+                        {% if location_info != "None" %}
+                            <div id="map" style="height: 400px;"></div>
+                        {% else %}
+                            None
+                        {% endif %}
+                    </p>
                 </div>
             </div>
         </div>
@@ -131,5 +137,26 @@
         color: #fff;
     }
 </style>
+
+<!-- Leaflet CSS and JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+{% if race.latitude and race.longitude %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const map = L.map('map').setView([{{ race.latitude }}, {{ race.longitude }}], 14);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        //  add a marker
+        L.marker([{{ race.latitude }}, {{ race.longitude }}]).addTo(map);
+    });
+</script>
+{% endif %}
+
 
 {% endblock %}
