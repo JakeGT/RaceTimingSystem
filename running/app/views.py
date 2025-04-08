@@ -443,7 +443,6 @@ def race_config(request):
         'saved_data': saved_data
     })
 
-
 @login_and_2fa_required
 def upload_results(request):
     """
@@ -461,15 +460,12 @@ def upload_results(request):
             logger.info(f"File '{file.name}' received for upload.")
 
             try:
-                #  decode the CSV file and process each row
                 decoded_file = file.read().decode('utf-8').splitlines()
                 reader = csv.reader(decoded_file)
 
-                #  skip the header row if present
                 header = next(reader, None)
                 logger.info(f"CSV header: {header}")
 
-                #  ensure race_id is provided
                 race_id = request.POST.get('race_id')
                 if not race_id:
                     messages.error(request, 'Please select a race before uploading CSV.')
@@ -484,7 +480,6 @@ def upload_results(request):
                     logger.error(f"Race with ID {race_id} not found.")
                     return render(request, 'app/upload_results.html', {'races': races})
 
-                #  process each row in the CSV file
                 for row in reader:
                     if len(row) < 2:
                         messages.error(request, 'CSV file format is incorrect.')
@@ -494,12 +489,10 @@ def upload_results(request):
                     bib_number = row[0].strip()
                     result_time = row[1].strip()
 
-                    #  skip empty rows
                     if not bib_number or not result_time:
                         logger.warning(f"Skipping empty row (bib_number: {bib_number}, result_time: {result_time})")
                         continue
 
-                    #  find the participant
                     try:
                         participant = Participant.objects.get(race_id=race.id, race_number=bib_number)
                         logger.info(f"Found participant: {participant.name} (Bib: {bib_number})")
@@ -510,7 +503,6 @@ def upload_results(request):
                         logger.error(f"Participant with bib number {bib_number} not found for race {race.name}.")
                         continue
 
-                    #  check if the result for this participant and race already exists
                     if RaceResult.objects.filter(race=race, participant=participant).exists():
                         messages.error(request,
                                        f'Result already uploaded for participant {bib_number}'
@@ -518,7 +510,6 @@ def upload_results(request):
                         logger.warning(f"Result already uploaded for participant {bib_number} in race {race.name}.")
                         continue
 
-                    #  save the result to the database
                     RaceResult.objects.create(
                         race=race,
                         participant=participant,
@@ -526,16 +517,28 @@ def upload_results(request):
                     )
                     logger.info(f"Result for participant {bib_number} successfully uploaded for race {race.name}.")
 
+                #  check if all results have been uploaded
+                total_participants = Participant.objects.filter(race=race).count()
+                uploaded_results = RaceResult.objects.filter(race=race).count()
+
+                if total_participants == uploaded_results:
+                    race.is_completed = True
+                    race.save()
+                    logger.info(f"Race '{race.name}' marked as completed (all results received).")
+                    messages.success(request, f"All results have been uploaded. Race '{race.name}' is now marked as completed.")
+
+                else:
+                    logger.info(f"Race '{race.name}' still has outstanding results: "
+                                f"{total_participants - uploaded_results} remaining.")
+
                 messages.success(request, 'CSV file uploaded successfully!')
-                logger.info(f"CSV upload for race {race.name} completed successfully.")
 
             except Exception as e:
                 messages.error(request, f'Error uploading CSV: {str(e)}')
                 logger.error(f"Error uploading CSV: {str(e)}")
 
-    #  render the same page with all races and the messages
-    logger.info("Rendering upload results page with races and any messages.")
     return render(request, 'app/upload_results.html', {'races': races})
+
 
 
 @login_and_2fa_required
@@ -1518,10 +1521,13 @@ def verify_2fa_view(request):
             #  authenticate user
             messages.success(request, "2FA verification successful!")
 
+            request.session['mfa_verified'] = True
             del request.session['needs_2fa']
+
             return redirect('/')
 
         else:
             messages.error(request, "Invalid OTP. Please try again.")
 
     return render(request, "app/verify_2fa.html")
+
