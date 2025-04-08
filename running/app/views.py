@@ -219,7 +219,6 @@ def user_login(request):
     """
     Handles user login.
     """
-
     logger.info("Accessing the login page view")
 
     if request.method == "POST":
@@ -240,7 +239,9 @@ def user_login(request):
             logger.info(f"Login failed for username: {username}: Invalid username or password.")
             messages.error(request, "Invalid username or password.")
 
-    return render(request, "app/login.html")
+    return render(request, "app/login.html", {
+        'google_client_id': settings.GOOGLE_CLIENT_ID
+    })
 
 
 @login_required

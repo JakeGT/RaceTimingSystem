@@ -5,7 +5,7 @@ from . import views
 from django.conf import settings
 from django.conf.urls.static import static
 from django.conf.urls import handler404, handler500, handler403
-from django.urls import path
+from django.urls import path, include
 from .views import CustomPasswordResetView
 from django.contrib.auth import views as auth_views
 
@@ -40,7 +40,7 @@ urlpatterns = [
     #  password reset custom view
     path("password_reset/", CustomPasswordResetView.as_view(), name="password_reset"),
 
-    #  password resetemail sent page
+    #  password reset-email sent page
     path("password_reset/done/", auth_views.PasswordResetDoneView.as_view(template_name="app/password_reset_done.html"),
          name="password_reset_done"),
 
@@ -125,8 +125,7 @@ urlpatterns = [
     #  log in with facebook account route
     path('facebook-login/', lambda request: redirect('/accounts/facebook/login/'), name='facebook_login'),
 
-    #  log in with apple account route
-    path('apple-login/', lambda request: redirect('/accounts/apple/login/'), name='apple_login'),
+    path('social-auth/', include('social_django.urls', namespace='social')),
 ]
 
 if settings.DEBUG:
