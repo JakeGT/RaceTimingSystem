@@ -134,12 +134,13 @@
                     <div class="form-group mb-4">
                         <label for="category" class="form-label">Select Category</label>
                         <select name="category_id" id="category" class="form-control" required>
-                            <option value="" disabled selected>Select a Category</option>
+                            <option value="" selected>Select a Category</option>
                             {% for category in race.categories.all %}
                                 <option value="{{ category.id }}">{{ category.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
+
 
                     <!-- Submit Button -->
                     <div class="form-group text-center">

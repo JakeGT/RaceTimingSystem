@@ -1400,17 +1400,18 @@ def organiser_delete_race(request, race_id):
     messages.success(request, "Race has been deleted successfully.")
     return redirect('race_organiser_dashboard')
 
+
 @login_required
 def apply_as_organiser(request):
     """
     Applies to be the organiser of a race.
     """
 
-    #  fetch races where the user is not the organiser
+    #  exclude races the user already organises
     available_races = Race.objects.exclude(organiser=request.user)
 
     if request.method == 'POST':
-        form = OrganiserApplicationForm(request.POST)
+        form = OrganiserApplicationForm(request.POST, user=request.user)
         if form.is_valid():
             app = form.save(commit=False)
             app.user = request.user
@@ -1418,10 +1419,9 @@ def apply_as_organiser(request):
             messages.success(request, "Your application has been submitted.")
             return redirect('race_organiser_dashboard')
     else:
-        form = OrganiserApplicationForm()
+        form = OrganiserApplicationForm(user=request.user)
 
     return render(request, 'app/apply_as_organiser.html', {'form': form, 'available_races': available_races})
-
 
 
 @login_required

@@ -2,7 +2,7 @@
 
 # -------------------------------------------------- Import Libraries --------------------------------------------------
 from django import forms
-from .models import RaceCategory, ParticipantCategory, OrganiserApplication
+from .models import RaceCategory, ParticipantCategory, OrganiserApplication, Race
 from django.utils import timezone
 from .models import Image
 
@@ -52,7 +52,7 @@ class ImageUploadForm(forms.ModelForm):
 
 class OrganiserApplicationForm(forms.ModelForm):
     """
-    Class for oranigser application form
+    Class for organiser application form
     """
 
     class Meta:
@@ -60,8 +60,8 @@ class OrganiserApplicationForm(forms.ModelForm):
         fields = ['race', 'message']
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
-        if 'user' in kwargs:
-            user = kwargs['user']
-            self.fields['race'].queryset = Race.objects.exclude(organisers=user)
+        if user:
+            self.fields['race'].queryset = Race.objects.exclude(organiser=user)
