@@ -764,86 +764,65 @@ def race_detail(request, race_id):
     """
     View for displaying race details, including race results or participant list.
     """
-
-    #  fetch the race object based on the provided race_id
     race = get_object_or_404(Race, id=race_id)
     logger.info(f"Accessed race details for race: {race.name} (ID: {race.id})")
 
-    #  get race results
     race_results = RaceResult.objects.filter(race=race)
 
-    #  get sorting and filtering parameters
     sort_by = request.GET.get('sort_by', '')
     sort_direction = request.GET.get('sort_direction', 'asc')
+    gender = request.GET.get('gender', '')
+    age = request.GET.get('age', '')
 
-    #  initialise gender and age filters
-    gender = request.GET.get('gender', None)
-    age = request.GET.get('age', None)
-
-    #  apply filters
     if race_results.exists():
         logger.info(f"Found {len(race_results)} race results for race: {race.name}")
 
-        #  apply gender filter
         if gender:
             race_results = race_results.filter(participant__gender=gender)
             logger.info(f"Filtering race results by gender: {gender}")
 
-        #  apply age filter
         if age:
             age_ranges = {
-                '18': (18, 25),
-                '26': (26, 35),
-                '36': (36, 45),
-                '46': (46, 60),
-                '60': (60, 1000),
+                '18': (18, 25), '26': (26, 35), '36': (36, 45),
+                '46': (46, 60), '60': (60, 1000),
             }
             if age in age_ranges:
                 min_age, max_age = age_ranges[age]
                 race_results = race_results.filter(participant__age__gte=min_age, participant__age__lte=max_age)
-                logger.info(f"Filtering race results by age range: {min_age}-{max_age}")
+                logger.info(f"Filtering race results by age: {min_age}-{max_age}")
 
-        #  apply sorting
         if sort_by:
             logger.info(f"Sorting race results by {sort_by} in {sort_direction} order.")
             if sort_by == 'name':
-                race_results = race_results.order_by(
-                    '-participant__name' if sort_direction == 'desc' else 'participant__name')
+                race_results = race_results.order_by('-participant__name' if sort_direction == 'desc' else 'participant__name')
             elif sort_by == 'age':
-                race_results = race_results.order_by(
-                    '-participant__age' if sort_direction == 'desc' else 'participant__age')
+                race_results = race_results.order_by('-participant__age' if sort_direction == 'desc' else 'participant__age')
             elif sort_by == 'total_time':
-                race_results = race_results.order_by(
-                    '-total_time' if sort_direction == 'desc' else 'total_time')
+                race_results = race_results.order_by('-total_time' if sort_direction == 'desc' else 'total_time')
 
-        #  render race results page
         return render(request, 'app/race_results.html', {
             'race': race,
             'race_results': race_results,
+            'filters': request.GET
         })
 
-    #  if there are no race results, display participants
-    participants = Participant.objects.filter(race=race).values('name', 'age', 'gender', 'age_category', 'race_number')
+    #  if there are no results just show participants
+    participants = Participant.objects.filter(race=race)
 
-    #  apply filters for participants
     if gender:
         participants = participants.filter(gender=gender)
         logger.info(f"Filtering participants by gender: {gender}")
 
     if age:
         age_ranges = {
-            '18': (18, 25),
-            '26': (26, 35),
-            '36': (36, 45),
-            '46': (46, 60),
-            '60': (60, 1000),
+            '18': (18, 25), '26': (26, 35), '36': (36, 45),
+            '46': (46, 60), '60': (60, 1000),
         }
         if age in age_ranges:
             min_age, max_age = age_ranges[age]
             participants = participants.filter(age__gte=min_age, age__lte=max_age)
-            logger.info(f"Filtering participants by age range: {min_age}-{max_age}")
+            logger.info(f"Filtering participants by age: {min_age}-{max_age}")
 
-    #  apply sorting
     if sort_by:
         logger.info(f"Sorting participants by {sort_by} in {sort_direction} order.")
         if sort_by == 'name':
@@ -851,20 +830,9 @@ def race_detail(request, race_id):
         elif sort_by == 'age':
             participants = participants.order_by('-age' if sort_direction == 'desc' else 'age')
 
-    #  count participants
     participants_count = participants.count()
-    logger.info(f"Displaying {participants_count} participants for race: {race.name}")
 
-    #  check if the race has a location
-    location_info = None
-    if race.address:
-        location_info = race.address
-    elif race.latitude and race.longitude:
-        location_info = f"Lat: {race.latitude}, Lon: {race.longitude}"
-    else:
-        location_info = "None"
-
-    #  check if the race has a category
+    location_info = race.address or (f"Lat: {race.latitude}, Lon: {race.longitude}" if race.latitude and race.longitude else "None")
     category_info = race.race_category if race.race_category else "None"
 
     return render(request, 'app/race_detail.html', {
@@ -873,6 +841,7 @@ def race_detail(request, race_id):
         'participants_count': participants_count,
         'location_info': location_info,
         'category_info': category_info,
+        'filters': request.GET,
     })
 
 
