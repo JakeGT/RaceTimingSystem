@@ -125,7 +125,11 @@ urlpatterns = [
     #  log in with facebook account route
     path('facebook-login/', lambda request: redirect('/accounts/facebook/login/'), name='facebook_login'),
 
+    #  social-auth route for third party sign in
     path('social-auth/', include('social_django.urls', namespace='social')),
+
+    #  2fa route
+    path('verify-2fa/', views.verify_2fa_view, name='verify_2fa'),
 ]
 
 if settings.DEBUG:

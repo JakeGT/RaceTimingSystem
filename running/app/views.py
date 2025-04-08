@@ -8,7 +8,7 @@ import json
 from django.core.files.base import ContentFile
 from django.shortcuts import get_object_or_404
 from google.auth.transport import requests
-
+import base64
 from .models import Participant, RaceResult, Race, ParticipantCategory, RaceCategory, Image, OrganiserApplication
 from .utils.logger import setup_logging
 from django.contrib.sessions.models import Session
@@ -36,6 +36,8 @@ from google.oauth2.id_token import verify_oauth2_token
 from django.conf import settings
 from django.utils.dateparse import parse_datetime
 from django.core.files.storage import default_storage
+import pyotp
+import qrcode
 
 #  define custom user
 from django.contrib.auth import get_user_model
@@ -144,6 +146,44 @@ def logged_out_required(view_func):
     return _wrapped_view
 
 
+def two_factor_required(view_func):
+    """
+    Decorator to require 2fa completion before accessing certain views
+    """
+
+    def _wrapped_view(request, *args, **kwargs):
+        if request.session.get('needs_2fa', False):
+            return redirect('verify_2fa')
+        return view_func(request, *args, **kwargs)
+
+    return _wrapped_view
+
+
+def login_and_2fa_required(view_func):
+    """
+    Decorator to require login and 2fa verification for a view
+    """
+
+    decorated_view = login_required(two_factor_required(view_func))
+    return decorated_view
+
+
+def login_and_2fa_optional(view_func):
+    """
+    Decorator that allows access to the view for non-logged-in users but requires
+    2fa for logged-in users with 2FA enabled.
+    """
+
+    def wrapper(request, *args, **kwargs):
+        if request.user.is_authenticated and request.user.mfa_enabled and not request.session.get('mfa_verified',
+                                                                                                  False):
+            return redirect("verify_2fa")
+
+        return view_func(request, *args, **kwargs)
+
+    return wrapper
+
+
 def landing_page(request):
     """
     View for the landing page of the Race Timing System.
@@ -219,6 +259,7 @@ def user_login(request):
     """
     Handles user login.
     """
+
     logger.info("Accessing the login page view")
 
     if request.method == "POST":
@@ -227,14 +268,22 @@ def user_login(request):
 
         logger.info(f"Login attempt for username: {username}")
 
-        #  authenticate the user
+        #  authenticate user
         user = authenticate(request, username=username, password=password)
 
         if user is not None:
+            #  log user in
             login(request, user)
             logger.info(f"Login successful for username: {username}")
             messages.success(request, "Login successful!")
+
+            #  check if 2fa enabled
+            if user.mfa_enabled:
+                request.session['needs_2fa'] = True
+                return redirect("verify_2fa")
+
             return redirect("/")
+
         else:
             logger.info(f"Login failed for username: {username}: Invalid username or password.")
             messages.error(request, "Invalid username or password.")
@@ -244,22 +293,7 @@ def user_login(request):
     })
 
 
-@login_required
-def user_logout(request):
-    """
-    Logs out the user.
-    """
-
-    #  log the logout attempt
-    logger.info(f"User {request.user.username} logged out.")
-
-    #  perform the logout
-    logout(request)
-
-    messages.success(request, "You have been logged out.")
-    return redirect("login")
-
-
+@login_and_2fa_optional
 def dashboard(request):
     """
     The view for the users dashboard.
@@ -295,8 +329,7 @@ def dashboard(request):
     })
 
 
-
-@login_required
+@login_and_2fa_required
 def race_config(request):
     """
     Views for race configuration page
@@ -411,7 +444,7 @@ def race_config(request):
     })
 
 
-@login_required
+@login_and_2fa_required
 def upload_results(request):
     """
     View for uploading race results via CSV file.
@@ -505,7 +538,7 @@ def upload_results(request):
     return render(request, 'app/upload_results.html', {'races': races})
 
 
-@login_required
+@login_and_2fa_required
 def upload_participants(request):
     """
     View for uploading participants either manually or via CSV.
@@ -678,7 +711,6 @@ def upload_participants(request):
     return render(request, 'app/upload_participants.html', {'races': races, 'categories': categories})
 
 
-@login_required
 def user_logout(request):
     """
     Logs out the user and redirects to the homepage.
@@ -696,7 +728,7 @@ def user_logout(request):
     return redirect('/')
 
 
-@login_required
+@login_and_2fa_required
 def manage_participants(request, race_id):
     """
     Loads a page where organisers can approve or deny participants.
@@ -736,7 +768,7 @@ def manage_participants(request, race_id):
                   {'race': race, 'participants': participants})
 
 
-@login_required
+@login_and_2fa_required
 def race_history(request):
     """
     Views the history of a runner.
@@ -754,10 +786,12 @@ def race_history(request):
     return render(request, 'app/race_history.html', {'participant': participant})
 
 
+@login_and_2fa_optional
 def race_detail(request, race_id):
     """
     View for displaying race details, including race results or participant list.
     """
+
     race = get_object_or_404(Race, id=race_id)
     logger.info(f"Accessed race details for race: {race.name} (ID: {race.id})")
 
@@ -839,7 +873,7 @@ def race_detail(request, race_id):
     })
 
 
-@login_required
+@login_and_2fa_required
 def race_organiser_dashboard(request):
     """
     Defines the view for a race organiser dashboard.
@@ -870,7 +904,7 @@ def race_organiser_dashboard(request):
     return render(request, 'app/race_organiser_dashboard.html', {'race_data': race_data})
 
 
-@login_required(login_url="login")
+@login_and_2fa_required
 def upcoming_races(request):
     """
     View for displaying all upcoming races.
@@ -892,6 +926,7 @@ def upcoming_races(request):
     return render(request, 'app/upcoming_races.html', {'upcoming_races': upcoming})
 
 
+@login_and_2fa_required
 def organiser_race_detail(request, race_id):
     """
     View for an organiser to see a specific race and its participants.
@@ -915,7 +950,7 @@ def organiser_race_detail(request, race_id):
     })
 
 
-@login_required(login_url="login")
+@login_and_2fa_required
 def race_results(request, race_id):
     """
     Defines the view for the results of a race.
@@ -937,7 +972,7 @@ def race_results(request, race_id):
     return render(request, 'app/race_results.html', {'race': race, 'results': results})
 
 
-@login_required
+@login_and_2fa_required
 def settings_view(request):
     """
     Defines the view for the settings page.
@@ -978,31 +1013,60 @@ def settings_view(request):
     return render(request, "app/settings.html")
 
 
-@login_required
+@login_and_2fa_required
 def profile_view(request):
     """
     Defines the view for the profile page.
     """
 
-    logger.info(f"Accessing profile page for user {request.user.username} (ID: {request.user.id})")
+    user = request.user
+    logger.info(f"Accessing profile page for user {user.username} (ID: {user.id})")
 
-    #  try to get the Participant instance associated with the logged-in user
-    participant = Participant.objects.filter(user=request.user).first()
+    # C check for MFA secret
+    if not user.mfa_secret:
+        user.mfa_secret = pyotp.random_base32()
+        user.save()
 
-    if not participant:
-        logger.warning(f"User {request.user.username} (ID: {request.user.id}) is not"
-                       f" registered as a race participant.")
-        return render(request, "app/profile.html",
-                      {"error": "You are not registered as a race participant."})
+    otp_uri = pyotp.totp.TOTP(user.mfa_secret).provisioning_uri(
+        name=user.email,
+        issuer_name="Automated Run Timing"
+    )
 
-    #  query races where the user is a participant
-    races = Race.objects.filter(participants=participant)
-    logger.info(f"User {request.user.username} (ID: {request.user.id}) is registered for {races.count()} races.")
+    qr = qrcode.make(otp_uri)
+    buffer = io.BytesIO()
+    qr.save(buffer, format="PNG")
 
-    return render(request, "app/profile.html", {"participant": participant, "races": races})
+    buffer.seek(0)
+    qr_code = base64.b64encode(buffer.getvalue()).decode("utf-8")
+
+    qr_code_data_uri = f"data:image/png;base64,{qr_code}"
+
+    #  handle 2fa enable/disable
+    if request.method == 'POST':
+        if 'enable_2fa' in request.POST:
+            otp = request.POST.get('otp')
+            if otp:
+                totp = pyotp.TOTP(user.mfa_secret)
+                if totp.verify(otp):
+                    user.mfa_enabled = True
+                    user.save()
+                    messages.success(request, "Two-factor authentication enabled successfully!")
+                    return redirect('profile')
+
+                messages.error(request, "Invalid OTP. Please try again.")
+        elif 'disable_2fa' in request.POST:
+            user.mfa_enabled = False
+            user.save()
+            messages.success(request, "Two-factor authentication disabled successfully!")
+            return redirect('profile')
+
+    return render(request, "app/profile.html", {
+        "qrcode": qr_code_data_uri,
+        "mfa_enabled": user.mfa_enabled
+    })
 
 
-@login_required
+@login_and_2fa_required
 def participant_category_list(request):
     """
     View to display the list of participant categories.
@@ -1017,7 +1081,7 @@ def participant_category_list(request):
     return render(request, 'app/participant_category_list.html', {'categories': categories})
 
 
-@login_required
+@login_and_2fa_required
 def participant_category_create(request):
     """
     View to create a new participant category.
@@ -1041,6 +1105,7 @@ def participant_category_create(request):
     return render(request, 'app/participant_category_form.html', {'form': form})
 
 
+@login_and_2fa_required
 def race_category_list(request):
     """
     View to list all the available race categories.
@@ -1056,7 +1121,7 @@ def race_category_list(request):
     return render(request, 'app/race_category_list.html', {'categories': categories})
 
 
-@login_required
+@login_and_2fa_required
 def race_category_create(request):
     """
     View to create a new race category.
@@ -1079,7 +1144,7 @@ def race_category_create(request):
     return render(request, 'app/race_category_create.html', {'form': form})
 
 
-@login_required
+@login_and_2fa_required
 def adjust_start_time(request, race_id):
     """
     View for adjusting the start time of a race.
@@ -1243,7 +1308,7 @@ def upload_image(request):
     return JsonResponse({'error': 'No file uploaded or incorrect method'}, status=400)
 
 
-@login_required
+@login_and_2fa_required
 def gallery_view(request, race_id):
     """
     A view for organisers to manually validate bib numbers for a specific race.
@@ -1345,7 +1410,7 @@ def custom_403(request, exception):
     return render(request, '403.html', status=403)
 
 
-@login_required
+@login_and_2fa_required
 def organiser_delete_race(request, race_id):
     """
     Deletes a race that the logged-in user is organising.
@@ -1364,7 +1429,7 @@ def organiser_delete_race(request, race_id):
     return redirect('race_organiser_dashboard')
 
 
-@login_required
+@login_and_2fa_required
 def apply_as_organiser(request):
     """
     Applies to be the organiser of a race.
@@ -1387,7 +1452,7 @@ def apply_as_organiser(request):
     return render(request, 'app/apply_as_organiser.html', {'form': form, 'available_races': available_races})
 
 
-@login_required
+@login_and_2fa_required
 def view_applications(request):
     """
     views the organiser applications for a race.
@@ -1398,7 +1463,7 @@ def view_applications(request):
     return render(request, 'app/organiser_applications.html', {'applications': applications})
 
 
-@login_required
+@login_and_2fa_required
 def handle_application(request, app_id, action):
     """
     approves or denies an application to become the race organiser.
@@ -1420,3 +1485,33 @@ def handle_application(request, app_id, action):
 
     app.save()
     return redirect('view_applications')
+
+
+@login_required
+def verify_2fa_view(request):
+    """
+    Handles the OTP verification for 2FA during login.
+    """
+
+    #  check if the session has the flag indicating 2FA verification is needed
+    if not request.session.get('needs_2fa', False):
+        return redirect('/')
+
+    user = request.user
+
+    if request.method == 'POST':
+        otp = request.POST.get('otp')
+
+        #  generate OTP validator
+        totp = pyotp.TOTP(user.mfa_secret)
+        if totp.verify(otp):
+            #  authenticate user
+            messages.success(request, "2FA verification successful!")
+
+            del request.session['needs_2fa']
+            return redirect('/')
+
+        else:
+            messages.error(request, "Invalid OTP. Please try again.")
+
+    return render(request, "app/verify_2fa.html")

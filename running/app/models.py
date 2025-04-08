@@ -156,6 +156,8 @@ class CustomUser(AbstractUser):
     name = models.CharField(max_length=255, blank=True, null=True)
     profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
     objects = CustomUserManager()
+    mfa_secret = models.CharField(max_length=16, blank=True, null=False)
+    mfa_enabled = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         """
