@@ -425,7 +425,7 @@ def upload_results(request):
 
     logger.info(f"Accessing the upload results page. Available races: {Race.objects.count()}")
 
-    races = Race.objects.all()
+    races = Race.objects.filter(organiser=request.user)
 
     if request.method == 'POST':
 
@@ -678,7 +678,7 @@ def upload_participants(request):
             return redirect('upload_results')
 
     #  get all available races
-    races = Race.objects.all()
+    races = Race.objects.filter(organiser=request.user)
     categories = RaceCategory.objects.all()  # Fetch all available race categories
     logger.info(f"Rendering upload participants page with {races.count()} races available.")
     return render(request, 'app/upload_participants.html', {'races': races, 'categories': categories})
