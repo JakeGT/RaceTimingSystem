@@ -18,7 +18,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.models import User
 from functools import wraps
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseForbidden
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.dateparse import parse_time
 from datetime import datetime, date, timedelta
@@ -1530,4 +1530,42 @@ def verify_2fa_view(request):
             messages.error(request, "Invalid OTP. Please try again.")
 
     return render(request, "app/verify_2fa.html")
+
+
+@login_and_2fa_required
+def delete_participant(request, race_id, participant_id):
+    """
+    View to handle the deletion of a participant after confirmation.
+    """
+
+    #  get the race and participant objects
+    race = get_object_or_404(Race, id=race_id)
+    participant = get_object_or_404(Participant, id=participant_id)
+
+    #  check if the user is one of the organisers of the race
+    if request.user not in race.organiser.all():
+        return HttpResponseForbidden("You are not authorized to delete this participant.")
+
+    #  delete the participant from the race
+    participant.delete()
+
+    messages.success(request, f"Participant {participant.name} has been deleted.")
+    return redirect('organiser_race_detail', race_id=race.id)
+
+
+@login_and_2fa_required
+def confirm_delete_participant(request, race_id, participant_id):
+    """
+    View to confirm participant deletion.
+    """
+
+    #  get the race and participant objects
+    race = get_object_or_404(Race, id=race_id)
+    participant = get_object_or_404(Participant, id=participant_id)
+
+    #  check if the user is one of the organisers of the race
+    if request.user not in race.organiser.all():
+        return HttpResponseForbidden("You are not authorized to delete this participant.")
+
+    return render(request, 'app/confirm_delete_participant.html', {'participant': participant, 'race': race})
 

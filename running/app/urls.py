@@ -130,6 +130,14 @@ urlpatterns = [
 
     #  2fa route
     path('verify-2fa/', views.verify_2fa_view, name='verify_2fa'),
+
+    #  participant deletion confirmation page
+    path('race/<int:race_id>/delete_participant/<int:participant_id>/', views.confirm_delete_participant,
+         name='confirm_delete_participant'),
+
+    #  participant deletion route
+    path('race/<int:race_id>/delete_participant/<int:participant_id>/delete/', views.delete_participant,
+         name='delete_participant'),
 ]
 
 if settings.DEBUG:
