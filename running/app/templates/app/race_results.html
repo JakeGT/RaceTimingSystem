@@ -32,63 +32,77 @@
     </div>
 
     <!-- Filters Section -->
-    <div class="row mt-5">
-        <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-header bg-secondary text-white">
-                    <h3 class="card-title mb-0">Filters</h3>
-                </div>
-                <div class="card-body">
-                    <form method="get" class="row g-3 align-items-end">
-
-                        <!-- Gender Filter -->
-                        <div class="col-md-3">
-                            <label for="gender-select" class="form-label">Gender</label>
-                            <select id="gender-select" name="gender" class="form-select">
-                                <option value="">All</option>
-                                <option value="male" {% if request.GET.gender == 'male' %}selected{% endif %}>Male</option>
-                                <option value="female" {% if request.GET.gender == 'female' %}selected{% endif %}>Female</option>
-                            </select>
-                        </div>
-
-                        <!-- Age Filter -->
-                        <div class="col-md-3">
-                            <label for="age-select" class="form-label">Age Range</label>
-                            <select id="age-select" name="age" class="form-select">
-                                <option value="">All</option>
-                                <option value="18" {% if request.GET.age == '18' %}selected{% endif %}>18–25</option>
-                                <option value="26" {% if request.GET.age == '26' %}selected{% endif %}>26–35</option>
-                                <option value="36" {% if request.GET.age == '36' %}selected{% endif %}>36–45</option>
-                                <option value="46" {% if request.GET.age == '46' %}selected{% endif %}>46–60</option>
-                                <option value="60" {% if request.GET.age == '60' %}selected{% endif %}>60+</option>
-                            </select>
-                        </div>
-
-                        <!-- Sort By -->
-                        <div class="col-md-3">
-                            <label class="form-label">Sort By</label>
-                            <select name="sort_by" class="form-select">
-                                <option value="">Default</option>
-                                <option value="name" {% if request.GET.sort_by == 'name' %}selected{% endif %}>Name</option>
-                                <option value="age" {% if request.GET.sort_by == 'age' %}selected{% endif %}>Age</option>
-                                <option value="total_time" {% if request.GET.sort_by == 'total_time' %}selected{% endif %}>Total Time</option>
-                            </select>
-                        </div>
-
-                        <!-- Sort Direction -->
-                        <div class="col-md-2">
-                            <label class="form-label">Order</label>
-                            <select name="sort_direction" class="form-select">
-                                <option value="asc" {% if request.GET.sort_direction == 'asc' %}selected{% endif %}>Ascending</option>
-                                <option value="desc" {% if request.GET.sort_direction == 'desc' %}selected{% endif %}>Descending</option>
-                            </select>
-                        </div>
-
-                        <!-- Submit -->
-                        <div class="col-md-1 text-end">
-                            <button type="submit" class="btn btn-primary w-100">Apply</button>
-                        </div>
-                    </form>
+    <div class="card-body">
+        <!-- Filters Section -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-secondary text-white">
+                        <h3 class="card-title mb-0">Filters</h3>
+                    </div>
+                    <div class="card-body bg-white border rounded">
+                        <form method="get" class="row g-3 align-items-end">
+        
+                            <!-- Name Search -->
+                            <div class="col-md-3">
+                                <label for="search" class="form-label text-dark">Search Name</label>
+                                <input type="text" id="search" name="search" class="form-control"
+                                       value="{{ request.GET.search }}" placeholder="e.g., Jane Doe">
+                            </div>
+        
+                            <!-- Gender Filter -->
+                            <div class="col-md-2">
+                                <label for="gender-select" class="form-label text-dark">Gender</label>
+                                <select id="gender-select" name="gender" class="form-select">
+                                    <option value="">All</option>
+                                    <option value="male" {% if request.GET.gender == 'male' %}selected{% endif %}>Male</option>
+                                    <option value="female" {% if request.GET.gender == 'female' %}selected{% endif %}>Female</option>
+                                </select>
+                            </div>
+        
+                            <!-- Age Filter -->
+                            <div class="col-md-2">
+                                <label for="age-select" class="form-label text-dark">Age Range</label>
+                                <select id="age-select" name="age" class="form-select">
+                                    <option value="">All</option>
+                                    <option value="18" {% if request.GET.age == '18' %}selected{% endif %}>18–25</option>
+                                    <option value="26" {% if request.GET.age == '26' %}selected{% endif %}>26–35</option>
+                                    <option value="36" {% if request.GET.age == '36' %}selected{% endif %}>36–45</option>
+                                    <option value="46" {% if request.GET.age == '46' %}selected{% endif %}>46–60</option>
+                                    <option value="60" {% if request.GET.age == '60' %}selected{% endif %}>60+</option>
+                                </select>
+                            </div>
+        
+                            <!-- Sort By -->
+                            <div class="col-md-2">
+                                <label class="form-label text-dark">Sort By</label>
+                                <select name="sort_by" class="form-select">
+                                    <option value="">Default</option>
+                                    <option value="name" {% if request.GET.sort_by == 'name' %}selected{% endif %}>Name</option>
+                                    <option value="age" {% if request.GET.sort_by == 'age' %}selected{% endif %}>Age</option>
+                                    <option value="total_time" {% if request.GET.sort_by == 'total_time' %}selected{% endif %}>Total Time</option>
+                                </select>
+                            </div>
+        
+                            <!-- Sort Direction -->
+                            <div class="col-md-2">
+                                <label class="form-label text-dark">Order</label>
+                                <select name="sort_direction" class="form-select">
+                                    <option value="asc" {% if request.GET.sort_direction == 'asc' %}selected{% endif %}>Ascending</option>
+                                    <option value="desc" {% if request.GET.sort_direction == 'desc' %}selected{% endif %}>Descending</option>
+                                </select>
+                            </div>
+        
+                            <!-- Submit & Reset -->
+                            <div class="col-md-1 d-grid">
+                                <button type="submit" class="btn btn-primary">Apply</button>
+                            </div>
+        
+                            <div class="col-md-12 text-end mt-2">
+                                <a href="?{% if race %}race_id={{ race.id }}{% endif %}" class="btn btn-outline-secondary btn-sm">Reset Filters</a>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>

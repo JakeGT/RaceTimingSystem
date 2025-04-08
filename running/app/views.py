@@ -801,9 +801,14 @@ def race_detail(request, race_id):
     sort_direction = request.GET.get('sort_direction', 'asc')
     gender = request.GET.get('gender', '')
     age = request.GET.get('age', '')
+    search_query = request.GET.get('search', '').strip()
 
     if race_results.exists():
         logger.info(f"Found {len(race_results)} race results for race: {race.name}")
+
+        if search_query:
+            race_results = race_results.filter(participant__name__icontains=search_query)
+            logger.info(f"Filtering race results by name containing: {search_query}")
 
         if gender:
             race_results = race_results.filter(participant__gender=gender)
@@ -836,6 +841,11 @@ def race_detail(request, race_id):
 
     #  if there are no results just show participants
     participants = Participant.objects.filter(race=race)
+
+    #  apply search filter if query exists
+    if search_query:
+        race_results = race_results.filter(participant__name__icontains=search_query)
+        logger.info(f"Filtering race results by name containing: {search_query}")
 
     if gender:
         participants = participants.filter(gender=gender)
