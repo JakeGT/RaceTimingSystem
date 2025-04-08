@@ -261,45 +261,38 @@ def user_logout(request):
 
 def dashboard(request):
     """
-    View for the dashboard page.
+    The view for the users dashboard.
     """
 
     logger.info("Accessing the dashboard page")
 
-    #  get the search term
     race_search = request.GET.get('race_search', '').strip()
-
-    #  get the completed filter
     completed = request.GET.get('completed', None)
+    upcoming = request.GET.get('upcoming', None)
 
-    #  fetch all races
     races = Race.objects.all()
 
-    #  apply search filter
     if race_search:
         logger.info(f"Filtering races with search term: '{race_search}'")
         races = races.filter(name__icontains=race_search)
 
-    #  apply is_completed filter
-    if completed is not None:
-        if completed == 'on':
-            logger.info("Filtering races with 'completed' status: True")
-            races = races.filter(is_completed=True)
-        else:
-            logger.info("Filtering races with 'completed' status: False")
-            races = races.filter(is_completed=False)
+    if completed == 'on':
+        logger.info("Filtering: Show only completed races")
+        races = races.filter(is_completed=True)
 
-    if not races:
-        logger.info("No races found in the database")
-        return render(request, 'app/dashboard.html', {
-            'races': races,
-            'message': 'No races available matching your criteria.'
-        })
+    if upcoming == 'on':
+        logger.info("Filtering: Show only *upcoming* races")
+        races = races.filter(is_completed=False)
 
-    logger.info(f"Found {races.count()} races")
+    #  prevent conflicting filters
+    if completed == 'on' and upcoming == 'on':
+        logger.info("Both completed and upcoming selected — showing nothing")
+        races = Race.objects.none()
+
     return render(request, 'app/dashboard.html', {
         'races': races,
     })
+
 
 
 @login_required

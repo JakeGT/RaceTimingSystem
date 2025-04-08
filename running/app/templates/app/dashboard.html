@@ -47,6 +47,12 @@
                         <label for="completed" class="form-label">Show Completed Races Only:</label>
                         <input type="checkbox" id="completed" name="completed" {% if request.GET.completed %} checked {% endif %}>
                     </div>
+                    
+                    <!-- Filter by Upcoming -->
+                    <div class="form-group">
+                        <label for="upcoming" class="form-label">Show Upcoming Races Only:</label>
+                        <input type="checkbox" id="upcoming" name="upcoming" {% if request.GET.upcoming %} checked {% endif %}>
+                    </div>
                 
                 </div>
             </form>
@@ -75,11 +81,22 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const checkbox = document.getElementById('completed');
+        const upcomingCheckbox = document.getElementById('upcoming');
         const searchInput = document.getElementById('race-search');
         const form = document.getElementById('race-filter-form');
 
         // Auto-submit on checkbox toggle
         checkbox.addEventListener('change', function () {
+            if (checkbox.checked && upcomingCheckbox.checked) {
+                upcomingCheckbox.checked = false;
+            }
+            form.submit();
+        });
+        
+        upcomingCheckbox.addEventListener('change', function () {
+            if (checkbox.checked && upcomingCheckbox.checked) {
+                checkbox.checked = false;
+            }
             form.submit();
         });
 

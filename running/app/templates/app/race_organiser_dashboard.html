@@ -15,7 +15,7 @@
                     <p class="mb-1">Date: {{ data.race.date }}</p>
                     <p class="mb-1">Total Participants: {{ data.participants_count }}</p>
                 </div>
-                
+
                 <!-- Delete Button -->
                 <form method="POST" action="{% url 'organiser_delete_race' data.race.id %}" style="display:inline;">
                     {% csrf_token %}
@@ -28,7 +28,7 @@
             <p class="text-center">You are not managing any races yet.</p>
             <p class="text-center">
                 <a href="{% url 'race_config' %}" class="btn btn-primary">Click here to create your first race</a>
-            
+
         <a href="{% url 'apply_as_organiser' %}" class="btn btn-success">Apply for Race Management</a>
             </p>
         {% endfor %}
