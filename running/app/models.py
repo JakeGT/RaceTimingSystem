@@ -6,6 +6,7 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import BaseUserManager
 from django.utils.translation import gettext_lazy as _
+import secrets
 
 
 # ------------------------------------------------- Class Declarations -------------------------------------------------
@@ -32,6 +33,15 @@ class Race(models.Model):
     address = models.CharField(max_length=255, blank=True, null=True)
     latitude = models.FloatField(blank=True, null=True)
     longitude = models.FloatField(blank=True, null=True)
+
+    organiser_website = models.URLField(blank=True, null=True)
+
+    social_twitter = models.URLField(blank=True, null=True)
+    social_instagram = models.URLField(blank=True, null=True)
+    social_facebook = models.URLField(blank=True, null=True)
+    social_linkedin = models.URLField(blank=True, null=True)
+
+    token = models.CharField(max_length=100, unique=True, blank=True, null=True)
 
     def __str__(self):
         return self.name

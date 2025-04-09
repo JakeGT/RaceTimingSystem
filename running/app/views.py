@@ -38,6 +38,7 @@ from django.utils.dateparse import parse_datetime
 from django.core.files.storage import default_storage
 import pyotp
 import qrcode
+import secrets
 
 #  define custom user
 from django.contrib.auth import get_user_model
@@ -78,23 +79,34 @@ User = get_user_model()
 # Objects version
 @csrf_exempt
 def upload_json(request, race_id):
-    if request.method == 'POST':
-        try:
-            race = Race.objects.get(pk=race_id)
-        except Race.DoesNotExist:
-            return JsonResponse({"error": "Race not found"}, status=404)
+    """
+    Backend API for the upload of runner results data, requires the token with the associated race
+    """
 
-        data = json.loads(request.body)
+    if request.method == 'POST':
+        # check token in header or query string
+        token = request.GET.get('token') or request.headers.get('X-Race-Token')
+        if not token:
+            return JsonResponse({"error": "Missing upload token"}, status=401)
+
+        try:
+            race = Race.objects.get(pk=race_id, token=token)
+        except Race.DoesNotExist:
+            return JsonResponse({"error": "Invalid race or token"}, status=403)
+
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
+
         bib_number = data.get('bib_number')
         result_time = data.get('time')
 
-        #  fetch the participant based on race_id and bib_number (race_number)
         try:
             participant = Participant.objects.get(race=race, race_number=bib_number)
         except Participant.DoesNotExist:
             return JsonResponse({"error": "Participant not found"}, status=404)
 
-        #  calculate the time difference between the start time and the given time
         start_time = race.start_time
         result_time_obj = parse_time(result_time)
 
@@ -106,7 +118,6 @@ def upload_json(request, race_id):
 
         time_difference = result_time_datetime - start_time_datetime
 
-        #  create a RaceResult object
         RaceResult.objects.create(
             participant=participant,
             race=race,
@@ -114,7 +125,9 @@ def upload_json(request, race_id):
         )
 
         return JsonResponse({"message": "Data processed and race result created."})
+
     return JsonResponse({"error": "Invalid request method"}, status=400)
+
 
 
 # -------------------------------------------------- Setup Logging -----------------------------------------------------
@@ -343,9 +356,6 @@ def dashboard(request):
 
 @login_and_2fa_required
 def race_config(request):
-    """
-    Views for race configuration page
-    """
     logger.info(f"Accessing race configuration page by user: {request.user.username}")
 
     race_categories = RaceCategory.objects.all()
@@ -360,13 +370,17 @@ def race_config(request):
         race_location = request.POST.get('race_location', '')
         latitude = request.POST.get('latitude')
         longitude = request.POST.get('longitude')
+        organiser_website = request.POST.get('organiser_website', '').strip()
+        social_twitter = request.POST.get('social_twitter', '').strip()
+        social_instagram = request.POST.get('social_instagram', '').strip()
+        social_facebook = request.POST.get('social_facebook', '').strip()
+        social_linkedin = request.POST.get('social_linkedin', '').strip()
 
         if no_location:
             race_location = None
             latitude = None
             longitude = None
 
-        #  save form values in session
         request.session['race_config_data'] = {
             'race_name': race_name,
             'race_date': race_date_str,
@@ -376,14 +390,17 @@ def race_config(request):
             'latitude': latitude,
             'longitude': longitude,
             'race_location': race_location,
-            'no_location': no_location
+            'no_location': no_location,
+            'organiser_website': organiser_website,
+            'social_twitter': social_twitter,
+            'social_instagram': social_instagram,
+            'social_facebook': social_facebook,
+            'social_linkedin': social_linkedin
         }
 
-        #  validate race date
         try:
             race_date = make_aware(datetime.strptime(race_date_str, "%Y-%m-%d"))
-            now = datetime.now().astimezone()
-            if race_date.date() < now.date():
+            if race_date.date() < datetime.now().astimezone().date():
                 messages.error(request, "Race date cannot be in the past.")
                 return render(request, 'app/race_config.html', {
                     'race_categories': race_categories,
@@ -398,11 +415,6 @@ def race_config(request):
                 'saved_data': request.POST
             })
 
-        logger.info(
-            f"Race configuration submitted by {request.user.username} with name: {race_name},"
-            f" date: {race_date_str}, start time: {start_time}, location: {race_location or 'No location'}"
-        )
-
         if Race.objects.filter(name=race_name).exists():
             messages.error(request, f"A race named '{race_name}' already exists. Please choose a different name.")
             return render(request, 'app/race_config.html', {
@@ -411,43 +423,47 @@ def race_config(request):
                 'saved_data': request.POST
             })
 
+        #  generate secure token
+        token = secrets.token_urlsafe(16)
+
         race = Race.objects.create(
             name=race_name,
             date=race_date,
             start_time=start_time,
             latitude=latitude,
             longitude=longitude,
-            address=race_location
+            address=race_location,
+            organiser_website=organiser_website,
+            social_twitter=social_twitter,
+            social_instagram=social_instagram,
+            social_facebook=social_facebook,
+            social_linkedin=social_linkedin,
+            token=token
         )
+
         race.organiser.add(request.user)
-        logger.info(f"New race created: {race.name} with ID: {race.id} by {request.user.username}")
 
         race_category_id = request.POST.get('race_category')
         if race_category_id:
             try:
-                race_category = RaceCategory.objects.get(id=race_category_id)
-                race.category = race_category
+                race.category = RaceCategory.objects.get(id=race_category_id)
                 race.save()
-                logger.info(f"Added race category {race_category.name} to race {race.name}")
             except RaceCategory.DoesNotExist:
-                logger.error(f"Race category with ID {race_category_id} does not exist.")
+                logger.warning(f"Race category with ID {race_category_id} does not exist.")
 
         for category_id in request.POST.getlist('participant_categories'):
             try:
-                participant_category = ParticipantCategory.objects.get(id=category_id)
-                race.participant_categories.add(participant_category)
-                logger.info(f"Added participant category {participant_category.name} to race {race.name}")
+                race.participant_categories.add(ParticipantCategory.objects.get(id=category_id))
             except ParticipantCategory.DoesNotExist:
-                logger.error(f"Participant category with ID {category_id} does not exist.")
+                logger.warning(f"Participant category with ID {category_id} does not exist.")
 
         request.session.pop('race_config_data', None)
-        logger.info(f"Redirecting user {request.user.username} to the dashboard after race creation.")
-        return redirect('/dashboard')
 
-    logger.info(
-        f"Rendering race configuration form with {len(race_categories)} race categories"
-        f" and {len(participant_categories)} participant categories."
-    )
+        #  show success page with token
+        return render(request, 'app/race_success.html', {
+            'race': race,
+            'token': token
+        })
 
     return render(request, 'app/race_config.html', {
         'race_categories': race_categories,

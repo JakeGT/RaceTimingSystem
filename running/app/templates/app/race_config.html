@@ -117,11 +117,37 @@
                         Please select a location on the map or check "No location required".
                     </div>
 
+                    <!-- Organiser Website -->
+                    <div class="form-group mb-4">
+                        <label for="organiser_website">Organiser Website</label>
+                        <input type="url" name="organiser_website" id="organiser_website" class="form-control" placeholder="https://example.com"
+                            value="{{ saved_data.organiser_website|default:'' }}">
+                    </div>
+                    
+                    <!-- Organiser Social Media Links -->
+                    <div class="form-group mb-4">
+                        <label>Social Media Links (Optional)</label>
+                    
+                        <input type="url" name="social_twitter" class="form-control mb-2" placeholder="Twitter/X (https://twitter.com/yourhandle)"
+                            value="{{ saved_data.social_twitter|default:'' }}">
+                    
+                        <input type="url" name="social_instagram" class="form-control mb-2" placeholder="Instagram (https://instagram.com/yourhandle)"
+                            value="{{ saved_data.social_instagram|default:'' }}">
+                    
+                        <input type="url" name="social_facebook" class="form-control mb-2" placeholder="Facebook (https://facebook.com/yourpage)"
+                            value="{{ saved_data.social_facebook|default:'' }}">
+                    
+                        <input type="url" name="social_linkedin" class="form-control mb-2" placeholder="LinkedIn (https://linkedin.com/in/yourprofile)"
+                            value="{{ saved_data.social_linkedin|default:'' }}">
+                    </div>
 
-                        <!-- Submit -->
-                        <div class="form-group text-center mt-4">
-                            <input type="submit" value="Create Race" class="btn btn-success btn-lg">
-                        </div>
+                    
+                    <!-- Submit -->
+                    <div class="form-group text-center mt-4">
+                        <input type="submit" value="Create Race" class="btn btn-success btn-lg">
+                    </div>
+                    
+                    
                     </form>
                 </div>
             </div>
@@ -141,7 +167,7 @@
         const raceDateInput = document.getElementById("race_date");
         const startTimeInput = document.getElementById("start_time");
 
-        //  initialise start time picker
+        // initialise start time picker
         let startTimePicker = flatpickr(startTimeInput, {
             enableTime: true,
             noCalendar: true,
@@ -174,7 +200,7 @@
             }
         }
 
-        //  location toggle
+        // location toggle
         const noLocationCheckbox = document.getElementById('no_location');
         const locationFields = document.getElementById('location-fields');
         const mapDiv = document.getElementById('map');
@@ -192,7 +218,7 @@
             document.getElementById('longitude').disabled = !show;
         });
 
-        //  leaflet map
+        // leaflet map
         const map = L.map('map').setView([50.7374, -3.5354], 15);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -219,29 +245,80 @@
             marker.setLatLng(e.latlng);
             updateLocationFields(e.latlng);
         });
-        
-        //  form submission validation
+
+        // form submission validation
         const form = document.querySelector('form');
         const latitudeInput = document.getElementById('latitude');
         const longitudeInput = document.getElementById('longitude');
         const locationError = document.getElementById('location-error');
-        
+
         form.addEventListener('submit', function (e) {
             const noLocationChecked = noLocationCheckbox.checked;
             const lat = latitudeInput.value.trim();
             const lng = longitudeInput.value.trim();
-        
-            //  if location is required but not selected
+
+            //  location validation
             if (!noLocationChecked && (!lat || !lng)) {
                 e.preventDefault();
                 locationError.classList.remove('d-none');
                 locationError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
             } else {
                 locationError.classList.add('d-none');
             }
-        });
 
+            //  social media validation
+            const socialLinks = {
+                'social_twitter': 'twitter.com',
+                'social_instagram': 'instagram.com',
+                'social_facebook': 'facebook.com',
+                'social_linkedin': 'linkedin.com'
+            };
+
+            let invalidLinks = [];
+
+            for (const [fieldId, expectedDomain] of Object.entries(socialLinks)) {
+                const input = document.querySelector(`[name="${fieldId}"]`);
+                if (!input) continue;
+                const value = input.value.trim();
+
+                if (value && !value.includes(expectedDomain)) {
+                    invalidLinks.push({
+                        field: fieldId,
+                        value: value,
+                        expected: expectedDomain
+                    });
+                }
+            }
+
+            if (invalidLinks.length > 0) {
+                e.preventDefault();
+
+                const msg = invalidLinks.map(link => 
+                    `${link.field.replace('social_', '')} link is invalid:\nExpected domain: ${link.expected}\nEntered: ${link.value}`
+                ).join('\n\n');
+
+                alert("Please correct the following social media URLs:\n\n" + msg);
+
+                invalidLinks.forEach(link => {
+                    const input = document.querySelector(`[name="${link.field}"]`);
+                    input.classList.add('is-invalid');
+                });
+            } else {
+                Object.keys(socialLinks).forEach(fieldId => {
+                    const input = document.querySelector(`[name="${fieldId}"]`);
+                    input?.classList.remove('is-invalid');
+                });
+            }
+        });
     });
 </script>
+
+<style>
+    .is-invalid {
+        border-color: #dc3545 !important;
+    }
+</style>
+
 
 {% endblock %}

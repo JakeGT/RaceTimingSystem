@@ -148,6 +148,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'app.CustomUser'
 
+SOCIALACCOUNT_ADAPTER='running.social_account.adapter.CustomSocialAccountAdapter'
 
 AUTHENTICATION_BACKENDS = [
     'social_core.backends.facebook.FacebookOAuth2',
@@ -178,7 +179,6 @@ SECRET_KEY = env('SECRET_KEY')
 EMAIL_HOST_USER = env('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL')
-SOCIALACCOUNT_ADAPTER = env('SOCIALACCOUNT_ADAPTER', default='app.social_account.adapter.CustomSocialAccountAdapter')
 GOOGLE_CLIENT_ID = env('GOOGLE_OAUTH_CLIENT_ID')
 
 SECURE_REFERRER_POLICY = 'no-referrer-when-downgrade'
