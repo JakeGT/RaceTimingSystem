@@ -298,31 +298,43 @@ def dashboard(request):
     """
     The view for the users dashboard.
     """
-
     logger.info("Accessing the dashboard page")
 
     race_search = request.GET.get('race_search', '').strip()
     completed = request.GET.get('completed', None)
     upcoming = request.GET.get('upcoming', None)
+    sort_by = request.GET.get('sort_by', '')
+    sort_order = request.GET.get('sort_order', 'asc')
 
     races = Race.objects.all()
 
+    #  search functionality
     if race_search:
         logger.info(f"Filtering races with search term: '{race_search}'")
         races = races.filter(name__icontains=race_search)
 
+    #  filter for completed races
     if completed == 'on':
         logger.info("Filtering: Show only completed races")
         races = races.filter(is_completed=True)
 
+    #  filter for upcoming races
     if upcoming == 'on':
-        logger.info("Filtering: Show only *upcoming* races")
+        logger.info("Filtering: Show only upcoming races")
         races = races.filter(is_completed=False)
 
     #  prevent conflicting filters
     if completed == 'on' and upcoming == 'on':
         logger.info("Both completed and upcoming selected — showing nothing")
         races = Race.objects.none()
+
+    #  sorting functionality
+    if sort_by == 'name':
+        logger.info("Sorting races by name")
+        races = races.order_by('name' if sort_order == 'asc' else '-name')
+    elif sort_by == 'date':
+        logger.info("Sorting races by date")
+        races = races.order_by('date' if sort_order == 'asc' else '-date')
 
     return render(request, 'app/dashboard.html', {
         'races': races,
