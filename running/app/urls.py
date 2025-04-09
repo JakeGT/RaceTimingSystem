@@ -138,6 +138,9 @@ urlpatterns = [
     #  participant deletion route
     path('race/<int:race_id>/delete_participant/<int:participant_id>/delete/', views.delete_participant,
          name='delete_participant'),
+
+    path('race/<int:race_id>/participant/<int:participant_id>/edit/', views.edit_participant, name='edit_participant'),
+
 ]
 
 if settings.DEBUG:

@@ -1554,6 +1554,20 @@ def delete_participant(request, race_id, participant_id):
 
 
 @login_and_2fa_required
+def edit_participant(request, race_id, participant_id):
+    participant = get_object_or_404(Participant, id=participant_id, race_id=race_id)
+
+    if request.method == 'POST':
+        participant.name = request.POST.get('name')
+        participant.age = request.POST.get('age')
+        participant.gender = request.POST.get('gender')
+        participant.save()
+        messages.success(request, "Participant details updated successfully.")
+
+    return redirect('organiser_race_detail', race_id=race_id)
+
+
+@login_and_2fa_required
 def confirm_delete_participant(request, race_id, participant_id):
     """
     View to confirm participant deletion.
