@@ -40,9 +40,9 @@
                             </td>
                             <td>
                                 <select name="gender" class="form-select" required>
-                                    <option value="Male" {% if participant.gender == "Male" %}selected{% endif %}>Male</option>
-                                    <option value="Female" {% if participant.gender == "Female" %}selected{% endif %}>Female</option>
-                                    <option value="Other" {% if participant.gender == "Other" %}selected{% endif %}>Other</option>
+                                    <option value="male" {% if participant.gender == "male" %}selected{% endif %}>Male</option>
+                                    <option value="female" {% if participant.gender == "female" %}selected{% endif %}>Female</option>
+                                    <option value="other" {% if participant.gender == "other" %}selected{% endif %}>Other</option>
                                 </select>
                             </td>
                             <td>{{ participant.status|capfirst }}</td>
