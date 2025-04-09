@@ -61,7 +61,7 @@
                                 value="{{ saved_data.start_time|default:'' }}" required>
                         </div>
 
-                        <!-- Select Race Category (Single Selection) -->
+                        <!-- Select Race Category -->
                         <div class="form-group mb-4">
                             <label for="race_category">Race Category</label>
                             <select name="race_category" id="race_category" class="form-control">
@@ -72,7 +72,7 @@
                             </select>
                         </div>
 
-                        <!-- Select Participant Categories (Multiple Selection) -->
+                        <!-- Participant Categories -->
                         <div class="form-group mb-4">
                             <label for="participant_categories">Participant Categories</label>
                             <select name="participant_categories" id="participant_categories" class="form-control" multiple>
@@ -83,13 +83,13 @@
                             </select>
                         </div>
 
-                        <!-- Buttons to Manage Categories -->
+                        <!-- Manage Buttons -->
                         <div class="d-flex justify-content-between mb-4">
                             <a href="{% url 'category_list' %}" class="btn btn-info">Manage Participant Categories</a>
                             <a href="{% url 'race_category_list' %}" class="btn btn-warning">Manage Race Categories</a>
                         </div>
 
-                        <!-- Checkbox to Opt Out of Location Configuration -->
+                        <!-- Location Opt-out -->
                         <div class="form-group mb-4">
                             <label for="no_location">
                                 <input type="checkbox" id="no_location" name="no_location" {% if saved_data.no_location %}checked{% endif %}>
@@ -97,7 +97,7 @@
                             </label>
                         </div>
 
-                        <!-- OpenStreetMap for selecting the location -->
+                        <!-- Map -->
                         <div id="map" style="height: 400px; width: 100%;"></div>
 
                         <!-- Location Fields -->
@@ -108,12 +108,17 @@
                                     value="{{ saved_data.race_location|default:'' }}" readonly required>
                             </div>
 
-                            <!-- Latitude and Longitude -->
                             <input type="hidden" name="latitude" id="latitude" value="{{ saved_data.latitude|default:'' }}">
                             <input type="hidden" name="longitude" id="longitude" value="{{ saved_data.longitude|default:'' }}">
                         </div>
+                    
+                    <!-- Validation Message -->
+                    <div id="location-error" class="alert alert-danger d-none" role="alert">
+                        Please select a location on the map or check "No location required".
+                    </div>
 
-                        <!-- Submit Button -->
+
+                        <!-- Submit -->
                         <div class="form-group text-center mt-4">
                             <input type="submit" value="Create Race" class="btn btn-success btn-lg">
                         </div>
@@ -124,97 +129,118 @@
     </div>
 </div>
 
-<!-- Flatpickr styles and scripts -->
+<!-- Styles & Scripts -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
-<!-- Leaflet.js styles and scripts -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        const raceDateInput = document.getElementById("race_date");
+        const startTimeInput = document.getElementById("start_time");
 
-        // Initialise Flatpickr for date
-        flatpickr("#race_date", {
-            dateFormat: "Y-m-d", 
-            allowInput: true, 
-            minDate: "today" 
-        });
-        
-        // Initialise Flatpickr for start time
-        flatpickr("#start_time", {
-            enableTime: true, 
+        //  initialise start time picker
+        let startTimePicker = flatpickr(startTimeInput, {
+            enableTime: true,
             noCalendar: true,
-            dateFormat: "H:i", 
+            dateFormat: "H:i",
             time_24hr: true,
-            allowInput: true,
-            minTime: new Date().toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit'}) 
+            allowInput: true
         });
 
-        
+        // initialise race date picker
+        flatpickr(raceDateInput, {
+            dateFormat: "Y-m-d",
+            allowInput: true,
+            minDate: "today",
+            onChange: function(selectedDates) {
+                updateStartTimeMin(selectedDates[0]);
+            }
+        });
+
+        function updateStartTimeMin(selectedDate) {
+            const today = new Date();
+            const selected = new Date(selectedDate);
+
+            startTimePicker.set('minTime', null);
+
+            if (selected.toDateString() === today.toDateString()) {
+                const now = new Date();
+                const hours = now.getHours().toString().padStart(2, '0');
+                const minutes = now.getMinutes().toString().padStart(2, '0');
+                startTimePicker.set('minTime', `${hours}:${minutes}`);
+            }
+        }
+
+        //  location toggle
         const noLocationCheckbox = document.getElementById('no_location');
         const locationFields = document.getElementById('location-fields');
         const mapDiv = document.getElementById('map');
 
-        //  check the state of the checkbox when the page loads
         if (noLocationCheckbox.checked) {
             locationFields.style.display = 'none';
             mapDiv.style.display = 'none';
         }
 
-        //  listen for changes to the checkbox
         noLocationCheckbox.addEventListener('change', function () {
-            if (noLocationCheckbox.checked) {
-                locationFields.style.display = 'none';
-                mapDiv.style.display = 'none';
-                document.getElementById('latitude').disabled = true;
-                document.getElementById('longitude').disabled = true;
-            } else {
-                locationFields.style.display = 'block';
-                mapDiv.style.display = 'block';
-                document.getElementById('latitude').disabled = false;
-                document.getElementById('longitude').disabled = false;
-            }
+            const show = !noLocationCheckbox.checked;
+            locationFields.style.display = show ? 'block' : 'none';
+            mapDiv.style.display = show ? 'block' : 'none';
+            document.getElementById('latitude').disabled = !show;
+            document.getElementById('longitude').disabled = !show;
         });
 
-        //  initialise Leaflet map at campus
+        //  leaflet map
         const map = L.map('map').setView([50.7374, -3.5354], 15);
-
-        //  add OpenStreetMap tile layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
-        //  add draggable marker at campus
         const marker = L.marker([50.7374, -3.5354], { draggable: true }).addTo(map);
 
-        //  update latitude and longitude fields
+        function updateLocationFields(position) {
+            document.getElementById("latitude").value = position.lat;
+            document.getElementById("longitude").value = position.lng;
+
+            fetch(`https://nominatim.openstreetmap.org/reverse?lat=${position.lat}&lon=${position.lng}&format=json`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("race_location").value = data.display_name || 'Unknown Location';
+                });
+        }
+
         marker.on('dragend', function (e) {
-            const position = e.target.getLatLng();
-            document.getElementById("latitude").value = position.lat;
-            document.getElementById("longitude").value = position.lng;
-
-            fetch(`https://nominatim.openstreetmap.org/reverse?lat=${position.lat}&lon=${position.lng}&format=json`)
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById("race_location").value = data.display_name || 'Unknown Location';
-                });
+            updateLocationFields(e.target.getLatLng());
         });
 
-        //  when the user clicks on the map place marker and update fields
         map.on('click', function (e) {
-            const position = e.latlng;
-            marker.setLatLng(position);
-            document.getElementById("latitude").value = position.lat;
-            document.getElementById("longitude").value = position.lng;
-
-            fetch(`https://nominatim.openstreetmap.org/reverse?lat=${position.lat}&lon=${position.lng}&format=json`)
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById("race_location").value = data.display_name || 'Unknown Location';
-                });
+            marker.setLatLng(e.latlng);
+            updateLocationFields(e.latlng);
         });
+        
+        //  form submission validation
+        const form = document.querySelector('form');
+        const latitudeInput = document.getElementById('latitude');
+        const longitudeInput = document.getElementById('longitude');
+        const locationError = document.getElementById('location-error');
+        
+        form.addEventListener('submit', function (e) {
+            const noLocationChecked = noLocationCheckbox.checked;
+            const lat = latitudeInput.value.trim();
+            const lng = longitudeInput.value.trim();
+        
+            //  if location is required but not selected
+            if (!noLocationChecked && (!lat || !lng)) {
+                e.preventDefault();
+                locationError.classList.remove('d-none');
+                locationError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } else {
+                locationError.classList.add('d-none');
+            }
+        });
+
     });
 </script>
 
