@@ -90,14 +90,18 @@
                     <!-- Social Sign-In -->
                     <div class="text-center mt-4">
                         <p>Or sign up with:</p>
+
+                        <!-- Google Sign-In Button -->
                         <div id="google-signin-button" class="mb-3"></div>
 
+                        <!-- Facebook -->
                         <a href="{% url 'facebook_login' %}" class="btn btn-primary w-100 mb-2" style="background-color: #3b5998; border: none;">
                             <i class="bi bi-facebook me-2"></i>Sign up with Facebook
                         </a>
 
-                        <a href="{% url 'apple_login' %}" class="btn btn-dark w-100" style="background-color: #000;">
-                            <i class="bi bi-apple me-2"></i>Sign up with Apple
+                        <!-- GitHub -->
+                        <a href="{% url 'social:begin' 'github' %}" class="btn btn-dark w-100">
+                            <i class="bi bi-github me-2"></i> Sign up with GitHub
                         </a>
                     </div>
 
