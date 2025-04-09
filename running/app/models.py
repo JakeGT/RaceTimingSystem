@@ -39,7 +39,6 @@ class Race(models.Model):
     social_twitter = models.URLField(blank=True, null=True)
     social_instagram = models.URLField(blank=True, null=True)
     social_facebook = models.URLField(blank=True, null=True)
-    social_linkedin = models.URLField(blank=True, null=True)
 
     token = models.CharField(max_length=100, unique=True, blank=True, null=True)
 

@@ -374,7 +374,6 @@ def race_config(request):
         social_twitter = request.POST.get('social_twitter', '').strip()
         social_instagram = request.POST.get('social_instagram', '').strip()
         social_facebook = request.POST.get('social_facebook', '').strip()
-        social_linkedin = request.POST.get('social_linkedin', '').strip()
 
         if no_location:
             race_location = None
@@ -395,7 +394,6 @@ def race_config(request):
             'social_twitter': social_twitter,
             'social_instagram': social_instagram,
             'social_facebook': social_facebook,
-            'social_linkedin': social_linkedin
         }
 
         try:
@@ -437,7 +435,6 @@ def race_config(request):
             social_twitter=social_twitter,
             social_instagram=social_instagram,
             social_facebook=social_facebook,
-            social_linkedin=social_linkedin,
             token=token
         )
 
