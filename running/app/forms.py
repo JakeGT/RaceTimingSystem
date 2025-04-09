@@ -30,12 +30,11 @@ class RaceCategoryForm(forms.ModelForm):
 
 class AdjustStartTimeForm(forms.Form):
     """
-    Class for adjusting race start time form
+    Form for adjusting the race start time.
     """
 
     start_time = forms.DateTimeField(
         label='New Start Time',
-        initial=timezone.now,
         widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}),
     )
 

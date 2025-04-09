@@ -1162,39 +1162,40 @@ def adjust_start_time(request, race_id):
     """
     View for adjusting the start time of a race.
     """
-
-    #  get the race object
     race = get_object_or_404(Race, id=race_id)
 
     logger.info(
-        f"User {request.user.username} (ID: {request.user.id}) is adjusting the start time for race"
-        f" '{race.name}' (ID: {race.id}).")
+        f"User {request.user.username} (ID: {request.user.id}) is adjusting the start time for race "
+        f"'{race.name}' (ID: {race.id})."
+    )
 
     if request.method == 'POST':
         form = AdjustStartTimeForm(request.POST)
 
         if form.is_valid():
-            #  update start time
-            new_start_time = form.cleaned_data['start_time']
-            old_start_time = race.start_time
+            new_start_datetime = form.cleaned_data['start_time']
+            old_date, old_time = race.date, race.start_time
 
-            logger.info(
-                f"Start time for race '{race.name}' (ID: {race.id}) is being changed"
-                f" from {old_start_time} to {new_start_time}.")
-
-            race.start_time = new_start_time
+            race.date = new_start_datetime.date()
+            race.start_time = new_start_datetime.time()
             race.save()
 
             logger.info(
-                f"Start time for race '{race.name}' (ID: {race.id}) successfully updated by user"
-                f" {request.user.username}.")
+                f"Race '{race.name}' (ID: {race.id}) start date/time changed from "
+                f"{old_date} {old_time} to {race.date} {race.start_time} by user {request.user.username}."
+            )
+
+            messages.success(request, "Start time updated successfully.")
             return redirect('organiser_race_detail', race_id=race.id)
         else:
             logger.warning(
-                f"User {request.user.username} attempted to adjust the start time for race"
-                f" '{race.name}' (ID: {race.id}) but the form was invalid.")
+                f"Invalid form submission by user {request.user.username} while adjusting start time "
+                f"for race '{race.name}' (ID: {race.id})."
+            )
     else:
-        form = AdjustStartTimeForm(initial={'start_time': race.start_time})
+        #  combine race.date and race.start_time into a datetime object
+        initial_start_datetime = datetime.combine(race.date, race.start_time)
+        form = AdjustStartTimeForm(initial={'start_time': initial_start_datetime})
 
     return render(request, 'app/adjust_start_time.html', {'form': form, 'race': race})
 
