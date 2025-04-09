@@ -1,4 +1,3 @@
-<!-- running/app/templates/app/organiser_race_detail.html -->
 {% extends 'base.html' %}
 
 {% block title %}Race Details - Organiser{% endblock %}
@@ -8,37 +7,107 @@
     <h1 class="text-center">Manage Participants for {{ race.name }}</h1>
     <p class="lead text-muted text-center">Manage race details and participants.</p>
 
-    <!-- Update Participants Button -->
-    <div class="text-center mb-4">
-        <a href="{% url 'upload_participants' %}" class="btn btn-primary">Update Participants</a>
-    </div>
-
-    <!-- Update Results Button -->
-    <div class="text-center mb-4">
-        <a href="{% url 'upload_results' %}" class="btn btn-secondary">Update Results</a>
-    </div>
-
-    <!-- Adjust Start Time Button -->
-    <div class="text-center mb-4">
-        <a href="{% url 'adjust_start_time' race.id %}" class="btn btn-warning">Adjust Start Time</a>
+    <!-- Button row -->
+    <div class="d-flex justify-content-center gap-3 mb-4">
+        <a href="{% url 'upload_participants' %}" class="btn btn-primary btn-lg">Update Participants</a>
+        <a href="{% url 'upload_results' %}" class="btn btn-secondary btn-lg">Update Results</a>
+        <a href="{% url 'adjust_start_time' race.id %}" class="btn btn-warning btn-lg">Adjust Start Time</a>
+        <a href="{% url 'gallery_view' race.id %}" class="btn btn-info btn-lg">Manual Bib Validation</a>
     </div>
 
     <!-- Participants Table -->
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for participant in participants %}
+    {% if participants %}
+        <table class="table table-bordered align-middle">
+            <thead class="table-light">
                 <tr>
-                    <td>{{ participant.name }}</td>
-                    <td>{{ participant.status }}</td>
+                    <th>Name</th>
+                    <th>Age</th>
+                    <th>Gender</th>
+                    <th>Status</th>
+                    <th>Action</th>
                 </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                {% for participant in participants %}
+                    <tr>
+                        <form method="POST" action="{% url 'edit_participant' race.id participant.id %}">
+                            {% csrf_token %}
+                            <td>
+                                <input type="text" name="name" value="{{ participant.name }}" class="form-control" required>
+                            </td>
+                            <td>
+                                <input type="number" name="age" value="{{ participant.age }}" class="form-control" min="0" required>
+                            </td>
+                            <td>
+                                <select name="gender" class="form-select" required>
+                                    <option value="male" {% if participant.gender == "male" %}selected{% endif %}>Male</option>
+                                    <option value="female" {% if participant.gender == "female" %}selected{% endif %}>Female</option>
+                                    <option value="other" {% if participant.gender == "other" %}selected{% endif %}>Other</option>
+                                </select>
+                            </td>
+                            <td>{{ participant.status|capfirst }}</td>
+                            <td class="d-flex gap-2">
+                                <button type="submit" class="btn btn-success btn-sm rounded" title="Save">
+                                    <i class="bi bi-check-lg"></i>
+                                </button>
+                                <a href="{% url 'confirm_delete_participant' race_id=race.id participant_id=participant.id %}" class="btn btn-danger btn-sm rounded-circle" title="Delete">
+                                    <i class="bi bi-x-lg"></i>
+                                </a>
+                            </td>
+                        </form>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% if results %}
+            <h2 class="mt-5 text-center">Race Results</h2>
+            <table class="table table-striped table-hover mt-3">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Name</th>
+                        <th>Race Number</th>
+                        <th>Age</th>
+                        <th>Gender</th>
+                        <th>Total Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for result in results %}
+                        <tr>
+                            <td>{{ result.participant.name }}</td>
+                            <td>{{ result.participant.race_number }}</td>
+                            <td>{{ result.participant.age }}</td>
+                            <td>{{ result.participant.gender|capfirst }}</td>
+                            <td>{{ result.total_time }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    {% else %}
+        <p class="text-center text-muted">There are no participants for this race yet.</p>
+    {% endif %}
+
+    <div class="text-center mt-5 mb-3">
+        <p class="lead text-muted">You can share the details of this race on social media to invite others to join and spread the word!</p>
+    </div>
+
+    <!-- Social Media Share Buttons -->
+    <div class="d-flex justify-content-center gap-3 mt-3">
+        <!-- Twitter Share Button -->
+        <a href="https://twitter.com/intent/tweet?text=Check%20out%20the%20{{ race.name }}%20race%20at%20{{ race.date }}!%20Join%20us%20for%20a%20great%20event!%20{% url 'race_detail' race.id %}" 
+           target="_blank" 
+           class="btn btn-outline-primary btn-lg">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/c/ce/X_logo_2023.svg" alt="X" style="width: 30px; height: 30px;">
+        </a>
+
+        <!-- Facebook Share Button -->
+        <a href="https://www.facebook.com/sharer/sharer.php?u={% url 'race_detail' race.id %}" 
+           target="_blank" 
+           class="btn btn-outline-primary btn-lg">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg" alt="Facebook" style="width: 30px; height: 30px;">
+        </a>
+    </div>
+
 </div>
 {% endblock %}

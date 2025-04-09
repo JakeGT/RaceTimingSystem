@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Race Created - Race Timing System{% endblock %}
+
+{% block content %}
+<div class="container mt-5 text-center">
+    <div class="alert alert-success">
+        <h2 class="mb-3">Race Created Successfully</h2>
+        <p class="lead">"<strong>{{ race.name }}</strong>" has been saved.</p>
+        <hr>
+        <h5 class="mt-4">Secure Token</h5>
+        <div class="input-group mb-3">
+            <input type="text" id="tokenInput" class="form-control text-monospace font-weight-bold bg-light p-3 rounded" value="{{ token }}" readonly>
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary" type="button" id="copyButton">Copy</button>
+            </div>
+        </div>
+        <a href="{% url 'dashboard' %}" class="btn btn-primary mt-4">Go to Dashboard</a>
+    </div>
+</div>
+
+<!-- Copy Button -->
+<script>
+    document.getElementById('copyButton').addEventListener('click', function() {
+        const tokenInput = document.getElementById('tokenInput');
+        tokenInput.select();
+        tokenInput.setSelectionRange(0, 99999);
+        document.execCommand('copy');
+        alert('Token copied to clipboard!');
+    });
+</script>
+
+{% endblock %}

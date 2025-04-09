@@ -5,7 +5,7 @@ from . import views
 from django.conf import settings
 from django.conf.urls.static import static
 from django.conf.urls import handler404, handler500, handler403
-from django.urls import path
+from django.urls import path, include
 from .views import CustomPasswordResetView
 from django.contrib.auth import views as auth_views
 
@@ -40,7 +40,7 @@ urlpatterns = [
     #  password reset custom view
     path("password_reset/", CustomPasswordResetView.as_view(), name="password_reset"),
 
-    #  password resetemail sent page
+    #  password reset-email sent page
     path("password_reset/done/", auth_views.PasswordResetDoneView.as_view(template_name="app/password_reset_done.html"),
          name="password_reset_done"),
 
@@ -109,6 +109,38 @@ urlpatterns = [
 
     #  manual bib validation
     path('gallery/<int:race_id>/', views.gallery_view, name='gallery_view'),
+
+    #  race deletion route
+    path('race/<int:race_id>/delete/', views.organiser_delete_race, name='organiser_delete_race'),
+
+    #  organiser application page
+    path('organiser/apply/', views.apply_as_organiser, name='apply_as_organiser'),
+
+    #  organiser application viewing page
+    path('organiser/applications/', views.view_applications, name='view_applications'),
+
+    #  individual organiser application page
+    path('organiser/applications/<int:app_id>/<str:action>/', views.handle_application, name='handle_application'),
+
+    #  log in with facebook account route
+    path('facebook-login/', lambda request: redirect('/accounts/facebook/login/'), name='facebook_login'),
+
+    #  social-auth route for third party sign in
+    path('social-auth/', include('social_django.urls', namespace='social')),
+
+    #  2fa route
+    path('verify-2fa/', views.verify_2fa_view, name='verify_2fa'),
+
+    #  participant deletion confirmation page
+    path('race/<int:race_id>/delete_participant/<int:participant_id>/', views.confirm_delete_participant,
+         name='confirm_delete_participant'),
+
+    #  participant deletion route
+    path('race/<int:race_id>/delete_participant/<int:participant_id>/delete/', views.delete_participant,
+         name='delete_participant'),
+
+    path('race/<int:race_id>/participant/<int:participant_id>/edit/', views.edit_participant, name='edit_participant'),
+
 ]
 
 if settings.DEBUG:

@@ -8,23 +8,25 @@ import json
 from django.core.files.base import ContentFile
 from django.shortcuts import get_object_or_404
 from google.auth.transport import requests
-
-from .models import Participant, RaceResult, Race, ParticipantCategory, RaceCategory, Image
+import base64
+from .models import Participant, RaceResult, Race, ParticipantCategory, RaceCategory, Image, OrganiserApplication
 from .utils.logger import setup_logging
+from django.contrib.sessions.models import Session
 from django.utils import timezone
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.models import User
 from functools import wraps
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseForbidden
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.dateparse import parse_time
 from datetime import datetime, date, timedelta
+from django.utils.timezone import make_aware
 from django.contrib.auth.views import PasswordResetView
 from django.urls import reverse_lazy
 from django.contrib.messages.views import SuccessMessageMixin
-from .forms import ParticipantCategoryForm, RaceCategoryForm, ImageUploadForm, AdjustStartTimeForm
+from .forms import ParticipantCategoryForm, RaceCategoryForm, ImageUploadForm, AdjustStartTimeForm, OrganiserApplicationForm
 from django.shortcuts import render
 from django.shortcuts import redirect
 from django.contrib.auth import login
@@ -34,6 +36,9 @@ from google.oauth2.id_token import verify_oauth2_token
 from django.conf import settings
 from django.utils.dateparse import parse_datetime
 from django.core.files.storage import default_storage
+import pyotp
+import qrcode
+import secrets
 
 #  define custom user
 from django.contrib.auth import get_user_model
@@ -74,23 +79,34 @@ User = get_user_model()
 # Objects version
 @csrf_exempt
 def upload_json(request, race_id):
-    if request.method == 'POST':
-        try:
-            race = Race.objects.get(pk=race_id)
-        except Race.DoesNotExist:
-            return JsonResponse({"error": "Race not found"}, status=404)
+    """
+    Backend API for the upload of runner results data, requires the token with the associated race
+    """
 
-        data = json.loads(request.body)
+    if request.method == 'POST':
+        # check token in header or query string
+        token = request.GET.get('token') or request.headers.get('X-Race-Token')
+        if not token:
+            return JsonResponse({"error": "Missing upload token"}, status=401)
+
+        try:
+            race = Race.objects.get(pk=race_id, token=token)
+        except Race.DoesNotExist:
+            return JsonResponse({"error": "Invalid race or token"}, status=403)
+
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
+
         bib_number = data.get('bib_number')
         result_time = data.get('time')
 
-        #  fetch the participant based on race_id and bib_number (race_number)
         try:
             participant = Participant.objects.get(race=race, race_number=bib_number)
         except Participant.DoesNotExist:
             return JsonResponse({"error": "Participant not found"}, status=404)
 
-        #  calculate the time difference between the start time and the given time
         start_time = race.start_time
         result_time_obj = parse_time(result_time)
 
@@ -102,7 +118,6 @@ def upload_json(request, race_id):
 
         time_difference = result_time_datetime - start_time_datetime
 
-        #  create a RaceResult object
         RaceResult.objects.create(
             participant=participant,
             race=race,
@@ -110,7 +125,9 @@ def upload_json(request, race_id):
         )
 
         return JsonResponse({"message": "Data processed and race result created."})
+
     return JsonResponse({"error": "Invalid request method"}, status=400)
+
 
 
 # -------------------------------------------------- Setup Logging -----------------------------------------------------
@@ -140,6 +157,44 @@ def logged_out_required(view_func):
         return view_func(request, *args, **kwargs)
 
     return _wrapped_view
+
+
+def two_factor_required(view_func):
+    """
+    Decorator to require 2fa completion before accessing certain views
+    """
+
+    def _wrapped_view(request, *args, **kwargs):
+        if request.session.get('needs_2fa', False):
+            return redirect('verify_2fa')
+        return view_func(request, *args, **kwargs)
+
+    return _wrapped_view
+
+
+def login_and_2fa_required(view_func):
+    """
+    Decorator to require login and 2fa verification for a view
+    """
+
+    decorated_view = login_required(two_factor_required(view_func))
+    return decorated_view
+
+
+def login_and_2fa_optional(view_func):
+    """
+    Decorator that allows access to the view for non-logged-in users but requires
+    2fa for logged-in users with 2FA enabled.
+    """
+
+    def wrapper(request, *args, **kwargs):
+        if request.user.is_authenticated and request.user.mfa_enabled and not request.session.get('mfa_verified',
+                                                                                                  False):
+            return redirect("verify_2fa")
+
+        return view_func(request, *args, **kwargs)
+
+    return wrapper
 
 
 def landing_page(request):
@@ -226,147 +281,197 @@ def user_login(request):
 
         logger.info(f"Login attempt for username: {username}")
 
-        #  authenticate the user
+        #  authenticate user
         user = authenticate(request, username=username, password=password)
 
         if user is not None:
+            #  log user in
             login(request, user)
             logger.info(f"Login successful for username: {username}")
             messages.success(request, "Login successful!")
+
+            #  check if 2fa enabled
+            if user.mfa_enabled:
+                request.session['needs_2fa'] = True
+                return redirect("verify_2fa")
+
             return redirect("/")
+
         else:
             logger.info(f"Login failed for username: {username}: Invalid username or password.")
             messages.error(request, "Invalid username or password.")
 
-    return render(request, "app/login.html")
+    return render(request, "app/login.html", {
+        'google_client_id': settings.GOOGLE_CLIENT_ID
+    })
 
 
-@login_required
-def user_logout(request):
-    """
-    Logs out the user.
-    """
-
-    #  log the logout attempt
-    logger.info(f"User {request.user.username} logged out.")
-
-    #  perform the logout
-    logout(request)
-
-    messages.success(request, "You have been logged out.")
-    return redirect("login")
-
-
+@login_and_2fa_optional
 def dashboard(request):
     """
-    View for the dashboard page.
+    The view for the users dashboard.
     """
-
     logger.info("Accessing the dashboard page")
 
-    #  get the search term
     race_search = request.GET.get('race_search', '').strip()
-
-    #  get the completed filter
     completed = request.GET.get('completed', None)
+    upcoming = request.GET.get('upcoming', None)
+    sort_by = request.GET.get('sort_by', '')
+    sort_order = request.GET.get('sort_order', 'asc')
 
-    #  fetch all races
     races = Race.objects.all()
 
-    #  apply search filter
+    #  search functionality
     if race_search:
         logger.info(f"Filtering races with search term: '{race_search}'")
         races = races.filter(name__icontains=race_search)
 
-    #  apply is_completed filter
-    if completed is not None:
-        if completed == 'on':
-            logger.info("Filtering races with 'completed' status: True")
-            races = races.filter(is_completed=True)
-        else:
-            logger.info("Filtering races with 'completed' status: False")
-            races = races.filter(is_completed=False)
+    #  filter for completed races
+    if completed == 'on':
+        logger.info("Filtering: Show only completed races")
+        races = races.filter(is_completed=True)
 
-    if not races:
-        logger.info("No races found in the database")
-        return render(request, 'app/dashboard.html', {
-            'races': races,
-            'message': 'No races available matching your criteria.'
-        })
+    #  filter for upcoming races
+    if upcoming == 'on':
+        logger.info("Filtering: Show only upcoming races")
+        races = races.filter(is_completed=False)
 
-    logger.info(f"Found {races.count()} races")
+    #  prevent conflicting filters
+    if completed == 'on' and upcoming == 'on':
+        logger.info("Both completed and upcoming selected — showing nothing")
+        races = Race.objects.none()
+
+    #  sorting functionality
+    if sort_by == 'name':
+        logger.info("Sorting races by name")
+        races = races.order_by('name' if sort_order == 'asc' else '-name')
+    elif sort_by == 'date':
+        logger.info("Sorting races by date")
+        races = races.order_by('date' if sort_order == 'asc' else '-date')
+
     return render(request, 'app/dashboard.html', {
         'races': races,
     })
 
 
-@login_required
+@login_and_2fa_required
 def race_config(request):
-    """
-    Views for race configuration page
-    """
-
     logger.info(f"Accessing race configuration page by user: {request.user.username}")
 
-    #  get all race categories and participant categories
     race_categories = RaceCategory.objects.all()
     participant_categories = ParticipantCategory.objects.all()
+    saved_data = request.session.get('race_config_data', {})
 
     if request.method == 'POST':
-        #  process the form data
         race_name = request.POST['race_name']
-        race_date = request.POST['race_date']
+        race_date_str = request.POST['race_date']
         start_time = request.POST['start_time']
+        no_location = request.POST.get('no_location', False)
+        race_location = request.POST.get('race_location', '')
+        latitude = request.POST.get('latitude')
+        longitude = request.POST.get('longitude')
+        organiser_website = request.POST.get('organiser_website', '').strip()
+        social_twitter = request.POST.get('social_twitter', '').strip()
+        social_instagram = request.POST.get('social_instagram', '').strip()
+        social_facebook = request.POST.get('social_facebook', '').strip()
+        social_linkedin = request.POST.get('social_linkedin', '').strip()
 
-        logger.info(
-            f"Race configuration submitted by {request.user.username} with name: {race_name},"
-            f" date: {race_date}, start time: {start_time}")
+        if no_location:
+            race_location = None
+            latitude = None
+            longitude = None
 
-        #  get the selected race category
-        race_category_id = request.POST.get('race_category', None)
-        if race_category_id:
-            race_category = RaceCategory.objects.get(id=race_category_id)
-            logger.info(f"Selected race category: {race_category.name}")
-        else:
-            race_category = None
-            logger.info("No race category selected.")
+        request.session['race_config_data'] = {
+            'race_name': race_name,
+            'race_date': race_date_str,
+            'start_time': start_time,
+            'race_category': request.POST.get('race_category', None),
+            'participant_categories': request.POST.getlist('participant_categories'),
+            'latitude': latitude,
+            'longitude': longitude,
+            'race_location': race_location,
+            'no_location': no_location,
+            'organiser_website': organiser_website,
+            'social_twitter': social_twitter,
+            'social_instagram': social_instagram,
+            'social_facebook': social_facebook,
+            'social_linkedin': social_linkedin
+        }
 
-        #  get the selected participant categories
-        participant_category_ids = request.POST.getlist('participant_categories')
-        logger.info(f"Selected participant categories: {participant_category_ids}")
+        try:
+            race_date = make_aware(datetime.strptime(race_date_str, "%Y-%m-%d"))
+            if race_date.date() < datetime.now().astimezone().date():
+                messages.error(request, "Race date cannot be in the past.")
+                return render(request, 'app/race_config.html', {
+                    'race_categories': race_categories,
+                    'participant_categories': participant_categories,
+                    'saved_data': request.POST
+                })
+        except ValueError:
+            messages.error(request, "Invalid race date format. Please use YYYY-MM-DD.")
+            return render(request, 'app/race_config.html', {
+                'race_categories': race_categories,
+                'participant_categories': participant_categories,
+                'saved_data': request.POST
+            })
 
-        #  create a new race object
+        if Race.objects.filter(name=race_name).exists():
+            messages.error(request, f"A race named '{race_name}' already exists. Please choose a different name.")
+            return render(request, 'app/race_config.html', {
+                'race_categories': race_categories,
+                'participant_categories': participant_categories,
+                'saved_data': request.POST
+            })
+
+        #  generate secure token
+        token = secrets.token_urlsafe(16)
+
         race = Race.objects.create(
             name=race_name,
             date=race_date,
             start_time=start_time,
-            categories=race_category.name if race_category else 'None',
-            organiser=request.user
+            latitude=latitude,
+            longitude=longitude,
+            address=race_location,
+            organiser_website=organiser_website,
+            social_twitter=social_twitter,
+            social_instagram=social_instagram,
+            social_facebook=social_facebook,
+            social_linkedin=social_linkedin,
+            token=token
         )
-        logger.info(f"New race created: {race.name} with ID: {race.id} by {request.user.username}")
 
-        #  add participant categories
-        if participant_category_ids:
-            for category_id in participant_category_ids:
-                participant_category = ParticipantCategory.objects.get(id=category_id)
-                race.participants.add(participant_category)
-                logger.info(f"Added participant category {participant_category.name} to race {race.name}")
+        race.organiser.add(request.user)
 
-        #  redirect to the dashboard
-        logger.info(f"Redirecting user {request.user.username} to the dashboard after race creation.")
-        return redirect('/dashboard')
+        race_category_id = request.POST.get('race_category')
+        if race_category_id:
+            try:
+                race.category = RaceCategory.objects.get(id=race_category_id)
+                race.save()
+            except RaceCategory.DoesNotExist:
+                logger.warning(f"Race category with ID {race_category_id} does not exist.")
 
-    #  render the form
-    logger.info(
-        f"Rendering race configuration form with {len(race_categories)} race categories"
-        f" and {len(participant_categories)} participant categories.")
+        for category_id in request.POST.getlist('participant_categories'):
+            try:
+                race.participant_categories.add(ParticipantCategory.objects.get(id=category_id))
+            except ParticipantCategory.DoesNotExist:
+                logger.warning(f"Participant category with ID {category_id} does not exist.")
+
+        request.session.pop('race_config_data', None)
+
+        #  show success page with token
+        return render(request, 'app/race_success.html', {
+            'race': race,
+            'token': token
+        })
+
     return render(request, 'app/race_config.html', {
         'race_categories': race_categories,
-        'participant_categories': participant_categories
+        'participant_categories': participant_categories,
+        'saved_data': saved_data
     })
 
-
-@login_required
+@login_and_2fa_required
 def upload_results(request):
     """
     View for uploading race results via CSV file.
@@ -374,7 +479,7 @@ def upload_results(request):
 
     logger.info(f"Accessing the upload results page. Available races: {Race.objects.count()}")
 
-    races = Race.objects.all()
+    races = Race.objects.filter(organiser=request.user)
 
     if request.method == 'POST':
 
@@ -383,15 +488,12 @@ def upload_results(request):
             logger.info(f"File '{file.name}' received for upload.")
 
             try:
-                #  decode the CSV file and process each row
                 decoded_file = file.read().decode('utf-8').splitlines()
                 reader = csv.reader(decoded_file)
 
-                #  skip the header row if present
                 header = next(reader, None)
                 logger.info(f"CSV header: {header}")
 
-                #  ensure race_id is provided
                 race_id = request.POST.get('race_id')
                 if not race_id:
                     messages.error(request, 'Please select a race before uploading CSV.')
@@ -406,7 +508,6 @@ def upload_results(request):
                     logger.error(f"Race with ID {race_id} not found.")
                     return render(request, 'app/upload_results.html', {'races': races})
 
-                #  process each row in the CSV file
                 for row in reader:
                     if len(row) < 2:
                         messages.error(request, 'CSV file format is incorrect.')
@@ -416,12 +517,10 @@ def upload_results(request):
                     bib_number = row[0].strip()
                     result_time = row[1].strip()
 
-                    #  skip empty rows
                     if not bib_number or not result_time:
                         logger.warning(f"Skipping empty row (bib_number: {bib_number}, result_time: {result_time})")
                         continue
 
-                    #  find the participant
                     try:
                         participant = Participant.objects.get(race_id=race.id, race_number=bib_number)
                         logger.info(f"Found participant: {participant.name} (Bib: {bib_number})")
@@ -432,7 +531,6 @@ def upload_results(request):
                         logger.error(f"Participant with bib number {bib_number} not found for race {race.name}.")
                         continue
 
-                    #  check if the result for this participant and race already exists
                     if RaceResult.objects.filter(race=race, participant=participant).exists():
                         messages.error(request,
                                        f'Result already uploaded for participant {bib_number}'
@@ -440,7 +538,6 @@ def upload_results(request):
                         logger.warning(f"Result already uploaded for participant {bib_number} in race {race.name}.")
                         continue
 
-                    #  save the result to the database
                     RaceResult.objects.create(
                         race=race,
                         participant=participant,
@@ -448,19 +545,31 @@ def upload_results(request):
                     )
                     logger.info(f"Result for participant {bib_number} successfully uploaded for race {race.name}.")
 
+                #  check if all results have been uploaded
+                total_participants = Participant.objects.filter(race=race).count()
+                uploaded_results = RaceResult.objects.filter(race=race).count()
+
+                if total_participants == uploaded_results:
+                    race.is_completed = True
+                    race.save()
+                    logger.info(f"Race '{race.name}' marked as completed (all results received).")
+                    messages.success(request, f"All results have been uploaded. Race '{race.name}' is now marked as completed.")
+
+                else:
+                    logger.info(f"Race '{race.name}' still has outstanding results: "
+                                f"{total_participants - uploaded_results} remaining.")
+
                 messages.success(request, 'CSV file uploaded successfully!')
-                logger.info(f"CSV upload for race {race.name} completed successfully.")
 
             except Exception as e:
                 messages.error(request, f'Error uploading CSV: {str(e)}')
                 logger.error(f"Error uploading CSV: {str(e)}")
 
-    #  render the same page with all races and the messages
-    logger.info("Rendering upload results page with races and any messages.")
     return render(request, 'app/upload_results.html', {'races': races})
 
 
-@login_required
+
+@login_and_2fa_required
 def upload_participants(request):
     """
     View for uploading participants either manually or via CSV.
@@ -484,6 +593,7 @@ def upload_participants(request):
             logger.error(f"Invalid race selected. Race ID: {race_id} does not exist.")
             return redirect('upload_participants')
 
+        # Handle CSV file upload
         if 'file' in request.FILES:
             csv_file = request.FILES['file']
             logger.info(f"CSV file '{csv_file.name}' received for upload.")
@@ -579,13 +689,59 @@ def upload_participants(request):
 
             return redirect('upload_results')
 
-    #   get all available races
-    races = Race.objects.all()
+        #  handle manual entry form
+        elif 'bib_number' in request.POST:
+            bib_number = request.POST.get('bib_number')
+            firstname = request.POST.get('firstname')
+            lastname = request.POST.get('lastname')
+            gender = request.POST.get('gender')
+            team_name = request.POST.get('team_name')
+            age_category = request.POST.get('age_category')
+            race_category = request.POST.get('race_category')
+            age = int(request.POST.get('age', 0))
+
+            #  validate form data
+            if not all([bib_number, firstname, lastname, gender, team_name, age_category, race_category, age]):
+                messages.error(request, "Please fill in all required fields.")
+                return redirect('upload_participants')
+
+            #  check for existing participant with the same bib number
+            existing_participant = Participant.objects.filter(race=race, race_number=bib_number).first()
+            if existing_participant:
+                messages.warning(request, f"Participant with Bib Number {bib_number} already exists for this race.")
+                return redirect('upload_participants')
+
+            #  create participant
+            participant = Participant(
+                race=race,
+                race_number=bib_number,
+                name=f"{firstname} {lastname}",
+                age=age,
+                gender=gender,
+                team_name=team_name,
+                age_category=age_category,
+                status='pending'
+            )
+
+            #  assign selected category if available
+            if race_category:
+                race_category_obj = RaceCategory.objects.filter(name=race_category).first()
+                if race_category_obj:
+                    participant.category = race_category_obj
+
+            participant.save()
+            messages.success(request, "Participant added successfully!")
+            logger.info(f"Added participant {firstname} {lastname} (Bib: {bib_number}) for race {race.name}.")
+
+            return redirect('upload_results')
+
+    #  get all available races
+    races = Race.objects.filter(organiser=request.user)
+    categories = RaceCategory.objects.all()  # Fetch all available race categories
     logger.info(f"Rendering upload participants page with {races.count()} races available.")
-    return render(request, 'app/upload_participants.html', {'races': races})
+    return render(request, 'app/upload_participants.html', {'races': races, 'categories': categories})
 
 
-@login_required
 def user_logout(request):
     """
     Logs out the user and redirects to the homepage.
@@ -603,7 +759,7 @@ def user_logout(request):
     return redirect('/')
 
 
-@login_required
+@login_and_2fa_required
 def manage_participants(request, race_id):
     """
     Loads a page where organisers can approve or deny participants.
@@ -643,7 +799,7 @@ def manage_participants(request, race_id):
                   {'race': race, 'participants': participants})
 
 
-@login_required
+@login_and_2fa_required
 def race_history(request):
     """
     Views the history of a runner.
@@ -661,28 +817,29 @@ def race_history(request):
     return render(request, 'app/race_history.html', {'participant': participant})
 
 
+@login_and_2fa_optional
 def race_detail(request, race_id):
     """
     View for displaying race details, including race results or participant list.
     """
 
-    #  fetch the race
     race = get_object_or_404(Race, id=race_id)
     logger.info(f"Accessed race details for race: {race.name} (ID: {race.id})")
 
-    #  get race results
     race_results = RaceResult.objects.filter(race=race)
 
-    #  get sorts and filters
     sort_by = request.GET.get('sort_by', '')
     sort_direction = request.GET.get('sort_direction', 'asc')
+    gender = request.GET.get('gender', '')
+    age = request.GET.get('age', '')
+    search_query = request.GET.get('search', '').strip()
 
     if race_results.exists():
         logger.info(f"Found {len(race_results)} race results for race: {race.name}")
 
-        #  apply filters
-        gender = request.GET.get('gender')
-        age = request.GET.get('age')
+        if search_query:
+            race_results = race_results.filter(participant__name__icontains=search_query)
+            logger.info(f"Filtering race results by name containing: {search_query}")
 
         if gender:
             race_results = race_results.filter(participant__gender=gender)
@@ -690,50 +847,51 @@ def race_detail(request, race_id):
 
         if age:
             age_ranges = {
-                '18': (18, 25),
-                '26': (26, 35),
-                '36': (36, 45),
-                '46': (46, 60),
-                '60': (60, 1000),
+                '18': (18, 25), '26': (26, 35), '36': (36, 45),
+                '46': (46, 60), '60': (60, 1000),
             }
             if age in age_ranges:
                 min_age, max_age = age_ranges[age]
                 race_results = race_results.filter(participant__age__gte=min_age, participant__age__lte=max_age)
-                logger.info(f"Filtering race results by age range: {min_age}-{max_age}")
+                logger.info(f"Filtering race results by age: {min_age}-{max_age}")
 
-        #  apply sorting
         if sort_by:
             logger.info(f"Sorting race results by {sort_by} in {sort_direction} order.")
             if sort_by == 'name':
-                race_results = race_results.order_by(
-                    '-participant__name' if sort_direction == 'desc' else 'participant__name')
+                race_results = race_results.order_by('-participant__name' if sort_direction == 'desc' else 'participant__name')
             elif sort_by == 'age':
-                race_results = race_results.order_by(
-                    '-participant__age' if sort_direction == 'desc' else 'participant__age')
+                race_results = race_results.order_by('-participant__age' if sort_direction == 'desc' else 'participant__age')
             elif sort_by == 'total_time':
-                race_results = race_results.order_by(
-                    '-total_time' if sort_direction == 'desc' else 'total_time')
+                race_results = race_results.order_by('-total_time' if sort_direction == 'desc' else 'total_time')
 
         return render(request, 'app/race_results.html', {
             'race': race,
             'race_results': race_results,
+            'filters': request.GET
         })
 
-    #  if no results show participants
-    participants = Participant.objects.filter(race=race).values('name', 'age', 'gender', 'age_category', 'race_number')
+    #  if there are no results just show participants
+    participants = Participant.objects.filter(race=race)
 
-    #  apply filters
+    #  apply search filter if query exists
+    if search_query:
+        race_results = race_results.filter(participant__name__icontains=search_query)
+        logger.info(f"Filtering race results by name containing: {search_query}")
+
     if gender:
         participants = participants.filter(gender=gender)
         logger.info(f"Filtering participants by gender: {gender}")
 
     if age:
+        age_ranges = {
+            '18': (18, 25), '26': (26, 35), '36': (36, 45),
+            '46': (46, 60), '60': (60, 1000),
+        }
         if age in age_ranges:
             min_age, max_age = age_ranges[age]
             participants = participants.filter(age__gte=min_age, age__lte=max_age)
-            logger.info(f"Filtering participants by age range: {min_age}-{max_age}")
+            logger.info(f"Filtering participants by age: {min_age}-{max_age}")
 
-    #  apply sorting
     if sort_by:
         logger.info(f"Sorting participants by {sort_by} in {sort_direction} order.")
         if sort_by == 'name':
@@ -742,16 +900,21 @@ def race_detail(request, race_id):
             participants = participants.order_by('-age' if sort_direction == 'desc' else 'age')
 
     participants_count = participants.count()
-    logger.info(f"Displaying {participants_count} participants for race: {race.name}")
+
+    location_info = race.address or (f"Lat: {race.latitude}, Lon: {race.longitude}" if race.latitude and race.longitude else "None")
+    category_info = race.race_category if race.race_category else "None"
 
     return render(request, 'app/race_detail.html', {
         'race': race,
         'participants': participants,
-        'participants_count': participants_count
+        'participants_count': participants_count,
+        'location_info': location_info,
+        'category_info': category_info,
+        'filters': request.GET,
     })
 
 
-@login_required
+@login_and_2fa_required
 def race_organiser_dashboard(request):
     """
     Defines the view for a race organiser dashboard.
@@ -759,30 +922,30 @@ def race_organiser_dashboard(request):
 
     logger.info(f"User {request.user.username} accessed the race organiser dashboard")
 
-    #  get races where the logged-in user is the organiser
+    query = request.GET.get('q', '')
     races = Race.objects.filter(organiser=request.user)
-    logger.info(f"Found {len(races)} races for organiser: {request.user.username}")
 
-    #  calculate the total participants
+    if query:
+        races = races.filter(name__icontains=query)
+        logger.info(f"Filtered races with query: '{query}', {len(races)} results found")
+
+    # calculate the total participants
     race_data = []
     for race in races:
         participants = Participant.objects.filter(race=race)
-
-        #  count the filtered participants
         participants_count = participants.count()
-        logger.info(f"Race {race.name} (ID: {race.id}) has {participants_count} participants")
-
         race_data.append({
             'race': race,
             'participants_count': participants_count
         })
 
-    logger.info(f"Race organiser dashboard data prepared with {len(race_data)} races")
+    return render(request, 'app/race_organiser_dashboard.html', {
+        'race_data': race_data,
+        'query': query,
+    })
 
-    return render(request, 'app/race_organiser_dashboard.html', {'race_data': race_data})
 
-
-@login_required(login_url="login")
+@login_and_2fa_required
 def upcoming_races(request):
     """
     View for displaying all upcoming races.
@@ -804,40 +967,33 @@ def upcoming_races(request):
     return render(request, 'app/upcoming_races.html', {'upcoming_races': upcoming})
 
 
+@login_and_2fa_required
 def organiser_race_detail(request, race_id):
     """
-    Defines the view for an organiser viewing a specific race.
+    View for an organiser to see a specific race and its participants.
     """
 
     logger.info(f"Accessing organiser race detail view for race_id={race_id}")
 
-    #  get the race object
     race = get_object_or_404(Race, id=race_id)
-    logger.info(f"Race details fetched: {race.name} - {race.date} with {race.participants.count()} participants")
+    participants = Participant.objects.filter(race=race)
+    participants_count = participants.count()
+    results = RaceResult.objects.filter(race=race).select_related('participant')
 
-    if request.method == 'POST':
-        participant_id = request.POST.get('participant_id')
-        status = request.POST.get('status')
+    logger.info(f"Race details fetched: {race.name} - {race.date}")
+    logger.info(f"Displaying {participants_count} participants for race: {race.name}")
+    logger.info(f"Found {results.count()} results for race: {race.name}")
 
-        try:
-            #  get the participant and update status
-            participant = race.participants.get(id=participant_id)
-            logger.info(f"Updating status for participant {participant.name} (ID: {participant_id}) to {status}")
-
-            participant.status = status
-            participant.save()
-            logger.info(f"Participant {participant.name} (ID: {participant_id}) status updated to {status}")
-        except race.participants.model.DoesNotExist:
-            logger.error(f"Participant with ID {participant_id} not found in race {race.name}")
-
-    participants = race.participants.all()
-    logger.info(f"Rendering race detail page with {participants.count()} participants")
-
-    return render(request, 'app/organiser_race_detail.html',
-                  {'race': race, 'participants': participants})
+    return render(request, 'app/organiser_race_detail.html', {
+        'race': race,
+        'participants': participants,
+        'participants_count': participants_count,
+        'results': results if results.exists() else None,
+    })
 
 
-@login_required(login_url="login")
+
+@login_and_2fa_required
 def race_results(request, race_id):
     """
     Defines the view for the results of a race.
@@ -859,7 +1015,7 @@ def race_results(request, race_id):
     return render(request, 'app/race_results.html', {'race': race, 'results': results})
 
 
-@login_required
+@login_and_2fa_required
 def settings_view(request):
     """
     Defines the view for the settings page.
@@ -900,48 +1056,60 @@ def settings_view(request):
     return render(request, "app/settings.html")
 
 
-@login_required
+@login_and_2fa_required
 def profile_view(request):
     """
     Defines the view for the profile page.
     """
 
-    logger.info(f"Accessing profile page for user {request.user.username} (ID: {request.user.id})")
+    user = request.user
+    logger.info(f"Accessing profile page for user {user.username} (ID: {user.id})")
 
-    #  try to get the Participant instance associated with the logged-in user
-    participant = Participant.objects.filter(user=request.user).first()
+    # C check for MFA secret
+    if not user.mfa_secret:
+        user.mfa_secret = pyotp.random_base32()
+        user.save()
 
-    if not participant:
-        logger.warning(f"User {request.user.username} (ID: {request.user.id}) is not"
-                       f" registered as a race participant.")
-        return render(request, "app/profile.html",
-                      {"error": "You are not registered as a race participant."})
+    otp_uri = pyotp.totp.TOTP(user.mfa_secret).provisioning_uri(
+        name=user.email,
+        issuer_name="Automated Run Timing"
+    )
 
-    #  query races where the user is a participant
-    races = Race.objects.filter(participants=participant)
-    logger.info(f"User {request.user.username} (ID: {request.user.id}) is registered for {races.count()} races.")
+    qr = qrcode.make(otp_uri)
+    buffer = io.BytesIO()
+    qr.save(buffer, format="PNG")
 
-    return render(request, "app/profile.html", {"participant": participant, "races": races})
+    buffer.seek(0)
+    qr_code = base64.b64encode(buffer.getvalue()).decode("utf-8")
 
+    qr_code_data_uri = f"data:image/png;base64,{qr_code}"
 
-@login_required
-def organiser_race_detail(request, race_id):
-    """
-    Defines the organiser view for a single race.
-    """
+    #  handle 2fa enable/disable
+    if request.method == 'POST':
+        if 'enable_2fa' in request.POST:
+            otp = request.POST.get('otp')
+            if otp:
+                totp = pyotp.TOTP(user.mfa_secret)
+                if totp.verify(otp):
+                    user.mfa_enabled = True
+                    user.save()
+                    messages.success(request, "Two-factor authentication enabled successfully!")
+                    return redirect('profile')
 
-    logger.info(f"Organiser {request.user.username} (ID: {request.user.id}) is viewing details for race {race_id}.")
+                messages.error(request, "Invalid OTP. Please try again.")
+        elif 'disable_2fa' in request.POST:
+            user.mfa_enabled = False
+            user.save()
+            messages.success(request, "Two-factor authentication disabled successfully!")
+            return redirect('profile')
 
-    race = get_object_or_404(Race, id=race_id)
-
-    logger.info(f"Race details loaded for race ID {race.id}, race name: {race.name}")
-
-    return render(request, 'app/organiser_race_detail.html', {
-        'race': race
+    return render(request, "app/profile.html", {
+        "qrcode": qr_code_data_uri,
+        "mfa_enabled": user.mfa_enabled
     })
 
 
-@login_required
+@login_and_2fa_required
 def participant_category_list(request):
     """
     View to display the list of participant categories.
@@ -956,7 +1124,7 @@ def participant_category_list(request):
     return render(request, 'app/participant_category_list.html', {'categories': categories})
 
 
-@login_required
+@login_and_2fa_required
 def participant_category_create(request):
     """
     View to create a new participant category.
@@ -980,6 +1148,7 @@ def participant_category_create(request):
     return render(request, 'app/participant_category_form.html', {'form': form})
 
 
+@login_and_2fa_required
 def race_category_list(request):
     """
     View to list all the available race categories.
@@ -995,7 +1164,7 @@ def race_category_list(request):
     return render(request, 'app/race_category_list.html', {'categories': categories})
 
 
-@login_required
+@login_and_2fa_required
 def race_category_create(request):
     """
     View to create a new race category.
@@ -1018,44 +1187,45 @@ def race_category_create(request):
     return render(request, 'app/race_category_create.html', {'form': form})
 
 
-@login_required
+@login_and_2fa_required
 def adjust_start_time(request, race_id):
     """
     View for adjusting the start time of a race.
     """
-
-    #  get the race object
     race = get_object_or_404(Race, id=race_id)
 
     logger.info(
-        f"User {request.user.username} (ID: {request.user.id}) is adjusting the start time for race"
-        f" '{race.name}' (ID: {race.id}).")
+        f"User {request.user.username} (ID: {request.user.id}) is adjusting the start time for race "
+        f"'{race.name}' (ID: {race.id})."
+    )
 
     if request.method == 'POST':
         form = AdjustStartTimeForm(request.POST)
 
         if form.is_valid():
-            #  update start time
-            new_start_time = form.cleaned_data['start_time']
-            old_start_time = race.start_time
+            new_start_datetime = form.cleaned_data['start_time']
+            old_date, old_time = race.date, race.start_time
 
-            logger.info(
-                f"Start time for race '{race.name}' (ID: {race.id}) is being changed"
-                f" from {old_start_time} to {new_start_time}.")
-
-            race.start_time = new_start_time
+            race.date = new_start_datetime.date()
+            race.start_time = new_start_datetime.time()
             race.save()
 
             logger.info(
-                f"Start time for race '{race.name}' (ID: {race.id}) successfully updated by user"
-                f" {request.user.username}.")
+                f"Race '{race.name}' (ID: {race.id}) start date/time changed from "
+                f"{old_date} {old_time} to {race.date} {race.start_time} by user {request.user.username}."
+            )
+
+            messages.success(request, "Start time updated successfully.")
             return redirect('organiser_race_detail', race_id=race.id)
         else:
             logger.warning(
-                f"User {request.user.username} attempted to adjust the start time for race"
-                f" '{race.name}' (ID: {race.id}) but the form was invalid.")
+                f"Invalid form submission by user {request.user.username} while adjusting start time "
+                f"for race '{race.name}' (ID: {race.id})."
+            )
     else:
-        form = AdjustStartTimeForm(initial={'start_time': race.start_time})
+        #  combine race.date and race.start_time into a datetime object
+        initial_start_datetime = datetime.combine(race.date, race.start_time)
+        form = AdjustStartTimeForm(initial={'start_time': initial_start_datetime})
 
     return render(request, 'app/adjust_start_time.html', {'form': form, 'race': race})
 
@@ -1182,7 +1352,7 @@ def upload_image(request):
     return JsonResponse({'error': 'No file uploaded or incorrect method'}, status=400)
 
 
-@login_required
+@login_and_2fa_required
 def gallery_view(request, race_id):
     """
     A view for organisers to manually validate bib numbers for a specific race.
@@ -1282,3 +1452,165 @@ def custom_403(request, exception):
 
     #  render the custom 403 page
     return render(request, '403.html', status=403)
+
+
+@login_and_2fa_required
+def organiser_delete_race(request, race_id):
+    """
+    Deletes a race that the logged-in user is organising.
+    """
+
+    race = get_object_or_404(Race, id=race_id)
+
+    #  check if the user is in the organisers list
+    if request.user not in race.organiser.all():
+        messages.error(request, "You are not authorised to delete this race.")
+        return redirect('race_organiser_dashboard')
+
+    #  delete the race
+    race.delete()
+    messages.success(request, "Race has been deleted successfully.")
+    return redirect('race_organiser_dashboard')
+
+
+@login_and_2fa_required
+def apply_as_organiser(request):
+    """
+    Applies to be the organiser of a race.
+    """
+
+    #  exclude races the user already organises
+    available_races = Race.objects.exclude(organiser=request.user)
+
+    if request.method == 'POST':
+        form = OrganiserApplicationForm(request.POST, user=request.user)
+        if form.is_valid():
+            app = form.save(commit=False)
+            app.user = request.user
+            app.save()
+            messages.success(request, "Your application has been submitted.")
+            return redirect('race_organiser_dashboard')
+    else:
+        form = OrganiserApplicationForm(user=request.user)
+
+    return render(request, 'app/apply_as_organiser.html', {'form': form, 'available_races': available_races})
+
+
+@login_and_2fa_required
+def view_applications(request):
+    """
+    views the organiser applications for a race.
+    """
+
+    races = request.user.organised_races.all()
+    applications = OrganiserApplication.objects.filter(race__in=races, status='pending')
+    return render(request, 'app/organiser_applications.html', {'applications': applications})
+
+
+@login_and_2fa_required
+def handle_application(request, app_id, action):
+    """
+    approves or denies an application to become the race organiser.
+    """
+
+    app = get_object_or_404(OrganiserApplication, id=app_id)
+
+    #  ensure current user is an organiser of the race
+    if request.user not in app.race.organiser.all():
+        return redirect('organiser_dashboard')
+
+    if action == 'approve':
+        app.status = 'approved'
+        app.race.organiser.add(app.user)
+        messages.success(request, f"{app.user.username} is now an organiser for {app.race.name}.")
+    elif action == 'deny':
+        app.status = 'denied'
+        messages.info(request, f"Application by {app.user.username} has been denied.")
+
+    app.save()
+    return redirect('view_applications')
+
+
+@login_required
+def verify_2fa_view(request):
+    """
+    Handles the OTP verification for 2FA during login.
+    """
+
+    #  check if the session has the flag indicating 2FA verification is needed
+    if not request.session.get('needs_2fa', False):
+        return redirect('/')
+
+    user = request.user
+
+    if request.method == 'POST':
+        otp = request.POST.get('otp')
+
+        #  generate OTP validator
+        totp = pyotp.TOTP(user.mfa_secret)
+        if totp.verify(otp):
+            #  authenticate user
+            messages.success(request, "2FA verification successful!")
+
+            request.session['mfa_verified'] = True
+            del request.session['needs_2fa']
+
+            return redirect('/')
+
+        else:
+            messages.error(request, "Invalid OTP. Please try again.")
+
+    return render(request, "app/verify_2fa.html")
+
+
+@login_and_2fa_required
+def delete_participant(request, race_id, participant_id):
+    """
+    View to handle the deletion of a participant after confirmation.
+    """
+
+    #  get the race and participant objects
+    race = get_object_or_404(Race, id=race_id)
+    participant = get_object_or_404(Participant, id=participant_id)
+
+    #  check if the user is one of the organisers of the race
+    if request.user not in race.organiser.all():
+        return HttpResponseForbidden("You are not authorized to delete this participant.")
+
+    #  delete the participant from the race
+    participant.delete()
+
+    messages.success(request, f"Participant {participant.name} has been deleted.")
+    return redirect('organiser_race_detail', race_id=race.id)
+
+
+@login_and_2fa_required
+def edit_participant(request, race_id, participant_id):
+    participant = get_object_or_404(Participant, id=participant_id, race_id=race_id)
+
+    if request.method == 'POST':
+        participant.name = request.POST.get('name')
+        participant.age = request.POST.get('age')
+        participant.gender = request.POST.get('gender')
+        participant.save()
+        messages.success(request, "Participant details updated successfully.")
+
+    return redirect('organiser_race_detail', race_id=race_id)
+
+
+@login_and_2fa_required
+def confirm_delete_participant(request, race_id, participant_id):
+    """
+    View to confirm participant deletion.
+    """
+
+    #  get the race and participant objects
+    race = get_object_or_404(Race, id=race_id)
+    participant = get_object_or_404(Participant, id=participant_id)
+
+    #  check if the user is one of the organisers of the race
+    if request.user not in race.organiser.all():
+        return HttpResponseForbidden("You are not authorized to delete this participant.")
+
+    return render(request, 'app/confirm_delete_participant.html', {'participant': participant, 'race': race})
+

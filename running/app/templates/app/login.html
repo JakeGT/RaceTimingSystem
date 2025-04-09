@@ -11,7 +11,6 @@
                     <h2>Login</h2>
                 </div>
                 <div class="card-body">
-
                     <!-- Display Django messages -->
                     {% if messages %}
                         {% for message in messages %}
@@ -51,33 +50,44 @@
                         <a href="{% url 'password_reset' %}">Forgot your password?</a>
                     </p>
 
-                    <!-- Google Sign-In Integration -->
-                    {% if not request.session.user_data %}
+                    <!-- Social Sign-In Buttons -->
                     <div class="text-center mt-4">
-                        <p>Or sign in with Google:</p>
-                        <div id="google-signin-button"></div>
+                        <p>Or sign in with:</p>
+
+                        <!-- Google -->
+                        <div id="google-signin-button" class="mb-2"></div>
+
+                        <!-- Facebook -->
+                        <a href="{% url 'social:begin' 'facebook' %}" class="btn btn-primary w-100 mb-2" style="background-color: #3b5998;">
+                            <i class="bi bi-facebook me-2"></i> Sign in with Facebook
+                        </a>
+
+                        <!-- GitHub -->
+                        <a href="{% url 'social:begin' 'github' %}" class="btn btn-dark w-100">
+                            <i class="bi bi-github me-2"></i> Sign in with GitHub
+                        </a>
                     </div>
-                    {% else %}
+
+                    {% if request.session.user_data %}
                     <div class="text-center mt-4">
-                        <p>Hi {{ request.session.user_data.given_name }} 🙂</p>
+                        <p>Hi {{ request.session.user_data.given_name }}</p>
                         <p>Your email is {{ request.session.user_data.email }}</p>
                         <img src="{{ request.session.user_data.picture }}" alt="User picture" style="border-radius: 50%; width: 100px; height: 100px; object-fit: cover;" />
                         <p>Click here to <a href="/sign-out">Sign out</a></p>
                     </div>
                     {% endif %}
-
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Include the Google Sign-In script -->
+<!-- Google Sign-In Script -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
   window.onload = function() {
     google.accounts.id.initialize({
-      client_id: '-- insert google client id --',
+      client_id: '{{ google_client_id }}',
       callback: handleCredentialResponse
     });
 
@@ -89,7 +99,6 @@
 
   function handleCredentialResponse(response) {
     const token = response.credential;
-
     window.location.href = `/google-login/callback/?credential=${token}`;
   }
 </script>

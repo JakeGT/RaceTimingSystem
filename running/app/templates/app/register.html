@@ -30,7 +30,7 @@
                     <form method="post" action="{% url 'register' %}">
                         {% csrf_token %}
 
-                        <!-- Show form errors if any -->
+                        <!-- Form Errors -->
                         {% if form.errors %}
                             <div class="alert alert-danger">
                                 <p><strong>Please correct the errors below:</strong></p>
@@ -44,6 +44,7 @@
                             </div>
                         {% endif %}
 
+                        <!-- Username -->
                         <div class="mb-3">
                             <label for="username" class="form-label">Username</label>
                             <input type="text" id="username" name="username" class="form-control {% if form.username.errors %}is-invalid{% endif %}" required autofocus>
@@ -52,6 +53,7 @@
                             {% endfor %}
                         </div>
 
+                        <!-- Email -->
                         <div class="mb-3">
                             <label for="email" class="form-label">Email</label>
                             <input type="email" id="email" name="email" class="form-control {% if form.email.errors %}is-invalid{% endif %}" required>
@@ -60,6 +62,7 @@
                             {% endfor %}
                         </div>
 
+                        <!-- Password -->
                         <div class="mb-3">
                             <label for="password1" class="form-label">Password</label>
                             <input type="password" id="password1" name="password1" class="form-control {% if form.password1.errors %}is-invalid{% endif %}" required>
@@ -68,6 +71,7 @@
                             {% endfor %}
                         </div>
 
+                        <!-- Confirm Password -->
                         <div class="mb-3">
                             <label for="password2" class="form-label">Confirm Password</label>
                             <input type="password" id="password2" name="password2" class="form-control {% if form.password2.errors %}is-invalid{% endif %}" required>
@@ -83,10 +87,18 @@
                         Already have an account? <a href="{% url 'login' %}">Login here</a>.
                     </p>
 
-                    <!-- Google Sign-In Integration -->
+                    <!-- Social Sign-In -->
                     <div class="text-center mt-4">
-                        <p>Or sign up with Google:</p>
-                        <div id="google-signin-button"></div>
+                        <p>Or sign up with:</p>
+                        <div id="google-signin-button" class="mb-3"></div>
+
+                        <a href="{% url 'facebook_login' %}" class="btn btn-primary w-100 mb-2" style="background-color: #3b5998; border: none;">
+                            <i class="bi bi-facebook me-2"></i>Sign up with Facebook
+                        </a>
+
+                        <a href="{% url 'apple_login' %}" class="btn btn-dark w-100" style="background-color: #000;">
+                            <i class="bi bi-apple me-2"></i>Sign up with Apple
+                        </a>
                     </div>
 
                 </div>
@@ -95,7 +107,7 @@
     </div>
 </div>
 
-<!-- Include the Google Sign-In script -->
+<!-- Google Sign-In Script -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
   window.onload = function() {
@@ -106,13 +118,16 @@
 
     google.accounts.id.renderButton(
       document.getElementById("google-signin-button"),
-      { theme: "outline", size: "large" }
+      {
+        theme: "outline",
+        size: "large",
+        text: "signup_with"
+      }
     );
   };
 
   function handleCredentialResponse(response) {
     const token = response.credential;
-
     window.location.href = `/google-login/callback/?credential=${token}`;
   }
 </script>

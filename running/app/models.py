@@ -6,6 +6,7 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import BaseUserManager
 from django.utils.translation import gettext_lazy as _
+import secrets
 
 
 # ------------------------------------------------- Class Declarations -------------------------------------------------
@@ -14,18 +15,39 @@ class Race(models.Model):
     Model representing a race configuration.
     """
 
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
     date = models.DateField()
     start_time = models.TimeField()
-    categories = models.TextField()
+    race_category = models.ForeignKey('RaceCategory', on_delete=models.SET_NULL, null=True, blank=True)
+    participant_categories = models.ManyToManyField('ParticipantCategory', related_name='races')
 
-    organiser = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    organiser = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name='organised_races',
+        blank=True
+    )
     participants = models.ManyToManyField('Participant', related_name='races', blank=True)
 
     is_completed = models.BooleanField(default=False)
 
+    address = models.CharField(max_length=255, blank=True, null=True)
+    latitude = models.FloatField(blank=True, null=True)
+    longitude = models.FloatField(blank=True, null=True)
+
+    organiser_website = models.URLField(blank=True, null=True)
+
+    social_twitter = models.URLField(blank=True, null=True)
+    social_instagram = models.URLField(blank=True, null=True)
+    social_facebook = models.URLField(blank=True, null=True)
+    social_linkedin = models.URLField(blank=True, null=True)
+
+    token = models.CharField(max_length=100, unique=True, blank=True, null=True)
+
     def __str__(self):
         return self.name
+
+    def get_location(self):
+        return f"{self.address} (Lat: {self.latitude}, Lon: {self.longitude})" if self.address else "Location not set"
 
 
 class Participant(models.Model):
@@ -83,7 +105,6 @@ class ParticipantCategory(models.Model):
     Model for custom Participant category (e.g., "veteran" or "junior").
     """
 
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     name = models.CharField(max_length=100, unique=True)
 
     def __str__(self):
@@ -145,6 +166,8 @@ class CustomUser(AbstractUser):
     name = models.CharField(max_length=255, blank=True, null=True)
     profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
     objects = CustomUserManager()
+    mfa_secret = models.CharField(max_length=16, blank=True, null=False)
+    mfa_enabled = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         """
@@ -172,3 +195,40 @@ class Image(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.race.name}) - {self.timestamp}"
+
+
+class OrganiserApplication(models.Model):
+    """
+    Model representing an application to become a race organiser.
+    """
+
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('denied', 'Denied'),
+    ]
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='organiser_applications'
+    )
+    race = models.ForeignKey(
+        Race,
+        on_delete=models.CASCADE,
+        related_name='organiser_applications'
+    )
+    message = models.TextField(blank=True)
+    status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default='pending'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'race')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user} - {self.race} ({self.status})"
