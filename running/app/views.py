@@ -947,20 +947,22 @@ def organiser_race_detail(request, race_id):
 
     logger.info(f"Accessing organiser race detail view for race_id={race_id}")
 
-    #  fetch the race object
     race = get_object_or_404(Race, id=race_id)
-    logger.info(f"Race details fetched: {race.name} - {race.date}")
-
-    #  fetch all participants for the race
     participants = Participant.objects.filter(race=race)
     participants_count = participants.count()
+    results = RaceResult.objects.filter(race=race).select_related('participant')
+
+    logger.info(f"Race details fetched: {race.name} - {race.date}")
     logger.info(f"Displaying {participants_count} participants for race: {race.name}")
+    logger.info(f"Found {results.count()} results for race: {race.name}")
 
     return render(request, 'app/organiser_race_detail.html', {
         'race': race,
         'participants': participants,
         'participants_count': participants_count,
+        'results': results if results.exists() else None,
     })
+
 
 
 @login_and_2fa_required

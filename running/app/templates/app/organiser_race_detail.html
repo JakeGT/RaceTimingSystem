@@ -59,6 +59,32 @@
                 {% endfor %}
             </tbody>
         </table>
+        {% if results %}
+            <h2 class="mt-5 text-center">Race Results</h2>
+            <table class="table table-striped table-hover mt-3">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Name</th>
+                        <th>Race Number</th>
+                        <th>Age</th>
+                        <th>Gender</th>
+                        <th>Total Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for result in results %}
+                        <tr>
+                            <td>{{ result.participant.name }}</td>
+                            <td>{{ result.participant.race_number }}</td>
+                            <td>{{ result.participant.age }}</td>
+                            <td>{{ result.participant.gender|capfirst }}</td>
+                            <td>{{ result.total_time }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+
     {% else %}
         <p class="text-center text-muted">There are no participants for this race yet.</p>
     {% endif %}
