@@ -894,27 +894,27 @@ def race_organiser_dashboard(request):
 
     logger.info(f"User {request.user.username} accessed the race organiser dashboard")
 
-    #  get races where the logged-in user is the organiser
+    query = request.GET.get('q', '')
     races = Race.objects.filter(organiser=request.user)
-    logger.info(f"Found {len(races)} races for organiser: {request.user.username}")
 
-    #  calculate the total participants
+    if query:
+        races = races.filter(name__icontains=query)
+        logger.info(f"Filtered races with query: '{query}', {len(races)} results found")
+
+    # calculate the total participants
     race_data = []
     for race in races:
         participants = Participant.objects.filter(race=race)
-
-        #  count the filtered participants
         participants_count = participants.count()
-        logger.info(f"Race {race.name} (ID: {race.id}) has {participants_count} participants")
-
         race_data.append({
             'race': race,
             'participants_count': participants_count
         })
 
-    logger.info(f"Race organiser dashboard data prepared with {len(race_data)} races")
-
-    return render(request, 'app/race_organiser_dashboard.html', {'race_data': race_data})
+    return render(request, 'app/race_organiser_dashboard.html', {
+        'race_data': race_data,
+        'query': query,
+    })
 
 
 @login_and_2fa_required
