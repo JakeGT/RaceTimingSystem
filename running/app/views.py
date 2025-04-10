@@ -888,6 +888,7 @@ def race_detail(request, race_id):
     race_results = RaceResult.objects.filter(race=race)
 
     sort_by = request.GET.get('sort_by', '')
+    participant_category = request.GET.get('participant_category', '')
     sort_direction = request.GET.get('sort_direction', 'asc')
     gender = request.GET.get('gender', '')
     age = request.GET.get('age', '')
@@ -903,6 +904,12 @@ def race_detail(request, race_id):
         if gender:
             race_results = race_results.filter(participant__gender=gender)
             logger.info(f"Filtering race results by gender: {gender}")
+
+        if participant_category:
+            race_results = race_results.filter(participant__participant_category__id=participant_category)
+            logger.info(f"Filtering race results by participant category: {participant_category}")
+
+        categories = race.participant_categories.all()
 
         if age:
             age_ranges = {
@@ -926,11 +933,16 @@ def race_detail(request, race_id):
         return render(request, 'app/race_results.html', {
             'race': race,
             'race_results': race_results,
-            'filters': request.GET
+            'filters': request.GET,
+            'categories': categories,
         })
 
     #  if there are no results just show participants
     participants = Participant.objects.filter(race=race)
+
+    if participant_category:
+        race_results = race_results.filter(participant__participant_category__id=participant_category)
+        logger.info(f"Filtering race results by participant category: {participant_category}")
 
     #  apply search filter if query exists
     if search_query:
@@ -962,6 +974,7 @@ def race_detail(request, race_id):
 
     location_info = race.address or (f"Lat: {race.latitude}, Lon: {race.longitude}" if race.latitude and race.longitude else "None")
     category_info = race.race_category if race.race_category else "None"
+    categories = race.participant_categories.all()
 
     return render(request, 'app/race_detail.html', {
         'race': race,
@@ -970,6 +983,7 @@ def race_detail(request, race_id):
         'location_info': location_info,
         'category_info': category_info,
         'filters': request.GET,
+        'categories': categories,
     })
 
 
@@ -1132,24 +1146,29 @@ def settings_view(request):
         user = request.user
         username = request.POST.get("username")
         email = request.POST.get("email")
+        first_name = request.POST.get("first_name")
+        last_name = request.POST.get("last_name")
         notify_race_updates = request.POST.get("notify_race_updates") == "on"
 
         #  update user details
-        if username != user.username or email != user.email:
+        if (
+            username != user.username
+            or email != user.email
+            or first_name != user.first_name
+            or last_name != user.last_name
+        ):
             logger.info(
                 f"Updating user details: username from {user.username} to {username},"
-                f" email from {user.email} to {email}")
+                f" email from {user.email} to {email},"
+                f" first_name from {user.first_name} to {first_name},"
+                f" last_name from {user.last_name} to {last_name}"
+            )
+
         user.username = username
         user.email = email
+        user.first_name = first_name
+        user.last_name = last_name
         user.save()
-
-        #  update profile settings
-        if user.profile.notify_race_updates != notify_race_updates:
-            logger.info(
-                f"Updating profile settings: notify_race_updates from"
-                f" {user.profile.notify_race_updates} to {notify_race_updates}")
-        user.profile.notify_race_updates = notify_race_updates
-        user.profile.save()
 
         messages.success(request, "Settings updated successfully!")
         logger.info(f"Settings updated successfully for user {request.user.username} (ID: {request.user.id})")
@@ -1157,6 +1176,7 @@ def settings_view(request):
         return redirect("settings")
 
     return render(request, "app/settings.html")
+
 
 
 @login_and_2fa_required

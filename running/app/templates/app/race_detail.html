@@ -71,6 +71,18 @@
                                         <option value="60" {% if filters.age == "60" %}selected{% endif %}>60+</option>
                                     </select>
                                 </div>
+                            
+                            <!-- Participant Category Filter -->
+                            <div class="col-md-2">
+                                <label for="participant_category" class="form-label text-dark">Category</label>
+                                <select name="participant_category" id="participant_category" class="form-select">
+                                    <option value="">All</option>
+                                    {% for category in categories %}
+                                        <option value="{{ category.id }}" {% if filters.participant_category == category.id|stringformat:"s" %}selected{% endif %}>{{ category.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
 
                                 <!-- Sort By -->
                                 <div class="col-md-2">
