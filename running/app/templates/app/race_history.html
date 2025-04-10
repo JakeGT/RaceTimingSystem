@@ -1,5 +1,3 @@
-<!-- running/app/templates/app/race_history.html -->
-
 {% extends 'base.html' %}
 
 {% block title %}Race History{% endblock %}
@@ -9,12 +7,32 @@
     <h1 class="text-center">Your Race History</h1>
     <p class="lead text-muted text-center">View your past races and results.</p>
 
+    <!-- Search and Sort Form -->
+    <form method="get" class="mb-4">
+        <div class="row">
+            <!-- Search Field -->
+            <div class="col-md-6">
+                <input type="text" name="search" value="{{ search_query }}" class="form-control" placeholder="Search by race name or result">
+            </div>
+            <!-- Sort Dropdown -->
+            <div class="col-md-3">
+                <select name="sort" class="form-control">
+                    <option value="date" {% if sort_by == 'date' %}selected{% endif %}>Sort by Date</option>
+                    <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Sort by Name</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary btn-block">Search & Sort</button>
+            </div>
+        </div>
+    </form>
+
     <div class="list-group">
         {% for race in races %}
             <a href="{% url 'race_detail' race.id %}" class="list-group-item list-group-item-action">
                 <h5 class="mb-1">{{ race.name }}</h5>
                 <p class="mb-1">Date: {{ race.date }}</p>
-                <p class="mb-1">Your Result: {{ race.result_for_user }}</p>
+                <p class="mb-1">Your Result: {{ race.total_time }}</p>
             </a>
         {% empty %}
             <p class="text-center">You haven't participated in any races yet.</p>

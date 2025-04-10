@@ -36,6 +36,8 @@ from google.oauth2.id_token import verify_oauth2_token
 from django.conf import settings
 from django.utils.dateparse import parse_datetime
 from django.core.files.storage import default_storage
+from django.utils import timezone
+from django.db import connection
 import pyotp
 import qrcode
 import secrets
@@ -272,28 +274,31 @@ def user_register(request):
 
 @logged_out_required
 def user_login(request):
-    """
-    Handles user login.
-    """
 
     logger.info("Accessing the login page view")
 
     if request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
+        remember_me = request.POST.get("remember_me") == "on"
 
         logger.info(f"Login attempt for username: {username}")
 
-        #  authenticate user
         user = authenticate(request, username=username, password=password)
 
         if user is not None:
-            #  log user in
             login(request, user)
             logger.info(f"Login successful for username: {username}")
             messages.success(request, "Login successful!")
 
-            #  check if 2fa enabled
+            #  set session expiry based on 'remember me'
+            if remember_me:
+                #  session will expire in 30 days
+                request.session.set_expiry(60 * 60 * 24 * 30)
+            else:
+                #  session expires when the browser closes
+                request.session.set_expiry(0)
+
             if user.mfa_enabled:
                 request.session['needs_2fa'] = True
                 return redirect("verify_2fa")
@@ -802,8 +807,11 @@ def manage_participants(request, race_id):
 @login_and_2fa_required
 def race_history(request):
     """
-    Views the history of a runner.
+    Views the history of a runner, including only completed races the user is participating in,
+    with sorting and searching functionality.
     """
+
+    logger.info("Accessing the race history view")
 
     #  check if the user has an associated participant
     if hasattr(request.user, 'participant'):
@@ -813,8 +821,59 @@ def race_history(request):
         participant = None
         logger.info(f"User {request.user.username} does not have an associated participant.")
 
-    #  render race history page
-    return render(request, 'app/race_history.html', {'participant': participant})
+    #  get search query and sorting parameters
+    search_query = request.GET.get('search', '')
+    sort_by = request.GET.get('sort', 'date')
+
+    #  construct the raw SQL query
+    query = """
+        SELECT r.id, r.name, r.date, r.start_time, rr.total_time
+        FROM app_race r
+        LEFT JOIN app_participant p ON r.id = p.race_id
+        LEFT JOIN app_raceresult rr ON p.id = rr.participant_id
+        WHERE p.user_id = %s
+          AND r.is_completed = TRUE
+    """
+
+    #  add filtering by search query
+    if search_query:
+        query += """
+            AND (r.name LIKE %s OR rr.total_time LIKE %s)
+        """
+
+    #  add sorting
+    if sort_by == 'name':
+        query += " ORDER BY r.name"
+    else:
+        query += " ORDER BY r.date, r.start_time"
+
+    #  execute the query with parameters
+    with connection.cursor() as cursor:
+        if search_query:
+            cursor.execute(query, [request.user.id, f'%{search_query}%', f'%{search_query}%'])
+        else:
+            cursor.execute(query, [request.user.id])
+
+        races = cursor.fetchall()
+
+    #  prepare the data to be rendered in the template
+    user_races = []
+    for race in races:
+        race_id, race_name, race_date, race_start_time, total_time = race
+        user_races.append({
+            'id': race_id,
+            'name': race_name,
+            'date': race_date,
+            'start_time': race_start_time,
+            'total_time': total_time,
+        })
+
+    #  render the page with the filtered race history
+    return render(request, 'app/race_history.html', {
+        'races': user_races,
+        'search_query': search_query,
+        'sort_by': sort_by
+    })
 
 
 @login_and_2fa_optional
@@ -948,23 +1007,67 @@ def race_organiser_dashboard(request):
 @login_and_2fa_required
 def upcoming_races(request):
     """
-    View for displaying all upcoming races.
-    Filters races that have a start date in the future.
+    View for displaying all upcoming races that the authenticated user is participating in
+    and where the race is not completed yet, with search and sorting functionality.
     """
-
     logger.info("Accessing the upcoming races view")
 
     #  get current datetime
-    current_time = timezone.now()
+    current_time = timezone.localtime(timezone.now())
     logger.info(f"Current time is {current_time}")
 
-    #  get all future races
-    upcoming = Race.objects.filter(date__gte=current_time.date()).order_by('date', 'start_time')
+    #  get search query and sorting parameters
+    search_query = request.GET.get('search', '')
+    sort_by = request.GET.get('sort', 'date')
 
-    logger.info(f"Found {upcoming.count()} upcoming races")
+    #  construct the raw SQL query
+    query = """
+        SELECT DISTINCT r.id, r.name, r.date, r.start_time
+        FROM app_race r
+        LEFT JOIN app_participant p ON r.id = p.race_id
+        WHERE r.date >= %s
+          AND r.is_completed = FALSE
+          AND (p.user_id = %s OR p.user_id IS NULL)
+    """
 
-    #  render the page with the upcoming races
-    return render(request, 'app/upcoming_races.html', {'upcoming_races': upcoming})
+    #  add filtering
+    if search_query:
+        query += """
+            AND (r.name LIKE %s)
+        """
+
+    #  add sorting
+    if sort_by == 'name':
+        query += " ORDER BY r.name"
+    else:
+        query += " ORDER BY r.date, r.start_time"
+
+    #  execute query
+    with connection.cursor() as cursor:
+        if search_query:
+            cursor.execute(query, [current_time.date(), request.user.id, f'%{search_query}%'])
+        else:
+            cursor.execute(query, [current_time.date(), request.user.id])
+
+        races = cursor.fetchall()
+
+    #  prepare the data to be rendered in the template
+    user_upcoming_races = []
+    for race in races:
+        race_id, race_name, race_date, race_start_time = race
+        user_upcoming_races.append({
+            'id': race_id,
+            'name': race_name,
+            'date': race_date,
+            'start_time': race_start_time,
+        })
+
+    #  render the page with the filtered upcoming races
+    return render(request, 'app/upcoming_races.html', {
+        'upcoming_races': user_upcoming_races,
+        'search_query': search_query,
+        'sort_by': sort_by
+    })
 
 
 @login_and_2fa_required
