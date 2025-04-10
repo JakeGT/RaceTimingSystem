@@ -23,8 +23,7 @@
                 <div class="card-body">
                     <p><strong>Username:</strong> {{ user.username }}</p>
                     <p><strong>Email:</strong> {{ user.email }}</p>
-                    <p><strong>Race Notifications:</strong> {% if user.profile.notify_race_updates %}Enabled{% else %}Disabled{% endif %}</p>
-
+                    
                     <a href="{% url 'settings' %}" class="btn btn-warning">Edit Profile</a>
                 </div>
             </div>

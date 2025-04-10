@@ -1188,7 +1188,7 @@ def profile_view(request):
     user = request.user
     logger.info(f"Accessing profile page for user {user.username} (ID: {user.id})")
 
-    # C check for MFA secret
+    #  check for MFA secret
     if not user.mfa_secret:
         user.mfa_secret = pyotp.random_base32()
         user.save()
