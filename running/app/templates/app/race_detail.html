@@ -126,7 +126,8 @@
                             <div class="list-group-item p-3 mb-2 rounded border participant-row">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div class="fw-bold participant-name">
-                                        {{ participant.name }}
+                                        <!-- Wrap participant name with a link -->
+                                        <a href="{% url 'link_participant' participant.id %}">{{ participant.name }}</a>
                                     </div>
                                     <div class="fw-bold participant-bib">
                                         {{ participant.race_number }}
@@ -147,22 +148,71 @@
         </div>
     </div>
 
-    <!-- Social Media Share Buttons -->
-    <div class="d-flex justify-content-center gap-3 mt-3 mb-3">
-        <!-- Twitter Share Button -->
-        <a href="https://twitter.com/intent/tweet?text=Check%20out%20the%20{{ race.name }}%20race%20at%20{{ race.date }}!%20Join%20us%20for%20a%20great%20event!%20{% url 'race_detail' race.id %}" 
-           target="_blank" 
-           class="btn btn-outline-primary btn-lg">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/c/ce/X_logo_2023.svg" alt="X" style="width: 30px; height: 30px;">
-        </a>
-    
-        <!-- Facebook Share Button -->
-        <a href="https://www.facebook.com/sharer/sharer.php?u={% url 'race_detail' race.id %}" 
-           target="_blank" 
-           class="btn btn-outline-primary btn-lg">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg" alt="Facebook" style="width: 30px; height: 30px;">
-        </a>
+    <!-- Organiser Information Section -->
+    <div class="row mt-5">
+        <div class="col-12 text-center">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h3 class="card-title mb-0">Organiser Information</h3>
+                </div>
+                <div class="card-body">
+                    {% if race.organiser_website %}
+                        <p><strong>Visit Organiser's Website:</strong> <a href="{{ race.organiser_website }}" target="_blank">{{ race.organiser_website }}</a></p>
+                    {% else %}
+                        <p>No website provided for the organiser.</p>
+                    {% endif %}
+                    <p><strong>Follow the Organiser on Social Media:</strong></p>
+                    <div class="d-flex justify-content-center gap-3">
+                        {% if race.social_twitter %}
+                            <a href="{{ race.social_twitter }}" target="_blank" class="btn btn-outline-info btn-lg">
+                                <i class="bi bi-twitter"></i> Twitter
+                            </a>
+                        {% endif %}
+                        {% if race.social_facebook %}
+                            <a href="{{ race.social_facebook }}" target="_blank" class="btn btn-outline-primary btn-lg">
+                                <i class="bi bi-facebook"></i> Facebook
+                            </a>
+                        {% endif %}
+                        {% if race.social_instagram %}
+                            <a href="{{ race.social_instagram }}" target="_blank" class="btn btn-outline-danger btn-lg">
+                                <i class="bi bi-instagram"></i> Instagram
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <!-- Social Media Share Buttons Section -->
+    <div class="mt-5">
+        <div class="card shadow-sm">
+            <div class="card-header bg-secondary text-white">
+                <h3 class="card-title mb-0">Share this Race</h3>
+            </div>
+            <div class="card-body text-center">
+                <p class="lead mb-3">Share this event</p>
+                <div class="d-flex justify-content-center gap-3">
+                    <!-- Twitter Share Button -->
+                    <a href="https://twitter.com/intent/tweet?text=Check%20out%20the%20{{ race.name }}%20race%20at%20{{ race.date }}!%20Join%20us%20for%20a%20great%20event!%20{% url 'race_detail' race.id %}" 
+                       target="_blank" 
+                       class="btn btn-outline-info btn-lg" 
+                       title="Share on Twitter">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/c/ce/X_logo_2023.svg" alt="X" style="width: 30px; height: 30px;">
+                    </a>
+                
+                    <!-- Facebook Share Button -->
+                    <a href="https://www.facebook.com/sharer/sharer.php?u={% url 'race_detail' race.id %}" 
+                       target="_blank" 
+                       class="btn btn-outline-primary btn-lg" 
+                       title="Share on Facebook">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg" alt="Facebook" style="width: 30px; height: 30px;">
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <!-- Hover Tooltip CSS -->
@@ -199,30 +249,12 @@
         font-weight: bold;
         background-color: #f8f9fa;
         padding: 10px;
-        border-bottom: 2px solid #000;
-        position: sticky;
-        top: 0;
-        z-index: 20;
+        border-bottom: 1px solid #ddd;
     }
 
-    .dark-mode .column-headers {
-        background-color: #333;
-        color: #fff;
-    }
-
-    .dark-mode .list-group-item {
-        background-color: #222;
-        color: #fff;
-        border-color: #444;
-    }
-
-    .dark-mode .list-group-item:hover {
-        background-color: #333;
-    }
-
-    .dark-mode .additional-info {
-        background-color: #444;
-        color: #fff;
+    .header-item {
+        flex: 1;
+        text-align: center;
     }
 </style>
 

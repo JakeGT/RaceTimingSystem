@@ -33,7 +33,6 @@
 
     <!-- Filters Section -->
     <div class="card-body">
-        <!-- Filters Section -->
         <div class="row mt-5">
             <div class="col-12">
                 <div class="card shadow-sm">
@@ -152,21 +151,33 @@
     </div>
 
     <!-- Social Media Share Buttons -->
-    <div class="d-flex justify-content-center gap-3 mt-3 mb-3">
-        <!-- Twitter Share Button -->
-        <a href="https://twitter.com/intent/tweet?text=Check%20out%20the%20{{ race.name }}%20race%20at%20{{ race.date }}!%20Join%20us%20for%20a%20great%20event!%20{% url 'race_detail' race.id %}" 
-           target="_blank" 
-           class="btn btn-outline-primary btn-lg">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/c/ce/X_logo_2023.svg" alt="X" style="width: 30px; height: 30px;">
-        </a>
-    
-        <!-- Facebook Share Button -->
-        <a href="https://www.facebook.com/sharer/sharer.php?u={% url 'race_detail' race.id %}" 
-           target="_blank" 
-           class="btn btn-outline-primary btn-lg">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg" alt="Facebook" style="width: 30px; height: 30px;">
-        </a>
+    <div class="mt-5">
+        <div class="card shadow-sm">
+            <div class="card-header bg-secondary text-white">
+                <h3 class="card-title mb-0">Share this Race Results</h3>
+            </div>
+            <div class="card-body text-center">
+                <p class="lead mb-3">Share the race results!</p>
+                <div class="d-flex justify-content-center gap-3">
+                    <!-- Twitter Share Button -->
+                    <a href="https://twitter.com/intent/tweet?text=Check%20out%20the%20{{ race.name }}%20race%20results%20at%20{{ race.date }}!%20{% url 'race_detail' race.id %}" 
+                       target="_blank" 
+                       class="btn btn-outline-info btn-lg" 
+                       title="Share on Twitter">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/c/ce/X_logo_2023.svg" alt="X" style="width: 30px; height: 30px;">
+                    </a>
+                
+                    <!-- Facebook Share Button -->
+                    <a href="https://www.facebook.com/sharer/sharer.php?u={% url 'race_detail' race.id %}" 
+                       target="_blank" 
+                       class="btn btn-outline-primary btn-lg" 
+                       title="Share on Facebook">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg" alt="Facebook" style="width: 30px; height: 30px;">
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
 
+</div>
 {% endblock %}

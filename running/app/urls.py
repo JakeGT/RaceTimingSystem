@@ -139,7 +139,11 @@ urlpatterns = [
     path('race/<int:race_id>/delete_participant/<int:participant_id>/delete/', views.delete_participant,
          name='delete_participant'),
 
+    #  endpoint for editing participant data
     path('race/<int:race_id>/participant/<int:participant_id>/edit/', views.edit_participant, name='edit_participant'),
+
+    #  endpoint for linking a users account to a participant instance
+    path('link-participant/<int:participant_id>/', views.link_participant, name='link_participant'),
 
 ]
 

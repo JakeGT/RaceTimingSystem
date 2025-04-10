@@ -197,6 +197,7 @@ def login_and_2fa_optional(view_func):
     return wrapper
 
 
+@login_and_2fa_optional
 def landing_page(request):
     """
     View for the landing page of the Race Timing System.
@@ -374,7 +375,6 @@ def race_config(request):
         social_twitter = request.POST.get('social_twitter', '').strip()
         social_instagram = request.POST.get('social_instagram', '').strip()
         social_facebook = request.POST.get('social_facebook', '').strip()
-        social_linkedin = request.POST.get('social_linkedin', '').strip()
 
         if no_location:
             race_location = None
@@ -395,7 +395,6 @@ def race_config(request):
             'social_twitter': social_twitter,
             'social_instagram': social_instagram,
             'social_facebook': social_facebook,
-            'social_linkedin': social_linkedin
         }
 
         try:
@@ -437,7 +436,6 @@ def race_config(request):
             social_twitter=social_twitter,
             social_instagram=social_instagram,
             social_facebook=social_facebook,
-            social_linkedin=social_linkedin,
             token=token
         )
 
@@ -1613,4 +1611,19 @@ def confirm_delete_participant(request, race_id, participant_id):
         return HttpResponseForbidden("You are not authorized to delete this participant.")
 
     return render(request, 'app/confirm_delete_participant.html', {'participant': participant, 'race': race})
+
+
+@login_required
+def link_participant(request, participant_id):
+    participant = get_object_or_404(Participant, id=participant_id)
+
+    if participant.user is None:
+        participant.user = request.user
+        participant.save()
+        messages.success(request, f"You've successfully linked to {participant.name}!")
+        return redirect('race_detail', race_id=participant.race.id)
+
+    messages.error(request, "This participant is already linked to another user.")
+    return redirect('race_detail', race_id=participant.race.id)
+
 
