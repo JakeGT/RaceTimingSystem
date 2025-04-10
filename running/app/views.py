@@ -1689,6 +1689,10 @@ def delete_participant(request, race_id, participant_id):
 
 @login_and_2fa_required
 def edit_participant(request, race_id, participant_id):
+    """
+    Edits a participant data.
+    """
+
     participant = get_object_or_404(Participant, id=participant_id, race_id=race_id)
 
     if request.method == 'POST':
@@ -1720,15 +1724,28 @@ def confirm_delete_participant(request, race_id, participant_id):
 
 @login_required
 def link_participant(request, participant_id):
+    """
+    Links a participant to the current user account.
+    Each user can only be linked to one participant.
+    """
+
     participant = get_object_or_404(Participant, id=participant_id)
 
-    if participant.user is None:
-        participant.user = request.user
-        participant.save()
-        messages.success(request, f"You've successfully linked to {participant.name}!")
+    #  check if this participant is already linked
+    if participant.user is not None:
+        messages.error(request, "This participant is already linked to another user.")
         return redirect('race_detail', race_id=participant.race.id)
 
-    messages.error(request, "This participant is already linked to another user.")
+    #  check if the current user is already linked to another participant
+    if Participant.objects.filter(user=request.user).exists():
+        messages.error(request, "You are already linked to a participant.")
+        return redirect('race_detail', race_id=participant.race.id)
+
+    #  link the participant to the user
+    participant.user = request.user
+    participant.save()
+    messages.success(request, f"You've successfully linked to {participant.name}!")
     return redirect('race_detail', race_id=participant.race.id)
+
 
 
