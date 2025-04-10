@@ -265,7 +265,9 @@ def user_register(request):
         messages.success(request, "Registration successful! You can now log in.")
         return redirect("login")
 
-    return render(request, "app/register.html")
+    return render(request, "app/register.html", {
+        'google_client_id': settings.GOOGLE_CLIENT_ID
+    })
 
 
 @logged_out_required

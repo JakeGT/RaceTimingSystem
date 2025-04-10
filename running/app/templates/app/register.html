@@ -116,10 +116,10 @@
 <script>
   window.onload = function() {
     google.accounts.id.initialize({
-      client_id: '-- insert google client id --',
+      client_id: '{{ google_client_id }}',
       callback: handleCredentialResponse
     });
-
+    
     google.accounts.id.renderButton(
       document.getElementById("google-signin-button"),
       {
