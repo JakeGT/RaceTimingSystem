@@ -145,6 +145,9 @@ urlpatterns = [
     #  endpoint for linking a users account to a participant instance
     path('link-participant/<int:participant_id>/', views.link_participant, name='link_participant'),
 
+    path('races/<int:race_id>/manage-organisers/', views.manage_organiser_permissions, name='manage_organiser_permissions'),
+
+    path('races/<int:race_id>/organisers/<int:organiser_id>/remove/', views.remove_organiser, name='remove_organiser'),
 ]
 
 if settings.DEBUG:

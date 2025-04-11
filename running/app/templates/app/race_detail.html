@@ -5,6 +5,19 @@
 {% block content %}
 <div class="container mt-5">
 
+    <!-- Flash Messages -->
+    {% if messages %}
+        <div class="mt-4">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+
     <!-- Page Header -->
     <div class="row">
         <div class="col-12 text-center">
@@ -36,6 +49,40 @@
             </div>
         </div>
     </div>
+
+    {% if race.stream_url %}
+        <!-- Livestream Section -->
+        <div class="row mt-5">
+            <div class="col-12 text-center">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-danger text-white">
+                        <h3 class="card-title mb-0">Live Stream</h3>
+                    </div>
+                    <div class="card-body">
+                        <p class="lead">Watch the race live below!</p>
+                        <div class="ratio ratio-16x9">
+                            {% if "youtube.com" in race.stream_url or "youtu.be" in race.stream_url %}
+                                <iframe 
+                                    src="https://www.youtube.com/embed/{% if 'watch?v=' in race.stream_url %}{{ race.stream_url|cut:'https://www.youtube.com/watch?v=' }}{% else %}{{ race.stream_url|cut:'https://youtu.be/' }}{% endif %}" 
+                                    frameborder="0" 
+                                    allowfullscreen>
+                                </iframe>
+                            {% elif "twitch.tv" in race.stream_url %}
+                                <iframe 
+                                    src="https://player.twitch.tv/?channel={{ race.stream_url|cut:'https://www.twitch.tv/' }}&parent={{ request.get_host }}" 
+                                    frameborder="0" 
+                                    allowfullscreen>
+                                </iframe>
+                            {% else %}
+                                <p>Live stream: <a href="{{ race.stream_url }}" target="_blank">{{ race.stream_url }}</a></p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
 
     <!-- Participants Section -->
     <div class="row mt-5">

@@ -42,6 +42,8 @@ class Race(models.Model):
 
     token = models.CharField(max_length=100, unique=True, blank=True, null=True)
 
+    stream_url = models.URLField(blank=True, null=True, help_text="URL to livestream (YouTube, Twitch, etc.)")
+
     def __str__(self):
         return self.name
 

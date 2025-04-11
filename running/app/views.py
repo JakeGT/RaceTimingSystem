@@ -221,6 +221,8 @@ def user_register(request):
     if request.method == "POST":
         username = request.POST.get("username")
         email = request.POST.get("email")
+        first_name = request.POST.get("first_name")
+        last_name = request.POST.get("last_name")
         password1 = request.POST.get("password1")
         password2 = request.POST.get("password2")
 
@@ -247,20 +249,25 @@ def user_register(request):
             messages.error(request, "Password must contain at least one special character.")
             return redirect("register")
 
-        #  check if username already exists
+        #  check if username or email already exists
         if User.objects.filter(username=username).exists():
             logger.info(f"Registration failed: Username '{username}' is already taken.")
             messages.error(request, "Username is already taken.")
             return redirect("register")
 
-        #  check if email already exists
         if User.objects.filter(email=email).exists():
             logger.info(f"Registration failed: Email '{email}' is already registered.")
             messages.error(request, "An account with this email already exists.")
             return redirect("register")
 
         #  create and save the user
-        user = User.objects.create_user(username=username, email=email, password=password1)
+        user = User.objects.create_user(
+            username=username,
+            email=email,
+            password=password1,
+            first_name=first_name,
+            last_name=last_name
+        )
         user.save()
 
         logger.info(f"Registration successful for username: {username}, email: {email}")
@@ -270,6 +277,7 @@ def user_register(request):
     return render(request, "app/register.html", {
         'google_client_id': settings.GOOGLE_CLIENT_ID
     })
+
 
 
 @logged_out_required
@@ -382,6 +390,7 @@ def race_config(request):
         social_twitter = request.POST.get('social_twitter', '').strip()
         social_instagram = request.POST.get('social_instagram', '').strip()
         social_facebook = request.POST.get('social_facebook', '').strip()
+        youtube_stream_url = request.POST.get('youtube_stream_url', '').strip()
 
         if no_location:
             race_location = None
@@ -402,6 +411,7 @@ def race_config(request):
             'social_twitter': social_twitter,
             'social_instagram': social_instagram,
             'social_facebook': social_facebook,
+            'youtube_stream_url': youtube_stream_url,
         }
 
         try:
@@ -443,7 +453,8 @@ def race_config(request):
             social_twitter=social_twitter,
             social_instagram=social_instagram,
             social_facebook=social_facebook,
-            token=token
+            token=token,
+            stream_url=youtube_stream_url,
         )
 
         race.organiser.add(request.user)
@@ -1746,6 +1757,7 @@ def confirm_delete_participant(request, race_id, participant_id):
 def link_participant(request, participant_id):
     """
     Links a participant to the current user account.
+    Only if the participant name matches the user's name.
     Each user can only be linked to one participant.
     """
 
@@ -1761,11 +1773,42 @@ def link_participant(request, participant_id):
         messages.error(request, "You are already linked to a participant.")
         return redirect('race_detail', race_id=participant.race.id)
 
+    #  check if participant's name matches user's full name
+    if participant.name.strip().lower() != request.user.name.strip().lower():
+        messages.error(request, "Your account name does not match the participant's name.")
+        return redirect('race_detail', race_id=participant.race.id)
+
     #  link the participant to the user
     participant.user = request.user
     participant.save()
+
     messages.success(request, f"You've successfully linked to {participant.name}!")
     return redirect('race_detail', race_id=participant.race.id)
 
 
 
+@login_and_2fa_required
+def manage_organiser_permissions(request, race_id):
+    race = get_object_or_404(Race, id=race_id)
+    organisers = race.organiser.all()
+    main_organiser = organisers.first()
+
+    if request.user != main_organiser:
+        return HttpResponseForbidden("Only the main organiser can manage organiser permissions.")
+
+    # You could render a form or list to add/remove/manage permissions
+    return render(request, "app/manage_organisers.html", {
+        "race": race,
+        "organisers": organisers,
+    })
+
+
+def remove_organiser(request, race_id, organiser_id):
+    race = get_object_or_404(Race, id=race_id)
+    organiser = get_object_or_404(User, id=organiser_id)
+
+    if request.user != race.organiser.all().first():
+        return redirect('forbidden')
+
+    race.organiser.remove(organiser)
+    return redirect('manage_organiser_permissions', race_id=race.id)

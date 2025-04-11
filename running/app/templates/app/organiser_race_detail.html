@@ -8,11 +8,47 @@
     <p class="lead text-muted text-center">Manage race details and participants.</p>
 
     <!-- Button row -->
-    <div class="d-flex justify-content-center gap-3 mb-4">
-        <a href="{% url 'upload_participants' %}" class="btn btn-primary btn-lg">Update Participants</a>
-        <a href="{% url 'upload_results' %}" class="btn btn-secondary btn-lg">Update Results</a>
-        <a href="{% url 'adjust_start_time' race.id %}" class="btn btn-warning btn-lg">Adjust Start Time</a>
-        <a href="{% url 'gallery_view' race.id %}" class="btn btn-info btn-lg">Manual Bib Validation</a>
+    <div class="container mb-5">
+        <div class="row row-cols-1 row-cols-md-3 row-cols-lg-5 g-3 justify-content-center">
+    
+            <div class="col d-grid">
+                <a href="{% url 'upload_participants' %}" class="btn btn-primary btn-lg w-100">
+                    Update Participants
+                </a>
+            </div>
+    
+            <div class="col d-grid">
+                <a href="{% url 'upload_results' %}" class="btn btn-secondary btn-lg w-100">
+                    Update Results
+                </a>
+            </div>
+    
+            <div class="col d-grid">
+                <a href="{% url 'adjust_start_time' race.id %}" class="btn btn-warning btn-lg w-100">
+                    Adjust Start Time
+                </a>
+            </div>
+    
+            <div class="col d-grid">
+                <a href="{% url 'gallery_view' race.id %}" class="btn btn-info btn-lg w-100">
+                    Manual Bib Validation
+                </a>
+            </div>
+    
+            {% with main_organiser=race.organiser.all|first %}
+                {% if user == main_organiser %}
+                    <div class="col d-grid">
+                        <a href="{% url 'manage_organiser_permissions' race.id %}" class="btn btn-dark btn-lg w-100">
+                            Manage Organisers
+                        </a>
+                    </div>
+                {% endif %}
+            {% endwith %}
+    
+        </div>
+    </div>
+
+
     </div>
 
     <!-- Participants Table -->
