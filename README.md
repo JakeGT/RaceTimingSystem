@@ -1,7 +1,5 @@
 # Automated Race Timing
 
-# Vision-Based Race Timing System
-
 ## Executive Summary
 
 Across the world, people compete in running races that span a variety of ages, abilities, and formats. These events 
