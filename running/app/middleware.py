@@ -1,8 +1,8 @@
 # running/app/middleware.py
 
 # -------------------------------------------------- Import Libraries --------------------------------------------------
-from django.contrib.messages.middleware import MessageMiddleware
 from django.contrib.messages import get_messages
+from django.contrib.messages.middleware import MessageMiddleware
 
 
 # ------------------------------------------------- Class Declarations -------------------------------------------------

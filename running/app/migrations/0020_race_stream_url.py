@@ -6,13 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('app', '0019_remove_race_social_linkedin'),
+        ("app", "0019_remove_race_social_linkedin"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='race',
-            name='stream_url',
-            field=models.URLField(blank=True, help_text='URL to livestream (YouTube, Twitch, etc.)', null=True),
+            model_name="race",
+            name="stream_url",
+            field=models.URLField(
+                blank=True,
+                help_text="URL to livestream (YouTube, Twitch, etc.)",
+                null=True,
+            ),
         ),
     ]

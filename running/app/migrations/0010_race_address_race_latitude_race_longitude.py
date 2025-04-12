@@ -6,23 +6,23 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('app', '0009_remove_participantcategory_user'),
+        ("app", "0009_remove_participantcategory_user"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='race',
-            name='address',
+            model_name="race",
+            name="address",
             field=models.CharField(blank=True, max_length=255, null=True),
         ),
         migrations.AddField(
-            model_name='race',
-            name='latitude',
+            model_name="race",
+            name="latitude",
             field=models.FloatField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='race',
-            name='longitude',
+            model_name="race",
+            name="longitude",
             field=models.FloatField(blank=True, null=True),
         ),
     ]

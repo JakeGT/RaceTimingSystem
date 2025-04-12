@@ -2,9 +2,9 @@
 
 # -------------------------------------------------- Import Libraries --------------------------------------------------
 from django import forms
-from .models import RaceCategory, ParticipantCategory, OrganiserApplication, Race
 from django.utils import timezone
-from .models import Image
+
+from .models import Image, OrganiserApplication, ParticipantCategory, Race, RaceCategory
 
 
 # ------------------------------------------------- Class Declarations -------------------------------------------------
@@ -15,7 +15,7 @@ class ParticipantCategoryForm(forms.ModelForm):
 
     class Meta:
         model = ParticipantCategory
-        fields = ['name']
+        fields = ["name"]
 
 
 class RaceCategoryForm(forms.ModelForm):
@@ -25,7 +25,7 @@ class RaceCategoryForm(forms.ModelForm):
 
     class Meta:
         model = RaceCategory
-        fields = ['name']
+        fields = ["name"]
 
 
 class AdjustStartTimeForm(forms.Form):
@@ -34,8 +34,8 @@ class AdjustStartTimeForm(forms.Form):
     """
 
     start_time = forms.DateTimeField(
-        label='New Start Time',
-        widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+        label="New Start Time",
+        widget=forms.DateTimeInput(attrs={"type": "datetime-local"}),
     )
 
 
@@ -46,7 +46,7 @@ class ImageUploadForm(forms.ModelForm):
 
     class Meta:
         model = Image
-        fields = ['name', 'image']
+        fields = ["name", "image"]
 
 
 class OrganiserApplicationForm(forms.ModelForm):
@@ -56,11 +56,11 @@ class OrganiserApplicationForm(forms.ModelForm):
 
     class Meta:
         model = OrganiserApplication
-        fields = ['race', 'message']
+        fields = ["race", "message"]
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user', None)
+        user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
         if user:
-            self.fields['race'].queryset = Race.objects.exclude(organiser=user)
+            self.fields["race"].queryset = Race.objects.exclude(organiser=user)

@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('app', '0015_customuser_mfa_enabled_customuser_mfa_secret'),
+        ("app", "0015_customuser_mfa_enabled_customuser_mfa_secret"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='race',
-            name='organiser_social',
+            model_name="race",
+            name="organiser_social",
             field=models.URLField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='race',
-            name='organiser_website',
+            model_name="race",
+            name="organiser_website",
             field=models.URLField(blank=True, null=True),
         ),
     ]

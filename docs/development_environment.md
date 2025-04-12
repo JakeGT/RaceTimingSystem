@@ -1,4 +1,3 @@
-
 ## Development Environment and its Requirements
 
 This section provides a complete guide for setting up the development environment for the race timing system.
@@ -97,6 +96,25 @@ Unit tests can be run with:
 
 ```bash
 python manage.py test
+```
+
+Further tests can be run using:
+
+Installing Playwright:
+1. **Install Node.js:** Make sure you have Node.js installed. If not, download and install it from the official Node.js website.
+2. **Install Playwright:** Run the following command in your terminal to install Playwright and its dependencies:
+   
+```bash
+npm install playwright
+```
+
+```bash
+npx playwright test
+```
+
+To see the complete results run
+```bash
+npx playwright show-report
 ```
 
 After completing the steps above, your environment will be fully ready for extending, debugging, or testing the system.

@@ -36,12 +36,12 @@ def setup_logging(log_directory="logs", log_file_name="app.log"):
 
     return logger
 
+
 # -------------------------------------------------- Main Code Execution -----------------------------------------------
-if __name__ == "__main__": #pragma: no cover
+if __name__ == "__main__":  # pragma: no cover
     logger = setup_logging()
     logger.debug("This is a debug message")
     logger.info("This is an info message")
     logger.warning("This is a warning message")
     logger.error("This is an error message")
     logger.critical("This is a critical message")
-
