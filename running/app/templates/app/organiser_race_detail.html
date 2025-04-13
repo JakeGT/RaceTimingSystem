@@ -59,40 +59,46 @@
                     <th>Name</th>
                     <th>Age</th>
                     <th>Gender</th>
-                    <th>Status</th>
+                    <th>Club</th>
+                    <th>Team</th>
                     <th>Action</th>
                 </tr>
             </thead>
             <tbody>
                 {% for participant in participants %}
-                    <tr>
-                        <form method="POST" action="{% url 'edit_participant' race.id participant.id %}">
-                            {% csrf_token %}
-                            <td>
-                                <input type="text" name="name" value="{{ participant.name }}" class="form-control" required>
-                            </td>
-                            <td>
-                                <input type="number" name="age" value="{{ participant.age }}" class="form-control" min="0" required>
-                            </td>
-                            <td>
-                                <select name="gender" class="form-select" required>
-                                    <option value="male" {% if participant.gender == "male" %}selected{% endif %}>Male</option>
-                                    <option value="female" {% if participant.gender == "female" %}selected{% endif %}>Female</option>
-                                    <option value="other" {% if participant.gender == "other" %}selected{% endif %}>Other</option>
-                                </select>
-                            </td>
-                            <td>{{ participant.status|capfirst }}</td>
-                            <td class="d-flex gap-2">
-                                <button type="submit" class="btn btn-success btn-sm rounded" title="Save">
-                                    <i class="bi bi-check-lg"></i>
-                                </button>
-                                <a href="{% url 'confirm_delete_participant' race_id=race.id participant_id=participant.id %}" class="btn btn-danger btn-sm rounded-circle" title="Delete">
-                                    <i class="bi bi-x-lg"></i>
-                                </a>
-                            </td>
-                        </form>
-                    </tr>
-                {% endfor %}
+                <tr>
+                    <form method="POST" action="{% url 'edit_participant' race.id participant.id %}">
+                        {% csrf_token %}
+                        <td>
+                            <input type="text" name="name" value="{{ participant.name }}" class="form-control" required>
+                        </td>
+                        <td>
+                            <input type="number" name="age" value="{{ participant.age }}" class="form-control" min="0" required>
+                        </td>
+                        <td>
+                            <select name="gender" class="form-select" required>
+                                <option value="male" {% if participant.gender == "male" %}selected{% endif %}>Male</option>
+                                <option value="female" {% if participant.gender == "female" %}selected{% endif %}>Female</option>
+                                <option value="other" {% if participant.gender == "other" %}selected{% endif %}>Other</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="text" name="club_name" value="{{ participant.club_name }}" class="form-control">
+                        </td>
+                        <td>
+                            <input type="text" name="team_name" value="{{ participant.team_name }}" class="form-control">
+                        </td>
+                        <td class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success btn-sm rounded" title="Save">
+                                <i class="bi bi-check-lg"></i>
+                            </button>
+                            <a href="{% url 'confirm_delete_participant' race_id=race.id participant_id=participant.id %}" class="btn btn-danger btn-sm rounded-circle" title="Delete">
+                                <i class="bi bi-x-lg"></i>
+                            </a>
+                        </td>
+                    </form>
+                </tr>
+            {% endfor %}
             </tbody>
         </table>
         {% if results %}
