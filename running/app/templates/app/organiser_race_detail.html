@@ -101,6 +101,39 @@
             {% endfor %}
             </tbody>
         </table>
+        
+        <hr class="my-5">
+        <h2 class="text-center">Add New Participant</h2>
+        <form method="POST" action="{% url 'add_participant' race.id %}" class="row g-3 mt-3">
+            {% csrf_token %}
+            <div class="col-md-4">
+                <input type="text" name="name" class="form-control" placeholder="Name" required>
+            </div>
+            <div class="col-md-2">
+                <input type="number" name="age" class="form-control" placeholder="Age" min="0" required>
+            </div>
+            <div class="col-md-2">
+                <select name="gender" class="form-select" required>
+                    <option value="" disabled selected>Gender</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <input type="text" name="club_name" class="form-control" placeholder="Club">
+            </div>
+            <div class="col-md-2">
+                <input type="text" name="team_name" class="form-control" placeholder="Team">
+            </div>
+            <div class="col-12 text-center">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Add Participant
+                </button>
+            </div>
+        </form>
+
+        
         {% if results %}
             <h2 class="mt-5 text-center">Race Results</h2>
             <table class="table table-striped table-hover mt-3">

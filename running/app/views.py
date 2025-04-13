@@ -2167,6 +2167,29 @@ def edit_participant(request, race_id, participant_id):
 
 
 @login_and_2fa_required
+def add_participant(request, race_id):
+    race = get_object_or_404(Race, id=race_id)
+
+    name = request.POST.get("name")
+    age = request.POST.get("age")
+    gender = request.POST.get("gender")
+    club_name = request.POST.get("club_name", "")
+    team_name = request.POST.get("team_name", "")
+
+    if name and age and gender:
+        Participant.objects.create(
+            race=race,
+            name=name,
+            age=age,
+            gender=gender,
+            club_name=club_name,
+            team_name=team_name,
+        )
+
+    return redirect("race_detail", race_id=race.id)
+
+
+@login_and_2fa_required
 def confirm_delete_participant(request, race_id, participant_id):
     """
     View to confirm participant deletion.

@@ -186,6 +186,8 @@ urlpatterns = [
         views.remove_organiser,
         name="remove_organiser",
     ),
+
+    path('race/<int:race_id>/add_participant/', views.add_participant, name='add_participant'),
 ]
 
 if settings.DEBUG:
