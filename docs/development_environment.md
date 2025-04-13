@@ -87,7 +87,7 @@ TODO
 ### 6. Frontend Assets
 
 - Static files are managed through Django's `collectstatic` command.
-- Bootstrap is used for styling (via CDN).
+- Bootstrap is used for styling.
 - You can extend templates in `templates/` to modify UI.
 
 ### 7. Testing
@@ -104,10 +104,11 @@ Installing Playwright:
 1. **Install Node.js:** Make sure you have Node.js installed. If not, download and install it from the official Node.js website.
 2. **Install Playwright:** Run the following command in your terminal to install Playwright and its dependencies:
    
-```bash
-npm install playwright
-```
+    ```bash
+    npm install playwright
+    ```
 
+3. Run playwright tests
 ```bash
 npx playwright test
 ```
