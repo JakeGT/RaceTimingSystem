@@ -8,6 +8,7 @@ import json
 import re
 import secrets
 from datetime import date, datetime, timedelta
+from collections import defaultdict
 from functools import wraps
 
 import pyotp
@@ -405,12 +406,12 @@ def user_login(request):
     )
 
 
-
 @login_and_2fa_optional
 def dashboard(request):
     """
     The view for the users dashboard.
     """
+
     logger.info("Accessing the dashboard page")
 
     race_search = request.GET.get("race_search", "").strip()
@@ -1236,6 +1237,14 @@ def race_detail(request, race_id):
                     "-total_time" if sort_direction == "desc" else "total_time"
                 )
 
+        #  get club data for each participant and add it to the context
+        clubs = set(race_results.values_list("participant__club_name", flat=True))
+        logger.info(f"Found the following clubs in the race results: {', '.join(clubs)}")
+
+        #  get team data for each participant and add it to the context
+        teams = set(race_results.values_list("participant__team_name", flat=True))
+        logger.info(f"Found the following teams in the race results: {', '.join(teams)}")
+
         return render(
             request,
             "app/race_results.html",
@@ -1244,6 +1253,8 @@ def race_detail(request, race_id):
                 "race_results": race_results,
                 "filters": request.GET,
                 "categories": categories,
+                "clubs": clubs,
+                "teams": teams,
             },
         )
 
@@ -1293,6 +1304,16 @@ def race_detail(request, race_id):
 
     participants_count = participants.count()
 
+    #  build grouped dictionaries
+    teams = defaultdict(list)
+    clubs = defaultdict(list)
+
+    for p in participants:
+        if p.team_name:
+            teams[p.team_name].append(p)
+        if p.club_name:
+            clubs[p.club_name].append(p)
+
     location_info = race.address or (
         f"Lat: {race.latitude}, Lon: {race.longitude}"
         if race.latitude and race.longitude
@@ -1312,6 +1333,8 @@ def race_detail(request, race_id):
             "category_info": category_info,
             "filters": request.GET,
             "categories": categories,
+            "teams": dict(teams),
+            "clubs": dict(clubs),
         },
     )
 

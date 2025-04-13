@@ -1,7 +1,7 @@
 BibNumber,Firstname,Lastname,Gender,ClubName,TeamName,AgeCategory,Age
-1,John,Doe,male,Team X,Team A,Adult,25
-2,Jane,Smith,female,Team Y,Team B,Senior,30
-3,Michael,Johnson,male,Team Z,Team C,Adult,35
-4,Emily,Davis,female,Team X,Team A,Junior,22
-5,Chris,Brown,male,Team Y,Team B,Senior,27
-6,Sarah,Wilson,female,Team Z,Team C,Adult,28
+1,John,Doe,male,Club X,Team A,Adult,25
+2,Jane,Smith,female,Club Y,Team B,Senior,30
+3,Michael,Johnson,male,Club Z,Team C,Adult,35
+4,Emily,Davis,female,Club X,Team A,Junior,22
+5,Chris,Brown,male,Club Y,Team B,Senior,27
+6,Sarah,Wilson,female,Club Z,Team C,Adult,28

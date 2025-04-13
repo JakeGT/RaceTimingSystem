@@ -195,41 +195,124 @@
 
 
                 <div class="card-body">
-                    <p class="card-text">Here are the participants for the race:</p>
-                    <div class="list-group list-group-flush">
-                        <div class="column-headers text-center d-flex">
-                            <span class="header-item flex-grow-1">Name</span>
-                            <span class="header-item flex-grow-1">Bib Number</span>
-                        </div>
-                        {% for participant in participants %}
-                            <div class="list-group-item p-3 mb-2 rounded border participant-row">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div class="fw-bold participant-name">
-                                        {% if user.is_authenticated %}
-                                            <a href="{% url 'link_participant' participant.id %}">
-                                                {{ participant.name }}
-                                            </a>
-                                        {% else %}
-                                            <span>{{ participant.name }}</span>
-                                        {% endif %}
-
-
-                                    </div>
-                                    <div class="fw-bold participant-bib">
-                                        {{ participant.race_number }}
-                                    </div>
-                                    <div class="additional-info">
-                                        <span class="badge bg-info me-2">{{ participant.age }} years old</span>
-                                        <span class="badge bg-info me-2">{{ participant.gender }}</span>
-                                        <span class="badge bg-info me-2">{{ participant.age_category }}</span>
-                                    </div>
+                    <!-- Tab navigation -->
+                    <ul class="nav nav-tabs" id="leaderboardTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="individual-tab" data-bs-toggle="tab" data-bs-target="#individual" type="button" role="tab">Individuals</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="teams-tab" data-bs-toggle="tab" data-bs-target="#teams" type="button" role="tab">Teams</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="clubs-tab" data-bs-toggle="tab" data-bs-target="#clubs" type="button" role="tab">Clubs</button>
+                        </li>
+                    </ul>
+                
+                    <div class="tab-content mt-4" id="leaderboardTabsContent">
+                        <!-- Individuals Tab -->
+                        <div class="tab-pane fade show active" id="individual" role="tabpanel" aria-labelledby="individual-tab">
+                            <p class="card-text">Here are the participants for the race:</p>
+                        
+                            {% if participants %}
+                                <!-- Static Headers with Center Alignment -->
+                                <div class="list-group-item bg-light d-flex justify-content-between align-items-center fw-bold border rounded mb-2 text-center">
+                                    <div class="col">Name</div>
+                                    <div class="col">Bib #</div>
                                 </div>
-                            </div>
-                        {% empty %}
-                            <p>No participants found.</p>
-                        {% endfor %}
+                        
+                                <!-- Participant List -->
+                                <div class="list-group list-group-flush">
+                                    {% for participant in participants %}
+                                        <div class="list-group-item p-3 mb-2 rounded border participant-row position-relative">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div class="fw-bold participant-name">
+                                                    {% if user.is_authenticated %}
+                                                        <a href="{% url 'link_participant' participant.id %}">
+                                                            {{ participant.name }}
+                                                        </a>
+                                                    {% else %}
+                                                        <span>{{ participant.name }}</span>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="fw-bold participant-bib">{{ participant.race_number }}</div>
+                                            </div>
+                                        
+                                            <!-- Hover-only info -->
+                                            <div class="additional-info" style="display: none;">
+                                                <span class="badge bg-info me-2">{{ participant.age }} yrs</span>
+                                                <span class="badge bg-info me-2">{{ participant.gender }}</span>
+                                                <span class="badge bg-info">{{ participant.age_category }}</span>
+                                            </div>
+                                        </div>
+
+                                    {% empty %}
+                                        <p>No individual participants found.</p>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <p>No individual participants found.</p>
+                            {% endif %}
+                        </div>
+
+                
+                        <!-- Teams Tab -->
+                        <div class="tab-pane fade" id="teams" role="tabpanel">
+                            {% if teams %}
+                                {% for team, members in teams.items %}
+                                    <div class="team-club-card">
+                                        <h5 class="mb-2"><strong>{{ team }}</strong> – {{ members|length }} member{{ members|length|pluralize }}</h5>
+                                        <div class="list-group list-group-flush">
+                                            {% for member in members %}
+                                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <strong>{{ member.name }}</strong>
+                                                        <small class="text-muted">({{ member.race_number }})</small>
+                                                    </div>
+                                                    <div>
+                                                        <span class="badge bg-secondary me-2">{{ member.age }} yrs</span>
+                                                        <span class="badge bg-secondary me-2">{{ member.gender }}</span>
+                                                        <span class="badge bg-secondary me-2">{{ member.age_category }}</span>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <p>No teams found.</p>
+                            {% endif %}
+                        </div>
+                
+                        <!-- Clubs Tab -->
+                        <div class="tab-pane fade" id="clubs" role="tabpanel">
+                            {% if clubs %}
+                                {% for club, members in clubs.items %}
+                                    <div class="team-club-card">
+                                        <h5 class="mb-2"><strong>{{ club }}</strong> – {{ members|length }} member{{ members|length|pluralize }}</h5>
+                                        <div class="list-group list-group-flush">
+                                            {% for member in members %}
+                                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <strong>{{ member.name }}</strong>
+                                                        <small class="text-muted">({{ member.race_number }})</small>
+                                                    </div>
+                                                    <div>
+                                                        <span class="badge bg-secondary me-2">{{ member.age }} yrs</span>
+                                                        <span class="badge bg-secondary me-2">{{ member.gender }}</span>
+                                                        <span class="badge bg-secondary me-2">{{ member.age_category }}</span>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <p>No clubs found.</p>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>
@@ -311,6 +394,43 @@
 
 <!-- Hover Tooltip CSS -->
 <style>
+    .nav-tabs {
+        display: flex !important;
+        flex-wrap: wrap !important;
+    }
+
+    .nav-tabs .nav-link {
+        display: inline-block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+    }
+    
+    .nav-tabs .nav-link:not(.active) {
+        color: #007bff !important; 
+        background-color: transparent !important;
+        border-color: #ddd !important;
+    }
+    
+    .nav-tabs .nav-link.active {
+        color: #fff !important; 
+        background-color: #007bff !important;
+        border-color: #0056b3 !important;
+        font-weight: bold; 
+    }
+    
+    .nav-tabs .nav-item {
+        display: inline-block !important;
+    }
+    
+    .team-club-card {
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        background-color: #f9f9f9;
+    }
+
     .participant-row {
         position: relative;
     }
@@ -336,22 +456,8 @@
         text-align: center;
         cursor: pointer;
     }
-
-    .column-headers {
-        display: flex;
-        justify-content: space-between;
-        font-weight: bold;
-        background-color: #f8f9fa;
-        padding: 10px;
-        border-bottom: 1px solid #ddd;
-    }
-
-    .header-item {
-        flex: 1;
-        text-align: center;
-    }
 </style>
-
+    
 <!-- Leaflet CSS and JS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
