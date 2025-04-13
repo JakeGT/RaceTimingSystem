@@ -734,7 +734,7 @@ def upload_results(request):
                 total_participants = Participant.objects.filter(race=race).count()
                 uploaded_results = RaceResult.objects.filter(race=race).count()
 
-                if total_participants == uploaded_results:
+                if total_participants == uploaded_results and total_participants > 0:
                     race.is_completed = True
                     race.save()
                     logger.info(
