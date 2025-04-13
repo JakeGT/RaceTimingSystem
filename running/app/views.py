@@ -241,11 +241,27 @@ def user_register(request):
         if password1 != password2:
             logger.info(f"Registration failed for {username}: Passwords do not match.")
             messages.error(request, "Passwords do not match.")
+
+            request.session['register_data'] = {
+                'first_name': first_name,
+                'last_name': last_name,
+                'username': username,
+                'email': email
+            }
+
             return redirect("register")
 
         if len(password1) < 8:
             logger.info(f"Registration failed for {username}: Password too short.")
             messages.error(request, "Password must be at least 8 characters long.")
+
+            request.session['register_data'] = {
+                'first_name': first_name,
+                'last_name': last_name,
+                'username': username,
+                'email': email
+            }
+
             return redirect("register")
 
         if not re.search(r"\d", password1):
@@ -253,6 +269,14 @@ def user_register(request):
                 f"Registration failed for {username}: Password missing a number."
             )
             messages.error(request, "Password must contain at least one number.")
+
+            request.session['register_data'] = {
+                'first_name': first_name,
+                'last_name': last_name,
+                'username': username,
+                'email': email
+            }
+
             return redirect("register")
 
         if not re.search(r"[!@#$%^&*()\-_=+[\]{}|;:'\",.<>?/]", password1):
@@ -262,17 +286,41 @@ def user_register(request):
             messages.error(
                 request, "Password must contain at least one special character."
             )
+
+            request.session['register_data'] = {
+                'first_name': first_name,
+                'last_name': last_name,
+                'username': username,
+                'email': email
+            }
+
             return redirect("register")
 
         #  check if username or email already exists
         if User.objects.filter(username=username).exists():
             logger.info(f"Registration failed: Username '{username}' is already taken.")
             messages.error(request, "Username is already taken.")
+
+            request.session['register_data'] = {
+                'first_name': first_name,
+                'last_name': last_name,
+                'username': username,
+                'email': email
+            }
+
             return redirect("register")
 
         if User.objects.filter(email=email).exists():
             logger.info(f"Registration failed: Email '{email}' is already registered.")
             messages.error(request, "An account with this email already exists.")
+
+            request.session['register_data'] = {
+                'first_name': first_name,
+                'last_name': last_name,
+                'username': username,
+                'email': email
+            }
+
             return redirect("register")
 
         #  create and save the user
@@ -285,17 +333,27 @@ def user_register(request):
         )
         user.save()
 
+        request.session.pop('register_data', None)
+
         logger.info(f"Registration successful for username: {username}, email: {email}")
         messages.success(request, "Registration successful! You can now log in.")
         return redirect("login")
 
     return render(
-        request, "app/register.html", {"google_client_id": settings.GOOGLE_CLIENT_ID}
+        request,
+        "app/register.html",
+        {
+            "google_client_id": settings.GOOGLE_CLIENT_ID,
+            "register_data": request.session.get("register_data", {})
+        }
     )
 
 
 @logged_out_required
 def user_login(request):
+    """
+    View for logging the user in.
+    """
 
     logger.info("Accessing the login page view")
 
@@ -313,12 +371,13 @@ def user_login(request):
             logger.info(f"Login successful for username: {username}")
             messages.success(request, "Login successful!")
 
-            #  set session expiry based on 'remember me'
+            # clear old login data
+            request.session.pop('login_data', None)
+
+            # session expiration logic
             if remember_me:
-                #  session will expire in 30 days
                 request.session.set_expiry(60 * 60 * 24 * 30)
             else:
-                #  session expires when the browser closes
                 request.session.set_expiry(0)
 
             if user.mfa_enabled:
@@ -328,14 +387,23 @@ def user_login(request):
             return redirect("/")
 
         else:
-            logger.info(
-                f"Login failed for username: {username}: Invalid username or password."
-            )
+            logger.info(f"Login failed for username: {username}: Invalid credentials")
             messages.error(request, "Invalid username or password.")
 
+            #  save username to repopulate form
+            request.session['login_data'] = {
+                'username': username
+            }
+
     return render(
-        request, "app/login.html", {"google_client_id": settings.GOOGLE_CLIENT_ID}
+        request,
+        "app/login.html",
+        {
+            "google_client_id": settings.GOOGLE_CLIENT_ID,
+            "login_data": request.session.get("login_data", {}),
+        }
     )
+
 
 
 @login_and_2fa_optional
