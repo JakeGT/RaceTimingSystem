@@ -24,6 +24,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.sessions.models import Session
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
+from django.core.mail import send_mail
 from django.db import connection
 from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -53,6 +54,8 @@ from .models import (
     RaceResult,
 )
 from .utils.logger import setup_logging
+
+User = get_user_model()
 
 # --------------------------------------------------- RESTful API ------------------------------------------------------
 
@@ -389,6 +392,10 @@ def dashboard(request):
 
 @login_and_2fa_required
 def race_config(request):
+    """
+    View for creating and cofiguring a race.
+    """
+
     logger.info(f"Accessing race configuration page by user: {request.user.username}")
 
     race_categories = RaceCategory.objects.all()
@@ -488,9 +495,28 @@ def race_config(request):
             token=token,
             stream_url=youtube_stream_url,
         )
-
         race.organiser.add(request.user)
 
+        #  send the token via email
+        subject = f"Race Token for '{race_name}'"
+        message = (
+            f"Hi {request.user.first_name or request.user.username},\n\n"
+            f'Your race "{race_name}" has been successfully created.\n\n'
+            f"Here is your unique token:\n\n"
+            f"{token}\n\n"
+            f"You can use this token to manage or share the race securely.\n\n"
+            f"— The Running App Team"
+        )
+
+        try:
+            send_mail(
+                subject, message, settings.DEFAULT_FROM_EMAIL, [request.user.email]
+            )
+            logger.info(f"Token email successfully sent to {request.user.email}")
+        except Exception as e:
+            logger.error(f"Failed to send token email to {request.user.email}: {e}")
+
+        #  race category assignment
         race_category_id = request.POST.get("race_category")
         if race_category_id:
             try:
@@ -501,6 +527,7 @@ def race_config(request):
                     f"Race category with ID {race_category_id} does not exist."
                 )
 
+        #  participant category assignments
         for category_id in request.POST.getlist("participant_categories"):
             try:
                 race.participant_categories.add(
@@ -511,11 +538,20 @@ def race_config(request):
                     f"Participant category with ID {category_id} does not exist."
                 )
 
+        #  clear session data
         request.session.pop("race_config_data", None)
 
-        #  show success page with token
-        return render(request, "app/race_success.html", {"race": race, "token": token})
+        #  success page
+        return render(
+            request,
+            "app/race_success.html",
+            {
+                "race": race,
+                "token": token,
+            },
+        )
 
+    #  get request
     return render(
         request,
         "app/race_config.html",
