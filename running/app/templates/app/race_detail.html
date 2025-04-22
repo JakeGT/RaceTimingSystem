@@ -22,79 +22,18 @@
                 </div>
                 <div class="card-body">
                     <p><strong>Date:</strong> {{ race.date }}</p>
-                    <p><strong>Category:</strong> {{ race.categories }}</p>
-                    <p><strong>Location:</strong> {{ race.location }}</p>
                     <p><strong>Start Time:</strong> {{ race.start_time }}</p>
+                    <p><strong>Category:</strong> {{ category_info }}</p>
                     <p><strong>Total Participants:</strong> {{ participants_count }}</p>
+                    <p><strong>Location:</strong>
+                        {% if location_info != "None" %}
+                            <div id="map" style="height: 400px;"></div>
+                        {% else %}
+                            None
+                        {% endif %}
+                    </p>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <!-- Filters Section -->
-    <div class="row mt-4">
-        <div class="col-12 text-center">
-            <form method="get" action="{% url 'race_detail' race.id %}">
-                <div class="d-flex justify-content-between">
-                    <!-- Gender Filter -->
-                    <div class="form-group">
-                        <label for="gender-select" class="form-label">Filter by Gender</label>
-                        <select id="gender-select" name="gender" class="form-select w-auto">
-                            <option value="">All Genders</option>
-                            <option value="male" {% if request.GET.gender == 'male' %}selected{% endif %}>Male</option>
-                            <option value="female" {% if request.GET.gender == 'female' %}selected{% endif %}>Female</option>
-                        </select>
-                    </div>
-
-                    <!-- Age Filter -->
-                    <div class="form-group">
-                        <label for="age-select" class="form-label">Filter by Age</label>
-                        <select id="age-select" name="age" class="form-select w-auto">
-                            <option value="">All Ages</option>
-                            <option value="18" {% if request.GET.age == '18' %}selected{% endif %}>18-25</option>
-                            <option value="26" {% if request.GET.age == '26' %}selected{% endif %}>26-35</option>
-                            <option value="36" {% if request.GET.age == '36' %}selected{% endif %}>36-45</option>
-                            <option value="46" {% if request.GET.age == '46' %}selected{% endif %}>46-60</option>
-                            <option value="60" {% if request.GET.age == '60' %}selected{% endif %}>60+</option>
-                        </select>
-                    </div>
-
-                    <!-- Sorting by (Radio Buttons) -->
-                    <div class="form-group">
-                        <label class="form-label">Sort by</label>
-                        <div>
-                            <label>
-                                <input type="radio" name="sort_by" value="name" {% if request.GET.sort_by == 'name' %}checked{% endif %}>
-                                Name
-                            </label>
-                            <label>
-                                <input type="radio" name="sort_by" value="age" {% if request.GET.sort_by == 'age' %}checked{% endif %}>
-                                Age
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Sort Direction (Radio Buttons) -->
-                    <div class="form-group">
-                        <label class="form-label">Sort Direction</label>
-                        <div>
-                            <label>
-                                <input type="radio" name="sort_direction" value="asc" {% if request.GET.sort_direction == 'asc' %}checked{% endif %}>
-                                Ascending
-                            </label>
-                            <label>
-                                <input type="radio" name="sort_direction" value="desc" {% if request.GET.sort_direction == 'desc' %}checked{% endif %}>
-                                Descending
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Submit Button -->
-                    <div class="form-group align-self-end">
-                        <button type="submit" class="btn btn-primary">Apply</button>
-                    </div>
-                </div>
-            </form>
         </div>
     </div>
 
@@ -104,14 +43,95 @@
             <div class="card shadow-sm">
                 <div class="card-header bg-warning text-white">
                     <h3 class="card-title mb-0">Participants</h3>
+
+                    <!-- Filters and Sorting Form -->
+                    <form method="get" class="mb-4">
+                        <div class="card-body bg-white border rounded shadow-sm mb-3">
+                            <div class="row g-3 align-items-end">
+                                <!-- Gender Filter -->
+                                <div class="col-md-2">
+                                    <label for="gender" class="form-label text-dark">Gender</label>
+                                    <select name="gender" id="gender" class="form-select">
+                                        <option value="">All</option>
+                                        <option value="male" {% if filters.gender == "male" %}selected{% endif %}>Male</option>
+                                        <option value="female" {% if filters.gender == "female" %}selected{% endif %}>Female</option>
+                                        <option value="other" {% if filters.gender == "other" %}selected{% endif %}>Other</option>
+                                    </select>
+                                </div>
+
+                                <!-- Age Filter -->
+                                <div class="col-md-2">
+                                    <label for="age" class="form-label text-dark">Age Range</label>
+                                    <select name="age" id="age" class="form-select">
+                                        <option value="">All</option>
+                                        <option value="18" {% if filters.age == "18" %}selected{% endif %}>18–25</option>
+                                        <option value="26" {% if filters.age == "26" %}selected{% endif %}>26–35</option>
+                                        <option value="36" {% if filters.age == "36" %}selected{% endif %}>36–45</option>
+                                        <option value="46" {% if filters.age == "46" %}selected{% endif %}>46–60</option>
+                                        <option value="60" {% if filters.age == "60" %}selected{% endif %}>60+</option>
+                                    </select>
+                                </div>
+
+                                <!-- Sort By -->
+                                <div class="col-md-2">
+                                    <label for="sort_by" class="form-label text-dark">Sort By</label>
+                                    <select name="sort_by" id="sort_by" class="form-select">
+                                        <option value="">None</option>
+                                        <option value="name" {% if filters.sort_by == "name" %}selected{% endif %}>Name</option>
+                                        <option value="age" {% if filters.sort_by == "age" %}selected{% endif %}>Age</option>
+                                    </select>
+                                </div>
+
+                                <!-- Sort Direction -->
+                                <div class="col-md-2">
+                                    <label for="sort_direction" class="form-label text-dark">Direction</label>
+                                    <select name="sort_direction" id="sort_direction" class="form-select">
+                                        <option value="asc" {% if filters.sort_direction == "asc" %}selected{% endif %}>Ascending</option>
+                                        <option value="desc" {% if filters.sort_direction == "desc" %}selected{% endif %}>Descending</option>
+                                    </select>
+                                </div>
+
+                                <!-- Search -->
+                                <div class="col-md-3">
+                                    <label for="search" class="form-label text-dark">Search Name</label>
+                                    <input type="text" name="search" id="search" class="form-control"
+                                           placeholder="e.g., John" value="{{ filters.search }}">
+                                </div>
+
+                                <!-- Apply Button -->
+                                <div class="col-md-1 d-grid">
+                                    <button type="submit" class="btn btn-primary">Go</button>
+                                </div>
+                            </div>
+
+                            <!-- Reset Link -->
+                            <div class="row mt-2">
+                                <div class="col text-end">
+                                    <a href="?{% if race %}race_id={{ race.id }}{% endif %}" class="btn btn-outline-secondary btn-sm">Reset Filters</a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
                 </div>
+
                 <div class="card-body">
                     <p class="card-text">Here are the participants for the race:</p>
                     <div class="list-group list-group-flush">
+                        <div class="column-headers text-center d-flex">
+                            <span class="header-item flex-grow-1">Name</span>
+                            <span class="header-item flex-grow-1">Bib Number</span>
+                        </div>
                         {% for participant in participants %}
                             <div class="list-group-item p-3 mb-2 rounded border participant-row">
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <div class="fw-bold participant-name">{{ participant.name }}</div>
+                                    <div class="fw-bold participant-name">
+                                        <!-- Wrap participant name with a link -->
+                                        <a href="{% url 'link_participant' participant.id %}">{{ participant.name }}</a>
+                                    </div>
+                                    <div class="fw-bold participant-bib">
+                                        {{ participant.race_number }}
+                                    </div>
                                     <div class="additional-info">
                                         <span class="badge bg-info me-2">{{ participant.age }} years old</span>
                                         <span class="badge bg-info me-2">{{ participant.gender }}</span>
@@ -123,6 +143,71 @@
                             <p>No participants found.</p>
                         {% endfor %}
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Organiser Information Section -->
+    <div class="row mt-5">
+        <div class="col-12 text-center">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h3 class="card-title mb-0">Organiser Information</h3>
+                </div>
+                <div class="card-body">
+                    {% if race.organiser_website %}
+                        <p><strong>Visit Organiser's Website:</strong> <a href="{{ race.organiser_website }}" target="_blank">{{ race.organiser_website }}</a></p>
+                    {% else %}
+                        <p>No website provided for the organiser.</p>
+                    {% endif %}
+                    <p><strong>Follow the Organiser on Social Media:</strong></p>
+                    <div class="d-flex justify-content-center gap-3">
+                        {% if race.social_twitter %}
+                            <a href="{{ race.social_twitter }}" target="_blank" class="btn btn-outline-info btn-lg">
+                                <i class="bi bi-twitter"></i> Twitter
+                            </a>
+                        {% endif %}
+                        {% if race.social_facebook %}
+                            <a href="{{ race.social_facebook }}" target="_blank" class="btn btn-outline-primary btn-lg">
+                                <i class="bi bi-facebook"></i> Facebook
+                            </a>
+                        {% endif %}
+                        {% if race.social_instagram %}
+                            <a href="{{ race.social_instagram }}" target="_blank" class="btn btn-outline-danger btn-lg">
+                                <i class="bi bi-instagram"></i> Instagram
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Social Media Share Buttons Section -->
+    <div class="mt-5">
+        <div class="card shadow-sm">
+            <div class="card-header bg-secondary text-white">
+                <h3 class="card-title mb-0">Share this Race</h3>
+            </div>
+            <div class="card-body text-center">
+                <p class="lead mb-3">Share this event</p>
+                <div class="d-flex justify-content-center gap-3">
+                    <!-- Twitter Share Button -->
+                    <a href="https://twitter.com/intent/tweet?text=Check%20out%20the%20{{ race.name }}%20race%20at%20{{ race.date }}!%20Join%20us%20for%20a%20great%20event!%20{% url 'race_detail' race.id %}" 
+                       target="_blank" 
+                       class="btn btn-outline-info btn-lg" 
+                       title="Share on Twitter">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/c/ce/X_logo_2023.svg" alt="X" style="width: 30px; height: 30px;">
+                    </a>
+                
+                    <!-- Facebook Share Button -->
+                    <a href="https://www.facebook.com/sharer/sharer.php?u={% url 'race_detail' race.id %}" 
+                       target="_blank" 
+                       class="btn btn-outline-primary btn-lg" 
+                       title="Share on Facebook">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg" alt="Facebook" style="width: 30px; height: 30px;">
+                    </a>
                 </div>
             </div>
         </div>
@@ -152,9 +237,45 @@
         display: block;
     }
 
-    .participant-name {
+    .participant-name, .participant-bib {
+        flex: 1;
+        text-align: center;
         cursor: pointer;
     }
+
+    .column-headers {
+        display: flex;
+        justify-content: space-between;
+        font-weight: bold;
+        background-color: #f8f9fa;
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .header-item {
+        flex: 1;
+        text-align: center;
+    }
 </style>
+
+<!-- Leaflet CSS and JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+{% if race.latitude and race.longitude %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const map = L.map('map').setView([{{ race.latitude }}, {{ race.longitude }}], 14);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        //  add a marker
+        L.marker([{{ race.latitude }}, {{ race.longitude }}]).addTo(map);
+    });
+</script>
+{% endif %}
 
 {% endblock %}

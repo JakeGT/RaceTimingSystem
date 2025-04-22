@@ -46,9 +46,9 @@
     <!-- Call to Action Section -->
     <div class="row mt-5">
         <div class="col-12">
-            <h2>Get Started Today</h2>
             <!-- Buttons for Signup and Login, only visible if the user is not authenticated -->
             {% if not user.is_authenticated %}
+                <h2>Get Started Today</h2>
                 <a href="{% url 'register' %}" class="btn btn-success btn-lg me-3">Sign Up</a>
                 <a href="{% url 'login' %}" class="btn btn-outline-primary btn-lg">Log In</a>
             {% endif %}

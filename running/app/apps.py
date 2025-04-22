@@ -1,8 +1,8 @@
 #  running/app/apps.py
 
 # -------------------------------------------------- Import Libraries --------------------------------------------------
-#  used for django app configuration
 from django.apps import AppConfig
+
 
 # ------------------------------------------------- Class Declarations -------------------------------------------------
 class AppConfig(AppConfig):

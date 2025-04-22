@@ -1,11 +1,66 @@
 # running/app/forms.py
+
+# -------------------------------------------------- Import Libraries --------------------------------------------------
 from django import forms
-from .models import Participant, Race
-import datetime
+from .models import RaceCategory, ParticipantCategory, OrganiserApplication, Race
+from django.utils import timezone
+from .models import Image
 
-class RegisterRaceForm(forms.ModelForm):
+
+# ------------------------------------------------- Class Declarations -------------------------------------------------
+class ParticipantCategoryForm(forms.ModelForm):
+    """
+    Class for the participant category creation form
+    """
+
     class Meta:
-        model = Participant
-        fields = ['name', 'race_number', 'age', 'gender', 'race']
+        model = ParticipantCategory
+        fields = ['name']
 
-    race = forms.ModelChoiceField(queryset=Race.objects.filter(date__gte=datetime.date.today()), empty_label="Select Race")
+
+class RaceCategoryForm(forms.ModelForm):
+    """
+    Class for the race category creation form
+    """
+
+    class Meta:
+        model = RaceCategory
+        fields = ['name']
+
+
+class AdjustStartTimeForm(forms.Form):
+    """
+    Form for adjusting the race start time.
+    """
+
+    start_time = forms.DateTimeField(
+        label='New Start Time',
+        widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+    )
+
+
+class ImageUploadForm(forms.ModelForm):
+    """
+    Class for upload images form
+    """
+
+    class Meta:
+        model = Image
+        fields = ['name', 'image']
+
+
+class OrganiserApplicationForm(forms.ModelForm):
+    """
+    Class for organiser application form
+    """
+
+    class Meta:
+        model = OrganiserApplication
+        fields = ['race', 'message']
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+
+        if user:
+            self.fields['race'].queryset = Race.objects.exclude(organiser=user)
