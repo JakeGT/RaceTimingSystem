@@ -23,48 +23,72 @@
                     <!-- If the user is logged in, show the following links -->
                     <a href="{% url 'race_history' %}" class="btn btn-info btn-lg">Race History</a>
                     <a href="{% url 'race_organiser_dashboard' %}" class="btn btn-success btn-lg">Organiser Dashboard</a>
-                    <a href="{% url 'register_for_race' %}" class="btn btn-primary btn-lg">Register for Race</a>
                     <a href="{% url 'upcoming_races' %}" class="btn btn-warning btn-lg">Upcoming Races</a>
+                    <a href="{% url 'race_config' %}" class="btn btn-danger btn-lg">Create Race</a>
                 {% endif %}
 
             </div>
         </div>
     </div>
 
-    <!-- Create Race Button (for authenticated users) -->
-    {% if user.is_authenticated %}
-    <div class="row">
-        <div class="col-12 text-end mt-4">
-            <a href="{% url 'race_config' %}" class="btn btn-danger btn-lg">Create Race</a>
-        </div>
-    </div>
-    {% endif %}
-
     <!-- Search and Filter Section -->
     <div class="row mt-4">
         <div class="col-12 text-center">
-            <form method="get" action="{% url 'dashboard' %}">
+            <form id="race-filter-form" method="get" action="{% url 'dashboard' %}">
                 <div class="d-flex justify-content-between">
                     <!-- Race Search -->
                     <div class="form-group">
                         <label for="race-search" class="form-label">Search for a Race:</label>
-                        <input type="text" id="race-search" name="race_search" class="form-control w-auto" placeholder="Search by race name">
+                        <input type="text" id="race-search" name="race_search" class="form-control w-auto" placeholder="Search by race name" value="{{ request.GET.race_search }}">
                     </div>
-
+    
                     <!-- Filter by Completion Status -->
                     <div class="form-group">
                         <label for="completed" class="form-label">Show Completed Races Only:</label>
                         <input type="checkbox" id="completed" name="completed" {% if request.GET.completed %} checked {% endif %}>
                     </div>
-
-                    <!-- Submit Button -->
-                    <div class="form-group align-self-end">
-                        <button type="submit" class="btn btn-primary">Search</button>
+                    
+                    <!-- Filter by Upcoming -->
+                    <div class="form-group">
+                        <label for="upcoming" class="form-label">Show Upcoming Races Only:</label>
+                        <input type="checkbox" id="upcoming" name="upcoming" {% if request.GET.upcoming %} checked {% endif %}>
+                    </div>
+    
+                    <!-- Sorting Options (Name/Date + Asc/Desc) -->
+                    <div class="form-group">
+                        <label for="sort-by" class="form-label">Sort By:</label>
+                        <div>
+                            <!-- Sort by Name or Date -->
+                            <label class="mr-3">
+                                <input type="radio" name="sort_by" value="name" {% if request.GET.sort_by == 'name' or not request.GET.sort_by %} checked {% endif %}>
+                                Name
+                            </label>
+                            <label>
+                                <input type="radio" name="sort_by" value="date" {% if request.GET.sort_by == 'date' %} checked {% endif %}>
+                                Date
+                            </label>
+                        </div>
+                    </div>
+    
+                    <div class="form-group">
+                        <label for="sort-order" class="form-label">Sort Order:</label>
+                        <div>
+                            <!-- Ascending or Descending -->
+                            <label class="mr-3">
+                                <input type="radio" name="sort_order" value="asc" {% if request.GET.sort_order == 'asc' %} checked {% endif %}>
+                                Ascending
+                            </label>
+                            <label>
+                                <input type="radio" name="sort_order" value="desc" {% if request.GET.sort_order == 'desc' %} checked {% endif %}>
+                                Descending
+                            </label>
+                        </div>
                     </div>
                 </div>
             </form>
         </div>
     </div>
+
 
     <!-- Race Selection Section -->
     <div class="row mt-4">
@@ -72,8 +96,9 @@
             <h3>Select a Race:</h3>
             <div class="list-group">
                 {% for race in races %}
-                    <a href="{% url 'race_detail' race.id %}" class="list-group-item list-group-item-action">
-                        {{ race.name }} - {{ race.date }}
+                    <a href="{% url 'race_detail' race.id %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                        <span class="d-flex justify-content-center w-100">{{ race.name }} - {{ race.date }}</span>
+                        <span class="status-dot {% if race.is_completed %}completed{% else %}pending{% endif %}"></span>
                     </a>
                 {% empty %}
                     <p>No races found. Please add a race.</p>
@@ -82,5 +107,156 @@
         </div>
     </div>
 
+    <!-- Race Map Section -->
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            <h3>Race Locations on Map:</h3>
+            <div id="map" style="height: 500px;"></div>
+        </div>
+    </div>
+
+    <!-- CSS Styles -->
+    <style>
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .completed {
+            background-color: #28a745; /* Green */
+        }
+
+        .pending {
+            background-color: #dc3545; /* Red */
+        }
+
+        /* Additional style to ensure the text stays centered */
+        .list-group-item {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .list-group-item span {
+            display: inline-block;
+        }
+
+        .status-dot {
+            position: absolute;
+            right: 10px;
+        }
+    </style>
+
+
+
 </div>
+
+<!-- Auto submit -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('race-filter-form');
+        const checkbox = document.getElementById('completed');
+        const upcomingCheckbox = document.getElementById('upcoming');
+        const searchInput = document.getElementById('race-search');
+        const radioSortBy = document.querySelectorAll('input[name="sort_by"]');
+        const radioSortOrder = document.querySelectorAll('input[name="sort_order"]');
+
+        //  auto submit on checkbox toggle
+        checkbox.addEventListener('change', function () {
+            if (checkbox.checked && upcomingCheckbox.checked) {
+                upcomingCheckbox.checked = false;
+            }
+            form.submit();
+        });
+        
+        upcomingCheckbox.addEventListener('change', function () {
+            if (checkbox.checked && upcomingCheckbox.checked) {
+                checkbox.checked = false;
+            }
+            form.submit();
+        });
+
+        //  auto submit when sort options change
+        radioSortBy.forEach(function(radio) {
+            radio.addEventListener('change', function () {
+                form.submit();
+            });
+        });
+
+        radioSortOrder.forEach(function(radio) {
+            radio.addEventListener('change', function () {
+                form.submit();
+            });
+        });
+
+        //  limit form submission frequency
+        let debounceTimer;
+        searchInput.addEventListener('input', function () {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                form.submit();
+            }, 1000);
+        });
+
+        //  focus the search input after the page reloads and position the cursor at the end
+        if (searchInput) {
+            setTimeout(() => {
+                searchInput.focus();
+                //  move cursor to the end of the input field
+                searchInput.setSelectionRange(searchInput.value.length, searchInput.value.length);
+            }, 10);  //  delay to allow the page reload to complete
+        }
+    });
+</script>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        
+        //  initialise an empty array to store race coordinates
+        var raceCoordinates = [];
+
+        //  loop through the races and add their coordinates to the raceCoordinates array
+        {% for race in races %}
+            {% if race.latitude and race.longitude %}
+                raceCoordinates.push([{{ race.latitude }}, {{ race.longitude }}]);
+            {% endif %}
+        {% endfor %}
+
+        //  set default map center to england
+        var mapCenter = [52.3555, -1.1743];
+        var zoomLevel = 6;
+    
+        if (raceCoordinates.length > 0) {
+            //  set the center to the first race
+            mapCenter = raceCoordinates[0];
+            zoomLevel = 10;
+        }
+
+        //  initialise the map
+        var map = L.map('map').setView(mapCenter, zoomLevel);
+
+        //  set the tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        //  loop through the races and place markers
+        {% for race in races %}
+            {% if race.latitude and race.longitude %}
+                L.marker([{{ race.latitude }}, {{ race.longitude }}])
+                    .addTo(map)
+                    .bindPopup('<b>{{ race.name }}</b><br>{{ race.get_location }}');
+            {% endif %}
+        {% endfor %}
+    });
+</script>
+
+
+
+
+    
 {% endblock %}
