@@ -28,7 +28,7 @@ class BibDetector:
         self.device = device
 
     def detect(self, source, verbose=False):
-        return self.model.track(source=source, device=self.device, stream=True, verbose=True, tracker="bytetrack.yaml")
+        return self.model.track(source=source, device=self.device, stream=True, verbose=verbose, tracker="bytetrack.yaml")
 
     def extract_bib_text(self, image):
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)

@@ -1,13 +1,12 @@
 import sys
-import cv2
 import threading
 import torch
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QLineEdit, QPushButton,
     QFileDialog, QComboBox, QCheckBox, QVBoxLayout, QHBoxLayout, QMessageBox
 )
-from PyQt5.QtGui import QImage, QPixmap
-from PyQt5.QtCore import QTimer
+from PyQt5.QtMultimedia import QCameraInfo, QCamera
+from PyQt5.QtMultimediaWidgets import QCameraViewfinder
 from bib_detector import BibDetector, BibTracker, VideoProcessor
 import website_api
 
@@ -15,6 +14,7 @@ import website_api
 class BibDetectorApp(QWidget):
     def __init__(self):
         super().__init__()
+        self.camera = None
         self.setWindowTitle("Bib Detector GUI")
 
         self.device_label = QLabel("Device:")
@@ -23,7 +23,6 @@ class BibDetectorApp(QWidget):
 
         self.camera_label = QLabel("Camera Input:")
         self.camera_combo = QComboBox()
-        self.populate_camera_inputs()
         self.camera_combo.currentIndexChanged.connect(self.change_camera_preview)
 
         self.refresh_button = QPushButton("Refresh Cameras")
@@ -42,17 +41,14 @@ class BibDetectorApp(QWidget):
         self.start_button.clicked.connect(self.start_detection)
 
         self.preview_label = QLabel("Camera Preview")
-        self.preview_label.setFixedSize(640, 360)
+        self.viewfinder = QCameraViewfinder()
+        self.viewfinder.setFixedSize(640, 360)
+        self.populate_camera_inputs()
 
-        self.timer = QTimer()
-        self.timer.timeout.connect(self.update_preview)
-        self.cap = None
 
         self.layout = QVBoxLayout()
         self.add_widgets()
         self.setLayout(self.layout)
-
-        self.timer.start(30)
 
     def add_widgets(self):
         self.layout.addLayout(self.row(self.device_label, self.device_combo))
@@ -61,6 +57,7 @@ class BibDetectorApp(QWidget):
         self.layout.addLayout(self.row(self.url_label, self.url_line))
         self.layout.addWidget(self.verbose_check)
         self.layout.addWidget(self.preview_label)
+        self.layout.addWidget(self.viewfinder)
         self.layout.addWidget(self.start_button)
 
     def row(self, *widgets):
@@ -78,13 +75,9 @@ class BibDetectorApp(QWidget):
 
     def populate_camera_inputs(self):
         self.camera_combo.clear()
-        for i in range(10):
-            cap = cv2.VideoCapture(i)
-            if cap.isOpened():
-                ret, _ = cap.read()
-                if ret:
-                    self.camera_combo.addItem(f"Camera {i}", i)
-                cap.release()
+        self.available_cameras = QCameraInfo.availableCameras()
+        for cam in self.available_cameras:
+            self.camera_combo.addItem(cam.description(), cam)
 
         if self.camera_combo.count() > 0:
             self.change_camera_preview()
@@ -95,29 +88,21 @@ class BibDetectorApp(QWidget):
             self.output_line.setText(filename)
 
     def change_camera_preview(self):
-        index = self.camera_combo.currentData()
-        if self.cap:
-            self.cap.release()
-        if index is not None:
-            self.cap = cv2.VideoCapture(index)
-            if not self.cap.isOpened():
-                QMessageBox.critical(self, "Camera Error", f"Could not open camera {index}.")
-                self.cap = None
+        if self.camera:
+            self.camera.stop()
+            self.camera.setViewfinder(None)
+            self.camera.deleteLater()
 
-    def update_preview(self):
-        if self.cap and self.cap.isOpened():
-            ret, frame = self.cap.read()
-            if not ret:
-                return
-            frame = cv2.resize(frame, (640, 360))
-            rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            qt_img = QImage(rgb_image.data, rgb_image.shape[1], rgb_image.shape[0],
-                            rgb_image.strides[0], QImage.Format_RGB888)
-            self.preview_label.setPixmap(QPixmap.fromImage(qt_img))
+        selected_camera_info = self.camera_combo.currentData()
+        if selected_camera_info:
+            self.camera = QCamera(selected_camera_info)
+            self.camera.setViewfinder(self.viewfinder)
+            self.camera.start()
 
     def start_detection(self):
         device = self.device_combo.currentText()
-        input_source = self.camera_combo.currentData()
+        selected_camera_info = self.camera_combo.currentData()
+        input_index = self.available_cameras.index(selected_camera_info) if selected_camera_info in self.available_cameras else 0
         output_file = self.output_line.text() or None
         url = self.url_line.text()
         verbose = self.verbose_check.isChecked()
@@ -126,24 +111,23 @@ class BibDetectorApp(QWidget):
             QMessageBox.critical(self, "Missing URL", "Please enter the Race Timing Website URL.")
             return
 
-        if self.cap:
-            self.cap.release()
-            self.cap = None
-        self.timer.stop()
+        if self.camera:
+            self.camera.stop()
+            self.camera.setViewfinder(None)
+            self.camera.deleteLater()
+            self.camera = None
 
         api = website_api.WebsiteAPI(url)
         detector = BibDetector("best.pt", device)
         tracker = BibTracker(api)
-        processor = VideoProcessor(detector, tracker, input_source, output_file, verbose)
+        processor = VideoProcessor(detector, tracker, input_index, output_file, verbose)
 
         self.hide()
         threading.Thread(target=lambda: self.run_processor(processor), daemon=True).start()
 
     def run_processor(self, processor):
         processor.run()
-        self.show()
-        self.timer.start(30)
-        self.change_camera_preview()
+        self.close()
 
 
 if __name__ == "__main__":
