@@ -1282,7 +1282,7 @@ def google_callback(request):
 
 
 @csrf_exempt
-def upload_image(request):
+def upload_image(request, race_id):
     """
     API endpoint function for the upload of images with a timestamp, for manual validation of results.
     """
@@ -1290,13 +1290,6 @@ def upload_image(request):
     if request.method == 'POST' and request.FILES.get('image'):
 
         logger.info("Received POST request with an image file.")
-
-        #   get race ID from request
-        race_id = request.POST.get('race_id')
-        if not race_id:
-            logger.warning("No race ID provided in the request.")
-            return JsonResponse({'error': 'Race ID is required'}, status=400)
-
         #   validate race
         try:
             race = Race.objects.get(id=race_id)

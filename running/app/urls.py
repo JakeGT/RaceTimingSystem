@@ -105,7 +105,7 @@ urlpatterns = [
     path('google-login/callback/', views.google_callback, name='google_callback'),
 
     #  image upload endpoint
-    path('upload-image/', views.upload_image, name='upload_image'),
+    path('race/<int:race_id>/upload_image', views.upload_image, name='upload_image'),
 
     #  manual bib validation
     path('gallery/<int:race_id>/', views.gallery_view, name='gallery_view'),
