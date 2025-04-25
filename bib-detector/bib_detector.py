@@ -28,7 +28,7 @@ class BibDetector:
         self.device = device
 
     def detect(self, source, verbose=False):
-        return self.model.track(source=source, device=self.device, stream=True, verbose=True, tracker="bytetrack.yaml")
+        return self.model.track(source=source, device=self.device, stream=True, verbose=verbose, tracker="bytetrack.yaml")
 
     def extract_bib_text(self, image):
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -55,8 +55,9 @@ class BibTracker:
     def __init__(self, api):
         self.ocr_history = defaultdict(list)
         self.api = api
+        self.best_frames = {}
 
-    def update(self, track_id, bib_box, detector):
+    def update(self, track_id, bib_box, detector, frame):
         if bib_box.size == 0:
             return
         text, conf = detector.extract_bib_text(bib_box)
@@ -65,6 +66,8 @@ class BibTracker:
             if numbers:
                 try:
                     self.ocr_history[track_id].append((int(numbers), time.time()))
+                    if track_id not in self.best_frames or conf > self.best_frames[track_id][0]:
+                        self.best_frames[track_id] = (conf, frame.copy())
                 except ValueError:
                     pass
 
@@ -99,11 +102,14 @@ class BibTracker:
                 if count >= self.MIN_OCR_ENTRIES:
                     mode_val = Counter([text for text, _ in entries]).most_common(1)[0][0]
                 else:
-                    mode_val = ""
-                self.api.send_result(time.time(), mode_val, track_id, count, None)
+                    mode_val = -1
+                image = self.best_frames.get(track_id, (None, None))[1]
+                self.api.send_result(time.time(), mode_val, track_id, count, image)
                 expired.append(track_id)
         for tid in expired:
             del self.ocr_history[tid]
+            if tid in self.best_frames:
+                del self.best_frames[tid]
 
 
 class VideoProcessor:

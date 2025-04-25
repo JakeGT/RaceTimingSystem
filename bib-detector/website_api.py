@@ -22,9 +22,11 @@ class WebsiteAPIDemo:
 
 
 class WebsiteAPI:
-    def __init__(self, url, token=None):
-        self.url = url + "/upload"
-        print(self.url)
+    def __init__(self, base_url, token=None):
+        self.url_data = f"{base_url}/upload"
+        self.url_image = f"{base_url}/upload_image"
+        print(f"Data URL: {self.url_data}")
+        print(f"Image URL: {self.url_image}")
         self.token = token
 
     def send_result(self, timestamp, bib_number, tracker_id, num_entries, image):
@@ -36,25 +38,28 @@ class WebsiteAPI:
                 "tracker_id": tracker_id,
                 "num_entries": num_entries,
             }
-            if image is not None:
-                success, buffer = cv2.imencode(".jpg", image)
-            else:
-                success = False
-            if not success:
-                print("Failed to encode image as JPEG")
-                files = {}
-            else:
-                image_bytes = buffer.tobytes()
-                files = {"image.jpg", image_bytes, "image/jpeg"}
             headers = {"Content-Type": "application/json"}
             if self.token:
                 headers["Authorization"] = f"Bearer {self.token}"
-            req = grequests.post(self.url, json=data, files=files, headers=headers)
-            responses = grequests.map([req], size=1)
-            if responses and responses[0]:
-                if responses[0].status_code != 200:
-                    print(f"Error sending result: {responses[0].status_code}")
+
+            data_req = grequests.post(self.url_data, json=data, headers=headers)
+            data_responses = grequests.map([data_req], size=1)
+            if data_responses and data_responses[0]:
+                if data_responses[0].status_code != 200:
+                    print(f"Error sending data: {data_responses[0].status_code}")
             else:
                 print("No response from server")
+
+            if image is not None:
+                success, buffer = cv2.imencode(".jpg", image)
+                if success:
+                    image_bytes = buffer.tobytes()
+                    files = {"image": ("image.jpg", image_bytes, "image/jpeg")}
+                    image_req = grequests.post(self.url_image, files=files, headers=headers)
+                    image_responses = grequests.map([image_req], size=1)
+                    if image_responses and image_responses[0] and image_responses[0].status_code != 200:
+                        print(f"Error sending image: {image_responses[0].status_code}")
+                else:
+                    print("Failed to encode image to JPEG")
 
         threading.Thread(target=task, daemon=True).start()

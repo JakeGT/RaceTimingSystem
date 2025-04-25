@@ -225,6 +225,7 @@ class Image(models.Model):
         Race, on_delete=models.CASCADE, related_name="race_images"
     )  # Link to a specific race
     timestamp = models.DateTimeField(auto_now_add=True)
+    bib_number = models.IntegerField()
 
     def __str__(self):
         return f"{self.name} ({self.race.name}) - {self.timestamp}"

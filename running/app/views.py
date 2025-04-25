@@ -102,9 +102,13 @@ def upload_json(request, race_id):
             return JsonResponse({"error": "Missing upload token"}, status=401)
 
         try:
-            race = Race.objects.get(pk=race_id, token=token)
+            race = Race.objects.get(pk=race_id)
         except Race.DoesNotExist:
-            return JsonResponse({"error": "Invalid race or token"}, status=403)
+            return JsonResponse({'error': 'Invalid race ID'}, status=404)
+
+        if race.token != token:
+            logger.info("Invalid token in request.")
+            return JsonResponse({'error': 'Invalid token'}, status=498)
 
         try:
             data = json.loads(request.body)
@@ -1807,20 +1811,18 @@ def google_callback(request):
 
 
 @csrf_exempt
-def upload_image(request):
+def upload_image(request, race_id):
     """
     API endpoint function for the upload of images with a timestamp, for manual validation of results.
     """
 
-    if request.method == "POST" and request.FILES.get("image"):
+    if request.method == 'POST' and request.FILES.get('image'):
+        # check token in header or query string
+        token = request.GET.get('token') or request.headers.get('X-Race-Token')
+        if not token:
+            return JsonResponse({"error": "Missing upload token"}, status=401)
 
         logger.info("Received POST request with an image file.")
-
-        #   get race ID from request
-        race_id = request.POST.get("race_id")
-        if not race_id:
-            logger.warning("No race ID provided in the request.")
-            return JsonResponse({"error": "Race ID is required"}, status=400)
 
         #   validate race
         try:
@@ -1828,7 +1830,10 @@ def upload_image(request):
             logger.info(f"Race with ID {race_id} found.")
         except Race.DoesNotExist:
             logger.error(f"Race with ID {race_id} does not exist.")
-            return JsonResponse({"error": "Invalid race ID"}, status=404)
+            return JsonResponse({'error': 'Invalid race ID'}, status=404)
+        if race.token != token:
+            logger.info("Invalid token in request.")
+            return JsonResponse({'error': 'Invalid token'}, status=498)
 
         #   get timestamp
         timestamp_str = request.POST.get("timestamp")
@@ -1846,9 +1851,15 @@ def upload_image(request):
                 status=400,
             )
 
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
+
         #   get the uploaded file
         uploaded_file = request.FILES["image"]
         logger.info(f"Received image file: {uploaded_file.name}")
+        bib_number = data.get('bib_number')
 
         try:
             #   save file to media
@@ -1864,7 +1875,12 @@ def upload_image(request):
         #   save to database
         try:
             image_instance = Image.objects.create(
-                name=uploaded_file.name, image=file_path, race=race, timestamp=timestamp
+                name=uploaded_file.name,
+                image=file_path,
+                race=race,
+                timestamp=timestamp,
+                bib_number=bib_number
+
             )
             logger.info(f"Image instance created with ID {image_instance.id}.")
         except Exception as e:
