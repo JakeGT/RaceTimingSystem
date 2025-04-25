@@ -26,19 +26,28 @@
                         {% endfor %}
                     {% endif %}
 
-                    <form method="post" action="{% url 'login' %}">
+                    <form method="post" action="{% url 'login' %}" autocomplete="on">
                         {% csrf_token %}
-
+                    
                         <div class="mb-3">
                             <label for="username" class="form-label">Username</label>
-                            <input type="text" id="username" name="username" class="form-control" required autofocus>
-                        </div>
+                            <input type="text" id="username" name="username" class="form-control"
+                                   required autofocus autocomplete="username"
+                                   value="{{ login_data.username|default_if_none:'' }}">
 
+
+                        </div>
+                    
                         <div class="mb-3">
                             <label for="password" class="form-label">Password</label>
-                            <input type="password" id="password" name="password" class="form-control" required>
+                            <input type="password" id="password" name="password" class="form-control" required autocomplete="current-password">
                         </div>
-
+                    
+                        <div class="form-check mb-3">
+                            <input type="checkbox" class="form-check-input" id="remember_me" name="remember_me">
+                            <label class="form-check-label" for="remember_me">Remember me</label>
+                        </div>
+                    
                         <button type="submit" class="btn btn-primary w-100">Login</button>
                     </form>
 

@@ -137,6 +137,15 @@
                         <input type="url" name="social_facebook" class="form-control mb-2" placeholder="Facebook (https://facebook.com/yourpage)"
                             value="{{ saved_data.social_facebook|default:'' }}">
                     </div>
+                    
+                    <!-- YouTube Stream -->
+                    <div class="form-group mb-4">
+                        <label for="youtube_stream_url">YouTube Stream URL (Optional)</label>
+                        <input type="url" name="youtube_stream_url" id="youtube_stream_url" class="form-control"
+                            placeholder="https://youtube.com/live/your-stream-id"
+                            value="{{ saved_data.youtube_stream_url|default:'' }}">
+                    </div>
+
 
                     
                     <!-- Submit -->
@@ -151,6 +160,19 @@
         </div>
     </div>
 </div>
+    
+<style>
+    input:required,
+    select:required,
+    textarea:required {
+        background-color: #fffde0;
+    }
+
+    input[readonly][required] {
+        background-color: #fffde0;
+    }
+</style>
+
 
 <!-- Styles & Scripts -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -163,8 +185,8 @@
     document.addEventListener('DOMContentLoaded', function () {
         const raceDateInput = document.getElementById("race_date");
         const startTimeInput = document.getElementById("start_time");
-
-        // initialise start time picker
+    
+        // Initialise start time picker
         let startTimePicker = flatpickr(startTimeInput, {
             enableTime: true,
             noCalendar: true,
@@ -172,8 +194,8 @@
             time_24hr: true,
             allowInput: true
         });
-
-        // initialise race date picker
+    
+        // Initialise race date picker
         flatpickr(raceDateInput, {
             dateFormat: "Y-m-d",
             allowInput: true,
@@ -182,13 +204,13 @@
                 updateStartTimeMin(selectedDates[0]);
             }
         });
-
+    
         function updateStartTimeMin(selectedDate) {
             const today = new Date();
             const selected = new Date(selectedDate);
-
+    
             startTimePicker.set('minTime', null);
-
+    
             if (selected.toDateString() === today.toDateString()) {
                 const now = new Date();
                 const hours = now.getHours().toString().padStart(2, '0');
@@ -196,17 +218,17 @@
                 startTimePicker.set('minTime', `${hours}:${minutes}`);
             }
         }
-
-        // location toggle
+    
+        // Location toggle
         const noLocationCheckbox = document.getElementById('no_location');
         const locationFields = document.getElementById('location-fields');
         const mapDiv = document.getElementById('map');
-
+    
         if (noLocationCheckbox.checked) {
             locationFields.style.display = 'none';
             mapDiv.style.display = 'none';
         }
-
+    
         noLocationCheckbox.addEventListener('change', function () {
             const show = !noLocationCheckbox.checked;
             locationFields.style.display = show ? 'block' : 'none';
@@ -214,47 +236,47 @@
             document.getElementById('latitude').disabled = !show;
             document.getElementById('longitude').disabled = !show;
         });
-
-        // leaflet map
+    
+        // Leaflet map
         const map = L.map('map').setView([50.7374, -3.5354], 15);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
-
+    
         const marker = L.marker([50.7374, -3.5354], { draggable: true }).addTo(map);
-
+    
         function updateLocationFields(position) {
             document.getElementById("latitude").value = position.lat;
             document.getElementById("longitude").value = position.lng;
-
+    
             fetch(`https://nominatim.openstreetmap.org/reverse?lat=${position.lat}&lon=${position.lng}&format=json`)
                 .then(response => response.json())
                 .then(data => {
                     document.getElementById("race_location").value = data.display_name || 'Unknown Location';
                 });
         }
-
+    
         marker.on('dragend', function (e) {
             updateLocationFields(e.target.getLatLng());
         });
-
+    
         map.on('click', function (e) {
             marker.setLatLng(e.latlng);
             updateLocationFields(e.latlng);
         });
-
-        // form submission validation
+    
+        // Form submission validation
         const form = document.querySelector('form');
         const latitudeInput = document.getElementById('latitude');
         const longitudeInput = document.getElementById('longitude');
         const locationError = document.getElementById('location-error');
-
+    
         form.addEventListener('submit', function (e) {
             const noLocationChecked = noLocationCheckbox.checked;
             const lat = latitudeInput.value.trim();
             const lng = longitudeInput.value.trim();
-
-            //  location validation
+    
+            // Location validation
             if (!noLocationChecked && (!lat || !lng)) {
                 e.preventDefault();
                 locationError.classList.remove('d-none');
@@ -263,22 +285,21 @@
             } else {
                 locationError.classList.add('d-none');
             }
-
-            //  social media validation
+    
+            // Social media validation
             const socialLinks = {
                 'social_twitter': 'twitter.com',
                 'social_instagram': 'instagram.com',
-                'social_facebook': 'facebook.com',
-                'social_linkedin': 'linkedin.com'
+                'social_facebook': 'facebook.com'
             };
-
+    
             let invalidLinks = [];
-
+    
             for (const [fieldId, expectedDomain] of Object.entries(socialLinks)) {
                 const input = document.querySelector(`[name="${fieldId}"]`);
                 if (!input) continue;
                 const value = input.value.trim();
-
+    
                 if (value && !value.includes(expectedDomain)) {
                     invalidLinks.push({
                         field: fieldId,
@@ -287,16 +308,16 @@
                     });
                 }
             }
-
+    
             if (invalidLinks.length > 0) {
                 e.preventDefault();
-
+    
                 const msg = invalidLinks.map(link => 
                     `${link.field.replace('social_', '')} link is invalid:\nExpected domain: ${link.expected}\nEntered: ${link.value}`
                 ).join('\n\n');
-
+    
                 alert("Please correct the following social media URLs:\n\n" + msg);
-
+    
                 invalidLinks.forEach(link => {
                     const input = document.querySelector(`[name="${link.field}"]`);
                     input.classList.add('is-invalid');
@@ -307,8 +328,22 @@
                     input?.classList.remove('is-invalid');
                 });
             }
+    
+            // YouTube stream validation
+            const streamField = document.querySelector('[name="youtube_stream_url"]');
+            if (streamField && streamField.value.trim() && !streamField.value.includes('youtube.com')) {
+                e.preventDefault();
+                alert("The YouTube stream URL seems invalid. It should contain 'youtube.com'.");
+                streamField.classList.add('is-invalid');
+                streamField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            } else {
+                streamField?.classList.remove('is-invalid');
+            }
         });
     });
+
+
 </script>
 
 <style>

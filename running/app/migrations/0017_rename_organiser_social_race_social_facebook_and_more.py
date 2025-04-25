@@ -6,28 +6,28 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('app', '0016_race_organiser_social_race_organiser_website'),
+        ("app", "0016_race_organiser_social_race_organiser_website"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='race',
-            old_name='organiser_social',
-            new_name='social_facebook',
+            model_name="race",
+            old_name="organiser_social",
+            new_name="social_facebook",
         ),
         migrations.AddField(
-            model_name='race',
-            name='social_instagram',
+            model_name="race",
+            name="social_instagram",
             field=models.URLField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='race',
-            name='social_linkedin',
+            model_name="race",
+            name="social_linkedin",
             field=models.URLField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='race',
-            name='social_twitter',
+            model_name="race",
+            name="social_twitter",
             field=models.URLField(blank=True, null=True),
         ),
     ]
