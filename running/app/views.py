@@ -90,9 +90,13 @@ def upload_json(request, race_id):
             return JsonResponse({"error": "Missing upload token"}, status=401)
 
         try:
-            race = Race.objects.get(pk=race_id, token=token)
+            race = Race.objects.get(pk=race_id)
         except Race.DoesNotExist:
-            return JsonResponse({"error": "Invalid race or token"}, status=403)
+            return JsonResponse({'error': 'Invalid race ID'}, status=404)
+
+        if race.token != token:
+            logger.info("Invalid token in request.")
+            return JsonResponse({'error': 'Invalid token'}, status=498)
 
         try:
             data = json.loads(request.body)
@@ -1288,6 +1292,10 @@ def upload_image(request, race_id):
     """
 
     if request.method == 'POST' and request.FILES.get('image'):
+        # check token in header or query string
+        token = request.GET.get('token') or request.headers.get('X-Race-Token')
+        if not token:
+            return JsonResponse({"error": "Missing upload token"}, status=401)
 
         logger.info("Received POST request with an image file.")
         #   validate race
@@ -1297,6 +1305,9 @@ def upload_image(request, race_id):
         except Race.DoesNotExist:
             logger.error(f"Race with ID {race_id} does not exist.")
             return JsonResponse({'error': 'Invalid race ID'}, status=404)
+        if race.token != token:
+            logger.info("Invalid token in request.")
+            return JsonResponse({'error': 'Invalid token'}, status=498)
 
         #   get timestamp
         timestamp_str = request.POST.get('timestamp')
