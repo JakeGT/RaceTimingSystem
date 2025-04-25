@@ -23,8 +23,8 @@ class WebsiteAPIDemo:
 
 class WebsiteAPI:
     def __init__(self, base_url, token=None):
-        self.url_data = f"{base_url}/upload/{race_id}/upload"
-        self.url_image = f"{base_url}/upload/{race_id}/upload_image"
+        self.url_data = f"{base_url}/upload"
+        self.url_image = f"{base_url}/upload_image"
         print(f"Data URL: {self.url_data}")
         print(f"Image URL: {self.url_image}")
         self.token = token
