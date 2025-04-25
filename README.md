@@ -1,7 +1,5 @@
 # Automated Race Timing
 
-# Vision-Based Race Timing System
-
 ## Executive Summary
 
 Across the world, people compete in running races that span a variety of ages, abilities, and formats. These events 
@@ -43,7 +41,7 @@ technology, it provides an accurate, scalable, and affordable system for event o
 
 ## License
 
-This project is licensed under the GNU GENERAL PUBLIC LICENSE. See the `LICENSE` file for details.
+This project is licensed under the GNU GENERAL PUBLIC LICENSE. See the [LICENSE](LICENSE) file for details.
 
 ## Dependencies
 
@@ -62,25 +60,74 @@ The project relies on the following core technologies:
 ### Computer Vision Pipeline
 - YOLO (via Ultralytics)
 - EasyOCR (OCR support)
-- TODO
+- Flask (for creating REST API calls)
 
-### Optional Tools
+### Other Tools
 - Git (version control)
 
 ## Setup Instructions
 
-1. Clone this repository
+1. Clone this repository:
+    ```bash
+    git clone https://github.com/UoE-ECMM427-202425/Running.git
+    ```
+
 2. Create a virtual environment
+
+    For Windows:
+    ```bash
+    python -m venv venv
+    ```
+    
+    For MacOs/Linux
+    ```bash
+    python3 -m venv venv
+    ```
+
 3. Install dependencies
+   - First activate the virtual environment:
+   For Windows:
+     ```bash
+     venv\Scripts\activate
+     ```
+    
+     For MacOs/Linux
+     ```bash
+     source venv/bin/activate
+     ```
+     
+   - Install all required dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
 ## Usage
+
+- Django website (local):
+1. Navigate to the `running` directory:
+   ```bash
+    cd running
+    ```
+2. Apply database migrations:
+     ```bash
+     python manage.py migrate
+     ```
+3. Run Django website locally:
+     ```bash
+     python manage.py runserver
+     ```
+  
+- Computer Vision Script
 TODO
 
 ## Screenshots
-TODO
+Screenshots of the product can be found in `/screenshots`
 
 ## Future Work
-TODO
+In order for further expansion feature could be added which include:
+- Support for multiple cameras (multi-angle detection).
+- Expand to include start timing + split tracking.
+- Migration of computer vision script to mobile
 
 ## Development Environment
 For more details, check out the [development environment](docs/development_environment.md).

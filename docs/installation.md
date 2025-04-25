@@ -4,7 +4,7 @@
 
 ### 1. Clone the Repository
 
-```
+```bash
 git clone https://github.com/UoE-ECMM427-202425/Running.git
 cd Running
 ```
@@ -13,21 +13,21 @@ cd Running
 
 For **Linux/macOS**:
 
-```
+```bash
 python3 -m venv venv
 source venv/bin/activate
 ```
 
 For **Windows**:
 
-```
+```bash
 python -m venv venv
 .\venv\Scripts\activate
 ```
 
 ### 3. Install Required Python Packages
 
-```
+```bash
 pip install -r requirements.txt
 ```
 
@@ -37,7 +37,7 @@ For development, this system uses SQLite by default. No additional setup is requ
 using a different database (e.g., PostgreSQL or MySQL), you'll need to configure your database settings in the
 `settings.py` file located in the project directory.
 
-```
+```bash
 python manage.py migrate
 ```
 
@@ -45,7 +45,7 @@ python manage.py migrate
 
 To manage the system through the Django admin interface, create a superuser account:
 
-```
+```bash
 python manage.py createsuperuser
 ```
 
@@ -53,7 +53,7 @@ Then follow the instructions to create a new superuser
 
 ### 6. Run the Development Server
 
-```
+```bash
 python manage.py runserver
 ```
 
@@ -66,13 +66,13 @@ You can access the system by navigating to `http://127.0.0.1:8000/` in your brow
 If you want to use a different database (e.g., PostgreSQL or MySQL), you need to modify the database settings in the
 `settings.py` file. Below is an example for PostgreSQL:
 
-```
+```python
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'your_database_name',
-        'USER': 'your_database_user',
-        'PASSWORD': 'your_database_password',
+        'NAME': 'database_name',
+        'USER': 'database_user',
+        'PASSWORD': 'database_password',
         'HOST': 'localhost',
         'PORT': '5432',
     }
@@ -81,7 +81,7 @@ DATABASES = {
 
 After modifying the database configuration, run the migrations again:
 
-```
+```bash
 python manage.py migrate
 ```
 

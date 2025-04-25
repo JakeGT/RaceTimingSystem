@@ -5,6 +5,19 @@
 {% block content %}
 <div class="container mt-5">
 
+    <!-- Flash Messages -->
+    {% if messages %}
+        <div class="mt-4">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+
     <!-- Page Header -->
     <div class="row">
         <div class="col-12 text-center">
@@ -36,6 +49,40 @@
             </div>
         </div>
     </div>
+
+    {% if race.stream_url %}
+        <!-- Livestream Section -->
+        <div class="row mt-5">
+            <div class="col-12 text-center">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-danger text-white">
+                        <h3 class="card-title mb-0">Live Stream</h3>
+                    </div>
+                    <div class="card-body">
+                        <p class="lead">Watch the race live below!</p>
+                        <div class="ratio ratio-16x9">
+                            {% if "youtube.com" in race.stream_url or "youtu.be" in race.stream_url %}
+                                <iframe 
+                                    src="https://www.youtube.com/embed/{% if 'watch?v=' in race.stream_url %}{{ race.stream_url|cut:'https://www.youtube.com/watch?v=' }}{% else %}{{ race.stream_url|cut:'https://youtu.be/' }}{% endif %}" 
+                                    frameborder="0" 
+                                    allowfullscreen>
+                                </iframe>
+                            {% elif "twitch.tv" in race.stream_url %}
+                                <iframe 
+                                    src="https://player.twitch.tv/?channel={{ race.stream_url|cut:'https://www.twitch.tv/' }}&parent={{ request.get_host }}" 
+                                    frameborder="0" 
+                                    allowfullscreen>
+                                </iframe>
+                            {% else %}
+                                <p>Live stream: <a href="{{ race.stream_url }}" target="_blank">{{ race.stream_url }}</a></p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
 
     <!-- Participants Section -->
     <div class="row mt-5">
@@ -71,6 +118,18 @@
                                         <option value="60" {% if filters.age == "60" %}selected{% endif %}>60+</option>
                                     </select>
                                 </div>
+                            
+                            <!-- Participant Category Filter -->
+                            <div class="col-md-2">
+                                <label for="participant_category" class="form-label text-dark">Category</label>
+                                <select name="participant_category" id="participant_category" class="form-select">
+                                    <option value="">All</option>
+                                    {% for category in categories %}
+                                        <option value="{{ category.id }}" {% if filters.participant_category == category.id|stringformat:"s" %}selected{% endif %}>{{ category.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
 
                                 <!-- Sort By -->
                                 <div class="col-md-2">
@@ -114,40 +173,151 @@
                     </form>
 
                 </div>
+            
+               {% if user.is_authenticated %}
+                    <!-- Participant Linking Info -->
+                    <div class="alert alert-info mt-4" role="alert">
+                        <h5 class="alert-heading">Want to claim your race participation?</h5>
+                        <p>
+                            If you see your name in the list below, click on it to link your account to that participant profile.
+                            This lets you view your results, edit your profile, and more!
+                        </p>
+                        <hr>
+                    </div>
+               {% else %}
+                    <!-- Prompt login for unauthenticated users -->
+                    <div class="alert alert-warning mt-4" role="alert">
+                        <h5 class="alert-heading">Want to claim your race participation?</h5>
+                        <p>You need to <a href="{% url 'login' %}?next={{ request.path }}">log in</a> to link your account to a participant profile.</p>
+                    </div>
+               {% endif %}
+
+
 
                 <div class="card-body">
-                    <p class="card-text">Here are the participants for the race:</p>
-                    <div class="list-group list-group-flush">
-                        <div class="column-headers text-center d-flex">
-                            <span class="header-item flex-grow-1">Name</span>
-                            <span class="header-item flex-grow-1">Bib Number</span>
-                        </div>
-                        {% for participant in participants %}
-                            <div class="list-group-item p-3 mb-2 rounded border participant-row">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div class="fw-bold participant-name">
-                                        <!-- Wrap participant name with a link -->
-                                        <a href="{% url 'link_participant' participant.id %}">{{ participant.name }}</a>
-                                    </div>
-                                    <div class="fw-bold participant-bib">
-                                        {{ participant.race_number }}
-                                    </div>
-                                    <div class="additional-info">
-                                        <span class="badge bg-info me-2">{{ participant.age }} years old</span>
-                                        <span class="badge bg-info me-2">{{ participant.gender }}</span>
-                                        <span class="badge bg-info me-2">{{ participant.age_category }}</span>
-                                    </div>
+                    <!-- Tab navigation -->
+                    <ul class="nav nav-tabs" id="leaderboardTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="individual-tab" data-bs-toggle="tab" data-bs-target="#individual" type="button" role="tab">Individuals</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="teams-tab" data-bs-toggle="tab" data-bs-target="#teams" type="button" role="tab">Teams</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="clubs-tab" data-bs-toggle="tab" data-bs-target="#clubs" type="button" role="tab">Clubs</button>
+                        </li>
+                    </ul>
+                
+                    <div class="tab-content mt-4" id="leaderboardTabsContent">
+                        <!-- Individuals Tab -->
+                        <div class="tab-pane fade show active" id="individual" role="tabpanel" aria-labelledby="individual-tab">
+                            <p class="card-text">Here are the participants for the race:</p>
+                        
+                            {% if participants %}
+                                <!-- Static Headers with Center Alignment -->
+                                <div class="list-group-item bg-light d-flex justify-content-between align-items-center fw-bold border rounded mb-2 text-center">
+                                    <div class="col">Name</div>
+                                    <div class="col">Bib #</div>
                                 </div>
-                            </div>
-                        {% empty %}
-                            <p>No participants found.</p>
-                        {% endfor %}
+                        
+                                <!-- Participant List -->
+                                <div class="list-group list-group-flush">
+                                    {% for participant in participants %}
+                                        <div class="list-group-item p-3 mb-2 rounded border participant-row position-relative">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div class="fw-bold participant-name">
+                                                    {% if user.is_authenticated %}
+                                                        <a href="{% url 'link_participant' participant.id %}">
+                                                            {{ participant.name }}
+                                                        </a>
+                                                    {% else %}
+                                                        <span>{{ participant.name }}</span>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="fw-bold participant-bib">{{ participant.race_number }}</div>
+                                            </div>
+                                        
+                                            <!-- Hover-only info -->
+                                            <div class="additional-info" style="display: none;">
+                                                <span class="badge bg-info me-2">{{ participant.age }} yrs</span>
+                                                <span class="badge bg-info me-2">{{ participant.gender }}</span>
+                                                <span class="badge bg-info">{{ participant.age_category }}</span>
+                                            </div>
+                                        </div>
+
+                                    {% empty %}
+                                        <p>No individual participants found.</p>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <p>No individual participants found.</p>
+                            {% endif %}
+                        </div>
+
+                
+                        <!-- Teams Tab -->
+                        <div class="tab-pane fade" id="teams" role="tabpanel">
+                            {% if teams %}
+                                {% for team, members in teams.items %}
+                                    <div class="team-club-card">
+                                        <h5 class="mb-2"><strong>{{ team }}</strong> – {{ members|length }} member{{ members|length|pluralize }}</h5>
+                                        <div class="list-group list-group-flush">
+                                            {% for member in members %}
+                                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <strong>{{ member.name }}</strong>
+                                                        <small class="text-muted">({{ member.race_number }})</small>
+                                                    </div>
+                                                    <div>
+                                                        <span class="badge bg-secondary me-2">{{ member.age }} yrs</span>
+                                                        <span class="badge bg-secondary me-2">{{ member.gender }}</span>
+                                                        <span class="badge bg-secondary me-2">{{ member.age_category }}</span>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <p>No teams found.</p>
+                            {% endif %}
+                        </div>
+                
+                        <!-- Clubs Tab -->
+                        <div class="tab-pane fade" id="clubs" role="tabpanel">
+                            {% if clubs %}
+                                {% for club, members in clubs.items %}
+                                    <div class="team-club-card">
+                                        <h5 class="mb-2"><strong>{{ club }}</strong> – {{ members|length }} member{{ members|length|pluralize }}</h5>
+                                        <div class="list-group list-group-flush">
+                                            {% for member in members %}
+                                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <strong>{{ member.name }}</strong>
+                                                        <small class="text-muted">({{ member.race_number }})</small>
+                                                    </div>
+                                                    <div>
+                                                        <span class="badge bg-secondary me-2">{{ member.age }} yrs</span>
+                                                        <span class="badge bg-secondary me-2">{{ member.gender }}</span>
+                                                        <span class="badge bg-secondary me-2">{{ member.age_category }}</span>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <p>No clubs found.</p>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>
 
+    {% if race.organiser_website or race.social_twitter or race.social_facebook or race.social_instagram %}
     <!-- Organiser Information Section -->
     <div class="row mt-5">
         <div class="col-12 text-center">
@@ -157,32 +327,39 @@
                 </div>
                 <div class="card-body">
                     {% if race.organiser_website %}
-                        <p><strong>Visit Organiser's Website:</strong> <a href="{{ race.organiser_website }}" target="_blank">{{ race.organiser_website }}</a></p>
-                    {% else %}
+                        <p><strong>Visit Organiser's Website:</strong> 
+                            <a href="{{ race.organiser_website }}" target="_blank">{{ race.organiser_website }}</a>
+                        </p>
+                    {% elif not race.social_twitter and not race.social_facebook and not race.social_instagram %}
                         <p>No website provided for the organiser.</p>
                     {% endif %}
-                    <p><strong>Follow the Organiser on Social Media:</strong></p>
-                    <div class="d-flex justify-content-center gap-3">
-                        {% if race.social_twitter %}
-                            <a href="{{ race.social_twitter }}" target="_blank" class="btn btn-outline-info btn-lg">
-                                <i class="bi bi-twitter"></i> Twitter
-                            </a>
-                        {% endif %}
-                        {% if race.social_facebook %}
-                            <a href="{{ race.social_facebook }}" target="_blank" class="btn btn-outline-primary btn-lg">
-                                <i class="bi bi-facebook"></i> Facebook
-                            </a>
-                        {% endif %}
-                        {% if race.social_instagram %}
-                            <a href="{{ race.social_instagram }}" target="_blank" class="btn btn-outline-danger btn-lg">
-                                <i class="bi bi-instagram"></i> Instagram
-                            </a>
-                        {% endif %}
-                    </div>
+    
+                    {% if race.social_twitter or race.social_facebook or race.social_instagram %}
+                        <p><strong>Follow the Organiser on Social Media:</strong></p>
+                        <div class="d-flex justify-content-center gap-3">
+                            {% if race.social_twitter %}
+                                <a href="{{ race.social_twitter }}" target="_blank" class="btn btn-outline-info btn-lg">
+                                    <i class="bi bi-twitter"></i> Twitter
+                                </a>
+                            {% endif %}
+                            {% if race.social_facebook %}
+                                <a href="{{ race.social_facebook }}" target="_blank" class="btn btn-outline-primary btn-lg">
+                                    <i class="bi bi-facebook"></i> Facebook
+                                </a>
+                            {% endif %}
+                            {% if race.social_instagram %}
+                                <a href="{{ race.social_instagram }}" target="_blank" class="btn btn-outline-danger btn-lg">
+                                    <i class="bi bi-instagram"></i> Instagram
+                                </a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
+    {% endif %}
+
 
     <!-- Social Media Share Buttons Section -->
     <div class="mt-5">
@@ -217,6 +394,43 @@
 
 <!-- Hover Tooltip CSS -->
 <style>
+    .nav-tabs {
+        display: flex !important;
+        flex-wrap: wrap !important;
+    }
+
+    .nav-tabs .nav-link {
+        display: inline-block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+    }
+    
+    .nav-tabs .nav-link:not(.active) {
+        color: #007bff !important; 
+        background-color: transparent !important;
+        border-color: #ddd !important;
+    }
+    
+    .nav-tabs .nav-link.active {
+        color: #fff !important; 
+        background-color: #007bff !important;
+        border-color: #0056b3 !important;
+        font-weight: bold; 
+    }
+    
+    .nav-tabs .nav-item {
+        display: inline-block !important;
+    }
+    
+    .team-club-card {
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        background-color: #f9f9f9;
+    }
+
     .participant-row {
         position: relative;
     }
@@ -242,22 +456,8 @@
         text-align: center;
         cursor: pointer;
     }
-
-    .column-headers {
-        display: flex;
-        justify-content: space-between;
-        font-weight: bold;
-        background-color: #f8f9fa;
-        padding: 10px;
-        border-bottom: 1px solid #ddd;
-    }
-
-    .header-item {
-        flex: 1;
-        text-align: center;
-    }
 </style>
-
+    
 <!-- Leaflet CSS and JS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>

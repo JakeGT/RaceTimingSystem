@@ -5,6 +5,19 @@
 {% block content %}
 <div class="container mt-5">
 
+    <!-- Flash Messages -->
+    {% if messages %}
+        <div class="mt-4">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+
     <!-- Page Header -->
     <div class="row">
         <div class="col-12 text-center">
@@ -41,14 +54,14 @@
                     </div>
                     <div class="card-body bg-white border rounded">
                         <form method="get" class="row g-3 align-items-end">
-        
+
                             <!-- Name Search -->
                             <div class="col-md-3">
                                 <label for="search" class="form-label text-dark">Search Name</label>
                                 <input type="text" id="search" name="search" class="form-control"
                                        value="{{ request.GET.search }}" placeholder="e.g., Jane Doe">
                             </div>
-        
+
                             <!-- Gender Filter -->
                             <div class="col-md-2">
                                 <label for="gender-select" class="form-label text-dark">Gender</label>
@@ -58,7 +71,7 @@
                                     <option value="female" {% if request.GET.gender == 'female' %}selected{% endif %}>Female</option>
                                 </select>
                             </div>
-        
+
                             <!-- Age Filter -->
                             <div class="col-md-2">
                                 <label for="age-select" class="form-label text-dark">Age Range</label>
@@ -71,7 +84,7 @@
                                     <option value="60" {% if request.GET.age == '60' %}selected{% endif %}>60+</option>
                                 </select>
                             </div>
-        
+
                             <!-- Sort By -->
                             <div class="col-md-2">
                                 <label class="form-label text-dark">Sort By</label>
@@ -82,7 +95,7 @@
                                     <option value="total_time" {% if request.GET.sort_by == 'total_time' %}selected{% endif %}>Total Time</option>
                                 </select>
                             </div>
-        
+
                             <!-- Sort Direction -->
                             <div class="col-md-2">
                                 <label class="form-label text-dark">Order</label>
@@ -91,12 +104,12 @@
                                     <option value="desc" {% if request.GET.sort_direction == 'desc' %}selected{% endif %}>Descending</option>
                                 </select>
                             </div>
-        
+
                             <!-- Submit & Reset -->
                             <div class="col-md-1 d-grid">
                                 <button type="submit" class="btn btn-primary">Apply</button>
                             </div>
-        
+
                             <div class="col-md-12 text-end mt-2">
                                 <a href="?{% if race %}race_id={{ race.id }}{% endif %}" class="btn btn-outline-secondary btn-sm">Reset Filters</a>
                             </div>
@@ -107,12 +120,43 @@
         </div>
     </div>
 
-    <!-- Results Table -->
-    <div class="row mt-5">
-        <div class="col-12">
+   {% if user.is_authenticated %}
+        <!-- Participant Linking Info -->
+        <div class="alert alert-info mt-4" role="alert">
+            <h5 class="alert-heading">Want to claim your race participation?</h5>
+            <p>
+                If you see your name in the list below, click on it to link your account to that participant profile.
+                This lets you view your results, edit your profile, and more!
+            </p>
+            <hr>
+        </div>
+   {% else %}
+        <!-- Prompt login for unauthenticated users -->
+        <div class="alert alert-warning mt-4" role="alert">
+            <h5 class="alert-heading">Want to claim your race participation?</h5>
+            <p>You need to <a href="{% url 'login' %}?next={{ request.path }}">log in</a> to link your account to a participant profile.</p>
+        </div>
+   {% endif %}
+
+    <!-- Tabbed Navigation for Individuals, Teams, and Clubs -->
+    <ul class="nav nav-tabs" id="leaderboardTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <a class="nav-link active" id="individual-tab" data-bs-toggle="tab" href="#individual" role="tab">Individuals</a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="teams-tab" data-bs-toggle="tab" href="#teams" role="tab">Teams</a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="clubs-tab" data-bs-toggle="tab" href="#clubs" role="tab">Clubs</a>
+        </li>
+    </ul>
+
+    <div class="tab-content mt-3">
+        <!-- Individuals Tab Content -->
+        <div class="tab-pane fade show active" id="individual" role="tabpanel">
             <div class="card shadow-sm">
                 <div class="card-header bg-primary text-white">
-                    <h3 class="card-title mb-0">Results</h3>
+                    <h3 class="card-title mb-0">Individuals Results</h3>
                 </div>
                 <div class="card-body">
                     {% if race_results %}
@@ -133,7 +177,15 @@
                                         <tr>
                                             <td>{{ forloop.counter }}</td>
                                             <td>{{ result.participant.race_number }}</td>
-                                            <td>{{ result.participant.name }}</td>
+                                            <td>
+                                                {% if user.is_authenticated %}
+                                                    <a href="{% url 'link_participant' result.participant.id %}">
+                                                        {{ result.participant.name }}
+                                                    </a>
+                                                {% else %}
+                                                    <span>{{ result.participant.name }}</span>
+                                                {% endif %}
+                                            </td>
                                             <td>{{ result.participant.age }}</td>
                                             <td>{{ result.participant.gender }}</td>
                                             <td>{{ result.total_time }}</td>
@@ -148,7 +200,117 @@
                 </div>
             </div>
         </div>
+
+        <!-- Teams Tab Content -->
+        <div class="tab-pane fade" id="teams" role="tabpanel">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h3 class="card-title mb-0">Teams Results</h3>
+                </div>
+                <div class="card-body">
+                    {% if teams %}
+                        <ul class="list-group">
+                            {% for team_name in teams %}
+                                <li class="list-group-item">
+                                    <h5>{{ team_name }}</h5>
+                                    <ul>
+                                        {% for result in race_results %}
+                                            {% if result.participant.team_name == team_name %}
+                                                <li>
+                                                    <strong>{{ result.participant.name }}</strong> - 
+                                                    Bib: {{ result.participant.race_number }} - 
+                                                    Time: {{ result.total_time }}
+                                                </li>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </ul>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>No teams found.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Clubs Tab Content -->
+        <div class="tab-pane fade" id="clubs" role="tabpanel">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-white">
+                    <h3 class="card-title mb-0">Clubs Results</h3>
+                </div>
+                <div class="card-body">
+                    {% if clubs %}
+                        <ul class="list-group">
+                            {% for club_name in clubs %}
+                                <li class="list-group-item">
+                                    <h5>{{ club_name }}</h5>
+                                    <ul>
+                                        {% for result in race_results %}
+                                            {% if result.participant.club_name == club_name %}
+                                                <li>
+                                                    <strong>{{ result.participant.name }}</strong> - 
+                                                    Bib: {{ result.participant.race_number }} - 
+                                                    Time: {{ result.total_time }}
+                                                </li>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </ul>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>No clubs found.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>  
+        
+    {% if race.organiser_website or race.social_twitter or race.social_facebook or race.social_instagram %}
+    <!-- Organiser Information Section -->
+    <div class="row mt-5">
+        <div class="col-12 text-center">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h3 class="card-title mb-0">Organiser Information</h3>
+                </div>
+                <div class="card-body">
+                    {% if race.organiser_website %}
+                        <p><strong>Visit Organiser's Website:</strong>
+                            <a href="{{ race.organiser_website }}" target="_blank">{{ race.organiser_website }}</a>
+                        </p>
+                    {% elif not race.social_twitter and not race.social_facebook and not race.social_instagram %}
+                        <p>No website provided for the organiser.</p>
+                    {% endif %}
+    
+                    {% if race.social_twitter or race.social_facebook or race.social_instagram %}
+                        <p><strong>Follow the Organiser on Social Media:</strong></p>
+                        <div class="d-flex justify-content-center gap-3">
+                            {% if race.social_twitter %}
+                                <a href="{{ race.social_twitter }}" target="_blank" class="btn btn-outline-info btn-lg">
+                                    <i class="bi bi-twitter"></i> Twitter
+                                </a>
+                            {% endif %}
+                            {% if race.social_facebook %}
+                                <a href="{{ race.social_facebook }}" target="_blank" class="btn btn-outline-primary btn-lg">
+                                    <i class="bi bi-facebook"></i> Facebook
+                                </a>
+                            {% endif %}
+                            {% if race.social_instagram %}
+                                <a href="{{ race.social_instagram }}" target="_blank" class="btn btn-outline-danger btn-lg">
+                                    <i class="bi bi-instagram"></i> Instagram
+                                </a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
     </div>
+    {% endif %}
+
 
     <!-- Social Media Share Buttons -->
     <div class="mt-5">
@@ -160,17 +322,17 @@
                 <p class="lead mb-3">Share the race results!</p>
                 <div class="d-flex justify-content-center gap-3">
                     <!-- Twitter Share Button -->
-                    <a href="https://twitter.com/intent/tweet?text=Check%20out%20the%20{{ race.name }}%20race%20results%20at%20{{ race.date }}!%20{% url 'race_detail' race.id %}" 
-                       target="_blank" 
-                       class="btn btn-outline-info btn-lg" 
+                    <a href="https://twitter.com/intent/tweet?text=Check%20out%20the%20{{ race.name }}%20race%20results%20at%20{{ race.date }}!%20{% url 'race_detail' race.id %}"
+                       target="_blank"
+                       class="btn btn-outline-info btn-lg"
                        title="Share on Twitter">
                         <img src="https://upload.wikimedia.org/wikipedia/commons/c/ce/X_logo_2023.svg" alt="X" style="width: 30px; height: 30px;">
                     </a>
-                
+
                     <!-- Facebook Share Button -->
-                    <a href="https://www.facebook.com/sharer/sharer.php?u={% url 'race_detail' race.id %}" 
-                       target="_blank" 
-                       class="btn btn-outline-primary btn-lg" 
+                    <a href="https://www.facebook.com/sharer/sharer.php?u={% url 'race_detail' race.id %}"
+                       target="_blank"
+                       class="btn btn-outline-primary btn-lg"
                        title="Share on Facebook">
                         <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg" alt="Facebook" style="width: 30px; height: 30px;">
                     </a>
@@ -180,4 +342,69 @@
     </div>
 
 </div>
+    
+    <style>
+    .nav-tabs {
+        display: flex !important;
+        flex-wrap: wrap !important;
+    }
+
+    .nav-tabs .nav-link {
+        display: inline-block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+    }
+    
+    .nav-tabs .nav-link:not(.active) {
+        color: #007bff !important; 
+        background-color: transparent !important;
+        border-color: #ddd !important;
+    }
+    
+    .nav-tabs .nav-link.active {
+        color: #fff !important; 
+        background-color: #007bff !important;
+        border-color: #0056b3 !important;
+        font-weight: bold; 
+    }
+    
+    .nav-tabs .nav-item {
+        display: inline-block !important;
+    }
+    
+    .team-club-card {
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        background-color: #f9f9f9;
+    }
+
+    .participant-row {
+        position: relative;
+    }
+
+    .additional-info {
+        display: none;
+        position: absolute;
+        top: 50%;
+        right: 0;
+        transform: translateY(-50%);
+        background-color: #ffc107;
+        padding: 10px;
+        border-radius: 5px;
+        z-index: 10;
+    }
+
+    .participant-row:hover .additional-info {
+        display: block;
+    }
+
+    .participant-name, .participant-bib {
+        flex: 1;
+        text-align: center;
+        cursor: pointer;
+    }
+</style>
 {% endblock %}
