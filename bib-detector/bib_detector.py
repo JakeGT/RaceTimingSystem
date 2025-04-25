@@ -102,7 +102,7 @@ class BibTracker:
                 if count >= self.MIN_OCR_ENTRIES:
                     mode_val = Counter([text for text, _ in entries]).most_common(1)[0][0]
                 else:
-                    mode_val = ""
+                    mode_val = -1
                 image = self.best_frames.get(track_id, (None, None))[1]
                 self.api.send_result(time.time(), mode_val, track_id, count, image)
                 expired.append(track_id)

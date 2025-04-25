@@ -1320,9 +1320,15 @@ def upload_image(request, race_id):
             logger.error(f"Invalid timestamp format: {timestamp_str}. Expected format: YYYY-MM-DD HH:MM:SS.")
             return JsonResponse({'error': 'Invalid timestamp format. Use YYYY-MM-DD HH:MM:SS'}, status=400)
 
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
+
         #   get the uploaded file
         uploaded_file = request.FILES['image']
         logger.info(f"Received image file: {uploaded_file.name}")
+        bib_number = data.get('bib_number')
 
         try:
             #   save file to media
@@ -1339,7 +1345,8 @@ def upload_image(request, race_id):
                 name=uploaded_file.name,
                 image=file_path,
                 race=race,
-                timestamp=timestamp
+                timestamp=timestamp,
+                bib_number=bib_number
             )
             logger.info(f"Image instance created with ID {image_instance.id}.")
         except Exception as e:
