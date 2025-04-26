@@ -7,7 +7,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QLineEdit, QPushButton,
     QFileDialog, QComboBox, QCheckBox, QVBoxLayout, QHBoxLayout, QMessageBox,
-    QStackedLayout
+    QStackedLayout, QInputDialog
 )
 from PyQt5.QtMultimedia import QCameraInfo, QCamera
 from PyQt5.QtMultimediaWidgets import QCameraViewfinder
@@ -46,6 +46,12 @@ class BibDetectorApp(QWidget):
         self.url_label = QLabel("Race Timing URL:")
         self.url_line = QLineEdit()
 
+        self.token_label = QLabel("API Token:")
+        self.token_line = QLineEdit()
+
+        self.load_config_button = QPushButton("Load Config")
+        self.load_config_button.clicked.connect(self.load_config)
+
         self.verbose_check = QCheckBox("Verbose")
         self.start_button = QPushButton("Start Detection")
         self.start_button.clicked.connect(self.start_detection)
@@ -77,6 +83,8 @@ class BibDetectorApp(QWidget):
         self.layout.addLayout(self.row(self.camera_label, self.camera_combo, self.refresh_button, self.connect_ip_button))
         self.layout.addLayout(self.row(self.output_label, self.output_line, self.output_browse))
         self.layout.addLayout(self.row(self.url_label, self.url_line))
+        self.layout.addLayout(self.row(self.token_label, self.token_line))
+        self.layout.addWidget(self.load_config_button)
         self.layout.addWidget(self.verbose_check)
         self.layout.addWidget(self.preview_label)
         self.layout.addWidget(self.preview_widget)
@@ -103,6 +111,44 @@ class BibDetectorApp(QWidget):
 
         if self.camera_combo.count() > 0:
             self.change_camera_preview()
+
+    def load_config(self):
+        filename, _ = QFileDialog.getOpenFileName(self, "Select Config File", filter="INI files (*.ini);;All files (*)")
+        if filename:
+            try:
+                with open(filename, 'r') as f:
+                    lines = f.readlines()
+                config = {}
+                for line in lines:
+                    line = line.strip()
+                    if line and not line.startswith("#"):  # Skip comments
+                        if '=' in line:
+                            key, value = line.split('=', 1)
+                            config[key.strip().upper()] = value.strip()
+
+                token = config.get('TOKEN')
+                url = config.get('URL')
+
+                if token:
+                    self.token_line.setText(token)
+
+                if url:
+                    if url.startswith('/'):
+                        # Prompt for IP base if relative URL
+                        base_ip, ok = QInputDialog.getText(self, "Enter IP Address",
+                                                           "Enter IP address for Race Timing Server (e.g., 192.168.1.100):")
+                        if ok and base_ip:
+                            full_url = f"http://{base_ip}{url}"
+                            self.url_line.setText(full_url)
+                        else:
+                            QMessageBox.warning(self, "Missing IP", "No IP address entered. URL will not be updated.")
+                    else:
+                        self.url_line.setText(url)
+
+                QMessageBox.information(self, "Config Loaded", "Configuration loaded successfully.")
+
+            except Exception as e:
+                QMessageBox.critical(self, "Load Error", f"Failed to load config file.\n{e}")
 
     def browse_output(self):
         filename, _ = QFileDialog.getSaveFileName(self, "Select Output File", filter="MP4 files (*.mp4)")
@@ -193,7 +239,8 @@ class BibDetectorApp(QWidget):
             # Using IP camera URL
             input_source = self.ip_camera_url
 
-        api = website_api.WebsiteAPI(url)
+        token = self.token_line.text() or None
+        api = website_api.WebsiteAPI(url, token)
         detector = BibDetector("best.pt", device)
         tracker = BibTracker(api)
         processor = VideoProcessor(detector, tracker, input_source, output_file, verbose)
