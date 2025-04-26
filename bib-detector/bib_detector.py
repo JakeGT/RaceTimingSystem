@@ -145,7 +145,7 @@ class VideoProcessor:
                 tracked_bibs[track_id] = (x1, y1, x2, y2)
 
                 bib_box = frame[y1:y2, x1:x2]
-                self.tracker.update(track_id, bib_box, self.detector)
+                self.tracker.update(track_id, bib_box, self.detector, frame)
 
             self.tracker.draw_info(side_panel, tracked_bibs, frame_w)
             self.tracker.expire_old_entries()
