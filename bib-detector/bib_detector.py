@@ -9,7 +9,6 @@ from ultralytics import YOLO
 import easyocr
 import website_api
 
-
 # Custom VideoCapture class to set resolution to 1080x1920
 class CustomVideoCapture(cv2.VideoCapture):
     def __init__(self, src, apiPreference=cv2.CAP_ANY):
@@ -20,6 +19,7 @@ class CustomVideoCapture(cv2.VideoCapture):
 
 # Monkey-patch cv2.VideoCapture with our custom class
 cv2.VideoCapture = CustomVideoCapture
+
 
 
 class BibDetector:
@@ -181,19 +181,39 @@ class BibTracker:
 
 
 class VideoProcessor:
-    def __init__(self, detector, tracker, input_source, output_file=None, verbose=False):
+    def __init__(self, detector, tracker, input_source, output_file=None, verbose=False, crop_coords=None):
         self.detector = detector
         self.tracker = tracker
         self.input_source = input_source
         self.output_file = output_file
         self.verbose = verbose
         self.out = None
+        self.crop_coords = self.validate_crop_coords(crop_coords)
+
+    def validate_crop_coords(self, coords):
+        if coords is None:
+            return None
+        if len(coords) != 4:
+            raise ValueError("Crop coordinates must be a tuple of (x1, y1, x2, y2)")
+        x1, y1, x2, y2 = coords
+        if x2 <= x1 or y2 <= y1:
+            raise ValueError(f"Invalid crop coordinates: ({x1}, {y1}), ({x2}, {y2}) — x2/y2 must be greater than x1/y1")
+        return coords
 
     def run(self):
         results = self.detector.detect(source=self.input_source, verbose=self.verbose)
+        crop_coords = self.crop_coords
+
         for result in results:
             frame = result.orig_img
             frame_h, frame_w, _ = frame.shape
+
+            # Step 1: Crop frame
+            if crop_coords:
+                x1_crop, y1_crop, x2_crop, y2_crop = crop_coords
+                frame = frame[y1_crop:y2_crop, x1_crop:x2_crop]
+                frame_h, frame_w, _ = frame.shape  # Update dimensions
+
             side_panel = np.ones((frame_h, 300, 3), dtype=np.uint8) * 50
             combined_w = frame_w + 300
 
@@ -204,6 +224,20 @@ class VideoProcessor:
 
             for box in result.boxes:
                 x1, y1, x2, y2 = map(int, box.xyxy[0])
+
+                # Step 2: Ignore boxes outside crop area
+                if crop_coords:
+                    center_x = (x1 + x2) // 2
+                    center_y = (y1 + y2) // 2
+                    if not (x1_crop <= center_x <= x2_crop and y1_crop <= center_y <= y2_crop):
+                        continue
+
+                    # Step 3: Shift coordinates to match cropped frame
+                    x1 -= x1_crop
+                    x2 -= x1_crop
+                    y1 -= y1_crop
+                    y2 -= y1_crop
+
                 if (x2 - x1 < BibTracker.MIN_BIB_WIDTH or y2 - y1 < BibTracker.MIN_BIB_HEIGHT):
                     cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
                     continue
@@ -238,7 +272,6 @@ def main():
     parser.add_argument("-o", "--output", help="Output file")
     parser.add_argument("-v", "--verbose", help="Verbose mode", action="store_true")
     parser.add_argument("-u", "--url", help="URL to Race Timing Website")
-    parser.add_argument("--demo", action="store_true", help="Use dummy Website API for testing")
     args = parser.parse_args()
 
     if args.demo:
@@ -248,7 +281,8 @@ def main():
         api = website_api.WebsiteAPI(args.url)
     detector = BibDetector("best.pt", args.device)
     tracker = BibTracker(api)
-    processor = VideoProcessor(detector, tracker, args.input, args.output, args.verbose)
+    crop_coords = tuple(args.crop) if args.crop else None
+    processor = VideoProcessor(detector, tracker, args.input, args.output, args.verbose, crop_coords)
     processor.run()
 
 

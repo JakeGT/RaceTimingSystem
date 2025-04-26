@@ -3,51 +3,86 @@
 {% block title %}Race Details - Organiser{% endblock %}
 
 {% block content %}
+
+<script> 
+function download(token, url) {
+	//TOKEN=asdf1234jigroeilbn
+	//URL=/race/
+  var element = document.createElement('a');
+  
+  var text = "TOKEN=";
+  text += token;
+  text += "\nURL=";
+  text += url;
+  
+  element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+  element.setAttribute('download', 'config.ini');
+
+  element.style.display = 'none';
+  document.body.appendChild(element);
+
+  element.click();
+
+  document.body.removeChild(element);
+}
+</script>
+
 <div class="container mt-5">
     <h1 class="text-center">Manage Participants for {{ race.name }}</h1>
     <p class="lead text-muted text-center">Manage race details and participants.</p>
 
     <!-- Button row -->
     <div class="container mb-5">
-        <div class="row row-cols-1 row-cols-md-3 row-cols-lg-5 g-3 justify-content-center">
+        <div class="d-flex flex-wrap justify-content-center gap-3">
     
-            <div class="col d-grid">
-                <a href="{% url 'upload_participants' %}" class="btn btn-primary btn-lg w-100">
+            <div class="col-auto">
+                <a href="{% url 'upload_participants' %}" class="btn btn-primary btn-lg">
                     Update Participants
                 </a>
             </div>
     
-            <div class="col d-grid">
-                <a href="{% url 'upload_results' %}" class="btn btn-secondary btn-lg w-100">
+            <div class="col-auto">
+                <a href="{% url 'upload_results' %}" class="btn btn-secondary btn-lg">
                     Update Results
                 </a>
             </div>
     
-            <div class="col d-grid">
-                <a href="{% url 'adjust_start_time' race.id %}" class="btn btn-warning btn-lg w-100">
+            <div class="col-auto">
+                <a href="{% url 'adjust_start_time' race.id %}" class="btn btn-warning btn-lg">
                     Adjust Start Time
                 </a>
             </div>
     
-            <div class="col d-grid">
-                <a href="{% url 'gallery_view' race.id %}" class="btn btn-info btn-lg w-100">
+            <div class="col-auto">
+                <a href="{% url 'gallery_view' race.id %}" class="btn btn-info btn-lg">
                     Manual Bib Validation
+                </a>
+            </div>
+        
+            <div class="col-auto">
+                <a href="{% url 'gallery_view' race.id %}" class="btn btn-success btn-lg">
+                    View Gallery
                 </a>
             </div>
     
             {% with main_organiser=race.organiser.all|first %}
                 {% if user == main_organiser %}
-                    <div class="col d-grid">
-                        <a href="{% url 'manage_organiser_permissions' race.id %}" class="btn btn-dark btn-lg w-100">
+                    <div class="col-auto">
+                        <a href="{% url 'manage_organiser_permissions' race.id %}" class="btn btn-dark btn-lg">
                             Manage Organisers
                         </a>
                     </div>
                 {% endif %}
             {% endwith %}
+			
+			<div class="col-auto">
+				<button onclick="download('{{ race.token }}', '/race/{{ race.id }}')" class="btn btn-danger btn-lg w-100">
+					Download Config File
+				</button>
+			</div>
     
         </div>
     </div>
-
 
     </div>
 
@@ -183,6 +218,4 @@
             <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg" alt="Facebook" style="width: 30px; height: 30px;">
         </a>
     </div>
-
-</div>
 {% endblock %}
