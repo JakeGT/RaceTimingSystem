@@ -1,5 +1,5 @@
 import time
-
+import os
 import cv2
 import grequests
 import threading
@@ -9,6 +9,8 @@ class WebsiteAPIDemo:
     def __init__(self, url, token=None):
         self.url = url
         self.token = token
+        self.save_dir = "debug_images"
+        os.makedirs(self.save_dir, exist_ok=True)
 
     def send_result(self, timestamp, bib_number, tracker_id, num_entries, image):
         print("---------------------------------------------------------")
@@ -20,6 +22,11 @@ class WebsiteAPIDemo:
             print(f"Timestamp: {timestamp}, tracker_id: {tracker_id}, num_entries: {num_entries}")
         print("---------------------------------------------------------\n")
 
+        if image is not None:
+            formatted_time = time.strftime("%Y%m%d_%H%M%S", time.gmtime(timestamp))
+            filename = f"{self.save_dir}/bib_{tracker_id}_{formatted_time}.jpg"
+            cv2.imwrite(filename, image)
+            print(f"Saved debug image: {filename}")
 
 class WebsiteAPI:
     def __init__(self, base_url, token=None):

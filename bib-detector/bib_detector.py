@@ -3,6 +3,7 @@ import time
 import cv2
 import numpy as np
 import argparse
+import os
 from collections import defaultdict, Counter
 from ultralytics import YOLO
 import easyocr
@@ -28,7 +29,8 @@ class BibDetector:
         self.device = device
 
     def detect(self, source, verbose=False):
-        return self.model.track(source=source, device=self.device, stream=True, verbose=verbose, tracker="bytetrack.yaml")
+        return self.model.track(source=source, device=self.device, stream=True, verbose=verbose,
+                                tracker="bytetrack.yaml")
 
     def extract_bib_text(self, image):
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -52,10 +54,41 @@ class BibTracker:
     OCR_TIMESTAMP_THRESHOLD = 1
     MIN_OCR_ENTRIES = 5
 
-    def __init__(self, api):
+    def __init__(self, api, config_path="bib_detector_config.ini"):
         self.ocr_history = defaultdict(list)
         self.api = api
         self.best_frames = {}
+
+        if os.path.isfile(config_path):
+            print(f"[INFO] Loading config from {config_path}")
+            self.load_config(config_path)
+        else:
+            print(f"[INFO] No config file found. Using default settings.")
+
+    def load_config(self, path):
+        try:
+            with open(path, "r") as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith("#"):
+                        if "=" in line:
+                            key, value = line.split("=", 1)
+                            key = key.strip()
+                            value = value.strip()
+
+                            # Try to cast value to float or int intelligently
+                            if hasattr(self, key) or hasattr(BibTracker, key):
+                                try:
+                                    if "." in value:
+                                        value = float(value)
+                                    else:
+                                        value = int(value)
+                                    setattr(BibTracker, key, value)
+                                    print(f"[CONFIG] {key} set to {value}")
+                                except ValueError:
+                                    print(f"[WARN] Could not parse value for {key}, skipping.")
+        except Exception as e:
+            print(f"[ERROR] Failed to load config: {e}")
 
     def update(self, track_id, bib_box, detector, frame):
         if bib_box.size == 0:
@@ -67,9 +100,44 @@ class BibTracker:
                 try:
                     self.ocr_history[track_id].append((int(numbers), time.time()))
                     if track_id not in self.best_frames or conf > self.best_frames[track_id][0]:
-                        self.best_frames[track_id] = (conf, frame.copy())
+                        new_frame = self.add_bib_inset(frame, bib_box)
+                        self.best_frames[track_id] = (conf, new_frame)
                 except ValueError:
                     pass
+
+    def add_bib_inset(self, frame, bib_box, margin=10, border_color=(0, 255, 255), border_thickness=2,
+                      inset_fraction=0.2):
+        frame_h, frame_w, _ = frame.shape
+        bib_h, bib_w, _ = bib_box.shape
+
+        # Target size for the inset
+        target_inset_w = int(frame_w * inset_fraction)
+        aspect_ratio = bib_h / bib_w
+        target_inset_h = int(target_inset_w * aspect_ratio)
+
+        # Avoid the inset being larger than frame dimensions
+        if target_inset_h + 2 * margin > frame_h or target_inset_w + 2 * margin > frame_w:
+            return frame  # Skip if it won't fit
+
+        # Resize the bib_box
+        resized_bib = cv2.resize(bib_box, (target_inset_w, target_inset_h))
+
+        # Copy the frame so we don't overwrite
+        frame_copy = frame.copy()
+
+        # Define top-right placement
+        paste_x1 = frame_w - target_inset_w - margin
+        paste_y1 = margin
+        paste_x2 = frame_w - margin
+        paste_y2 = margin + target_inset_h
+
+        # Paste the resized bib_box
+        frame_copy[paste_y1:paste_y2, paste_x1:paste_x2] = resized_bib
+
+        # Draw a border rectangle
+        cv2.rectangle(frame_copy, (paste_x1, paste_y1), (paste_x2, paste_y2), border_color, border_thickness)
+
+        return frame_copy
 
     def get_summary(self, track_id):
         entries = self.ocr_history[track_id]
@@ -179,7 +247,7 @@ class VideoProcessor:
                 tracked_bibs[track_id] = (x1, y1, x2, y2)
 
                 bib_box = frame[y1:y2, x1:x2]
-                self.tracker.update(track_id, bib_box, self.detector)
+                self.tracker.update(track_id, bib_box, self.detector, frame)
 
             self.tracker.draw_info(side_panel, tracked_bibs, frame_w)
             self.tracker.expire_old_entries()
@@ -197,7 +265,6 @@ class VideoProcessor:
         cv2.destroyAllWindows()
 
 
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--device", help="Select CUDA Device", default="cpu")
@@ -205,15 +272,16 @@ def main():
     parser.add_argument("-o", "--output", help="Output file")
     parser.add_argument("-v", "--verbose", help="Verbose mode", action="store_true")
     parser.add_argument("-u", "--url", help="URL to Race Timing Website")
-    parser.add_argument("--crop", nargs=4, type=int, help="Crop box: x1 y1 x2 y2", default=None)
     args = parser.parse_args()
 
-    api = website_api.WebsiteAPI(args.url)
+    if args.demo:
+        api = website_api.WebsiteAPIDemo(args.url)
+        print("[INFO] Using WebsiteAPIDemo (images will be saved locally)")
+    else:
+        api = website_api.WebsiteAPI(args.url)
     detector = BibDetector("best.pt", args.device)
     tracker = BibTracker(api)
-
     crop_coords = tuple(args.crop) if args.crop else None
-
     processor = VideoProcessor(detector, tracker, args.input, args.output, args.verbose, crop_coords)
     processor.run()
 
