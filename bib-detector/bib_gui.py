@@ -114,6 +114,8 @@ class CropWindow(QWidget):
 class BibDetectorApp(QWidget):
     def __init__(self):
         super().__init__()
+        self.setAttribute(Qt.WA_StyledBackground, True)
+        self.setObjectName("MainWindow")
         self.crop_window = None
         self.available_cameras = None
         self.camera = None
