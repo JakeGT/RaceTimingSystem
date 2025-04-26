@@ -12,17 +12,6 @@ from PyQt5.QtCore import Qt, QRect
 from bib_detector import BibDetector, BibTracker, VideoProcessor
 import website_api
 
-
-
-from PyQt5.QtGui import QPixmap, QPainter, QPen, QColor
-from PyQt5.QtCore import Qt, QRect
-
-from PyQt5.QtWidgets import QPushButton
-
-from PyQt5.QtWidgets import QPushButton
-from PyQt5.QtGui import QPixmap, QPainter, QPen, QColor
-from PyQt5.QtCore import Qt, QRect
-
 class CropWindow(QWidget):
     def __init__(self, pixmap, parent_app):
         super().__init__()
