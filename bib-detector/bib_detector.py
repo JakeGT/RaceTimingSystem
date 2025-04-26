@@ -53,10 +53,41 @@ class BibTracker:
     OCR_TIMESTAMP_THRESHOLD = 1
     MIN_OCR_ENTRIES = 5
 
-    def __init__(self, api):
+    def __init__(self, api, config_path="bib_detector_config.ini"):
         self.ocr_history = defaultdict(list)
         self.api = api
         self.best_frames = {}
+
+        if os.path.isfile(config_path):
+            print(f"[INFO] Loading config from {config_path}")
+            self.load_config(config_path)
+        else:
+            print(f"[INFO] No config file found. Using default settings.")
+
+    def load_config(self, path):
+        try:
+            with open(path, "r") as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith("#"):
+                        if "=" in line:
+                            key, value = line.split("=", 1)
+                            key = key.strip()
+                            value = value.strip()
+
+                            # Try to cast value to float or int intelligently
+                            if hasattr(self, key) or hasattr(BibTracker, key):
+                                try:
+                                    if "." in value:
+                                        value = float(value)
+                                    else:
+                                        value = int(value)
+                                    setattr(BibTracker, key, value)
+                                    print(f"[CONFIG] {key} set to {value}")
+                                except ValueError:
+                                    print(f"[WARN] Could not parse value for {key}, skipping.")
+        except Exception as e:
+            print(f"[ERROR] Failed to load config: {e}")
 
     def update(self, track_id, bib_box, detector, frame):
         if bib_box.size == 0:
