@@ -1817,25 +1817,26 @@ def upload_image(request, race_id):
     """
 
     if request.method == 'POST' and request.FILES.get('image'):
-        # check token in header or query string
-        token = request.GET.get('token') or request.headers.get('X-Race-Token')
+        #  fetch token either
+        token = request.POST.get('token') or request.GET.get('token') or request.headers.get('X-Race-Token')
         if not token:
             return JsonResponse({"error": "Missing upload token"}, status=401)
 
         logger.info("Received POST request with an image file.")
 
-        #   validate race
+        #  validate race
         try:
             race = Race.objects.get(id=race_id)
             logger.info(f"Race with ID {race_id} found.")
         except Race.DoesNotExist:
             logger.error(f"Race with ID {race_id} does not exist.")
             return JsonResponse({'error': 'Invalid race ID'}, status=404)
+
         if race.token != token:
             logger.info("Invalid token in request.")
             return JsonResponse({'error': 'Invalid token'}, status=498)
 
-        #   get timestamp
+        #  get timestamp
         timestamp_str = request.POST.get("timestamp")
         if not timestamp_str:
             logger.warning("No timestamp provided in the request.")
@@ -1851,18 +1852,15 @@ def upload_image(request, race_id):
                 status=400,
             )
 
-        try:
-            data = json.loads(request.body)
-        except json.JSONDecodeError:
-            return JsonResponse({"error": "Invalid JSON"}, status=400)
-
-        #   get the uploaded file
+        #  get uploaded file
         uploaded_file = request.FILES["image"]
         logger.info(f"Received image file: {uploaded_file.name}")
-        bib_number = data.get('bib_number')
+
+        #  get optional bib_number
+        bib_number = request.POST.get('bib_number') or -1
 
         try:
-            #   save file to media
+            #  save file to media storage
             file_path = default_storage.save(
                 f"images/{uploaded_file.name}", ContentFile(uploaded_file.read())
             )
@@ -1872,7 +1870,7 @@ def upload_image(request, race_id):
             logger.error(f"Error saving file: {str(e)}.")
             return JsonResponse({"error": "Error saving file."}, status=500)
 
-        #   save to database
+        #  save image
         try:
             image_instance = Image.objects.create(
                 name=uploaded_file.name,
@@ -1880,7 +1878,6 @@ def upload_image(request, race_id):
                 race=race,
                 timestamp=timestamp,
                 bib_number=bib_number
-
             )
             logger.info(f"Image instance created with ID {image_instance.id}.")
         except Exception as e:
@@ -1888,6 +1885,9 @@ def upload_image(request, race_id):
             return JsonResponse(
                 {"error": "Error saving image to database."}, status=500
             )
+
+        #  redirect to gallery view after successful upload
+        return redirect('gallery_view', race_id=race.id)
 
         return JsonResponse(
             {
@@ -1904,18 +1904,32 @@ def upload_image(request, race_id):
 @login_and_2fa_required
 def gallery_view(request, race_id):
     """
-    A view for organisers to manually validate bib numbers for a specific race.
+    A view for organisers to manually validate bib numbers for a specific race
+    and manage images.
     """
 
-    #   get the race object
     race = get_object_or_404(Race, id=race_id)
     logger.info(f"Race with ID {race_id} found.")
 
-    #   fetch images
     images = Image.objects.filter(race=race)
     logger.info(f"Found {images.count()} images associated with race ID {race_id}.")
 
     if request.method == "POST":
+        #  detect if its a delete request
+        if 'delete_image_id' in request.POST:
+            delete_image_id = request.POST.get('delete_image_id')
+            image_to_delete = images.filter(id=delete_image_id).first()
+
+            if image_to_delete:
+                logger.info(f"Deleting image with ID {delete_image_id}.")
+                image_to_delete.delete()
+                messages.success(request, "Image deleted successfully.")
+            else:
+                logger.warning(f"Attempted to delete non-existent image ID {delete_image_id}.")
+                messages.error(request, "Image not found.")
+            return redirect('gallery_view', race_id=race.id)
+
+        #  normal bib number submission flow
         bib_number = request.POST.get("bib_number")
         image_id = request.POST.get("image_id")
         image_timestamp = request.POST.get("image_timestamp")
@@ -1925,7 +1939,6 @@ def gallery_view(request, race_id):
             f" and timestamp: {image_timestamp}."
         )
 
-        #   find the image based on ID
         image = images.filter(id=image_id).first()
         if not image:
             logger.warning(
@@ -1939,21 +1952,28 @@ def gallery_view(request, race_id):
             )
 
         try:
-            #   try to find participant with the given bib number
             participant = Participant.objects.get(race=race, race_number=bib_number)
             logger.info(
                 f"Participant with bib number {bib_number} found: {participant.name}"
             )
 
+            #  check if a race result already exists for this participant and race
+            existing_result = RaceResult.objects.filter(participant=participant, race=race).first()
+
+            if existing_result:
+                #  delete existing results
+                logger.info(f"Deleting existing race result for participant {participant.name}.")
+                existing_result.delete()
+                messages.info(request, "Existing result deleted. Creating new result.")
+
             try:
-                #   parse the timestamp from the input
                 timestamp = datetime.strptime(image_timestamp, "%d %b %Y, %I:%M %p")
                 if timezone.is_naive(timestamp):
                     timestamp = timezone.make_aware(timestamp)
 
                 time = timestamp.strftime("%H:%M:%S")
 
-                #   create race result
+                #  create the new race result
                 RaceResult.objects.create(
                     participant=participant, race=race, total_time=time
                 )
