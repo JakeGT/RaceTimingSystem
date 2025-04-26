@@ -33,36 +33,43 @@ function download(token, url) {
 
     <!-- Button row -->
     <div class="container mb-5">
-        <div class="row row-cols-1 row-cols-md-3 row-cols-lg-5 g-3 justify-content-center">
+        <div class="d-flex flex-wrap justify-content-center gap-3">
     
-            <div class="col d-grid">
-                <a href="{% url 'upload_participants' %}" class="btn btn-primary btn-lg w-100">
+            <div class="col-auto">
+                <a href="{% url 'upload_participants' %}" class="btn btn-primary btn-lg">
                     Update Participants
                 </a>
             </div>
     
-            <div class="col d-grid">
-                <a href="{% url 'upload_results' %}" class="btn btn-secondary btn-lg w-100">
+            <div class="col-auto">
+                <a href="{% url 'upload_results' %}" class="btn btn-secondary btn-lg">
                     Update Results
                 </a>
             </div>
     
-            <div class="col d-grid">
-                <a href="{% url 'adjust_start_time' race.id %}" class="btn btn-warning btn-lg w-100">
+            <div class="col-auto">
+                <a href="{% url 'adjust_start_time' race.id %}" class="btn btn-warning btn-lg">
                     Adjust Start Time
                 </a>
             </div>
     
-            <div class="col d-grid">
-                <a href="{% url 'gallery_view' race.id %}" class="btn btn-info btn-lg w-100">
+            <div class="col-auto">
+                <a href="{% url 'gallery_view' race.id %}" class="btn btn-info btn-lg">
                     Manual Bib Validation
+                </a>
+            </div>
+
+            <!-- New button to link to gallery view -->
+            <div class="col-auto">
+                <a href="{% url 'gallery_view' race.id %}" class="btn btn-success btn-lg">
+                    View Gallery
                 </a>
             </div>
     
             {% with main_organiser=race.organiser.all|first %}
                 {% if user == main_organiser %}
-                    <div class="col d-grid">
-                        <a href="{% url 'manage_organiser_permissions' race.id %}" class="btn btn-dark btn-lg w-100">
+                    <div class="col-auto">
+                        <a href="{% url 'manage_organiser_permissions' race.id %}" class="btn btn-dark btn-lg">
                             Manage Organisers
                         </a>
                     </div>
@@ -77,7 +84,6 @@ function download(token, url) {
     
         </div>
     </div>
-
 
     </div>
 
@@ -213,6 +219,4 @@ function download(token, url) {
             <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg" alt="Facebook" style="width: 30px; height: 30px;">
         </a>
     </div>
-
-</div>
 {% endblock %}
