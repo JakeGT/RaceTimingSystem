@@ -1,0 +1,56 @@
+/* General */
+QWidget {
+    background-color: #2b2b2b;
+    color: #f0f0f0;
+    font-family: Arial;
+    font-size: 14px;
+}
+
+/* Inputs */
+QLineEdit, QComboBox, QTextEdit {
+    background-color: #3c3f41;
+    border: 1px solid #5c5c5c;
+    border-radius: 5px;
+    padding: 4px;
+}
+
+/* Buttons */
+QPushButton {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+}
+QPushButton:hover {
+    background-color: #45a049;
+}
+
+/* Group boxes */
+QGroupBox {
+    border: 1px solid #555;
+    border-radius: 8px;
+    margin-top: 10px;
+    padding: 10px;
+}
+QGroupBox:title {
+    subcontrol-origin: margin;
+    left: 10px;
+    padding: 0 5px;
+    background-color: #2b2b2b;
+}
+
+/* Other widgets */
+QCheckBox {
+    spacing: 5px;
+}
+QLabel {
+    padding: 2px;
+}
+
+/* Camera Viewfinder */
+QCameraViewfinder {
+    border: 2px solid #aaa;
+    border-radius: 8px;
+    background-color: #000;
+}
