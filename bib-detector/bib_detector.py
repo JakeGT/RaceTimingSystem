@@ -8,6 +8,7 @@ from ultralytics import YOLO
 import easyocr
 import website_api
 
+
 # Custom VideoCapture class to set resolution to 1080x1920
 class CustomVideoCapture(cv2.VideoCapture):
     def __init__(self, src, apiPreference=cv2.CAP_ANY):
@@ -20,7 +21,6 @@ class CustomVideoCapture(cv2.VideoCapture):
 cv2.VideoCapture = CustomVideoCapture
 
 
-
 class BibDetector:
     def __init__(self, model_path, device):
         self.model = YOLO(model_path)
@@ -28,7 +28,8 @@ class BibDetector:
         self.device = device
 
     def detect(self, source, verbose=False):
-        return self.model.track(source=source, device=self.device, stream=True, verbose=verbose, tracker="bytetrack.yaml")
+        return self.model.track(source=source, device=self.device, stream=True, verbose=verbose,
+                                tracker="bytetrack.yaml")
 
     def extract_bib_text(self, image):
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -67,9 +68,44 @@ class BibTracker:
                 try:
                     self.ocr_history[track_id].append((int(numbers), time.time()))
                     if track_id not in self.best_frames or conf > self.best_frames[track_id][0]:
-                        self.best_frames[track_id] = (conf, frame.copy())
+                        new_frame = self.add_bib_inset(frame, bib_box)
+                        self.best_frames[track_id] = (conf, new_frame)
                 except ValueError:
                     pass
+
+    def add_bib_inset(self, frame, bib_box, margin=10, border_color=(0, 255, 255), border_thickness=2,
+                      inset_fraction=0.2):
+        frame_h, frame_w, _ = frame.shape
+        bib_h, bib_w, _ = bib_box.shape
+
+        # Target size for the inset
+        target_inset_w = int(frame_w * inset_fraction)
+        aspect_ratio = bib_h / bib_w
+        target_inset_h = int(target_inset_w * aspect_ratio)
+
+        # Avoid the inset being larger than frame dimensions
+        if target_inset_h + 2 * margin > frame_h or target_inset_w + 2 * margin > frame_w:
+            return frame  # Skip if it won't fit
+
+        # Resize the bib_box
+        resized_bib = cv2.resize(bib_box, (target_inset_w, target_inset_h))
+
+        # Copy the frame so we don't overwrite
+        frame_copy = frame.copy()
+
+        # Define top-right placement
+        paste_x1 = frame_w - target_inset_w - margin
+        paste_y1 = margin
+        paste_x2 = frame_w - margin
+        paste_y2 = margin + target_inset_h
+
+        # Paste the resized bib_box
+        frame_copy[paste_y1:paste_y2, paste_x1:paste_x2] = resized_bib
+
+        # Draw a border rectangle
+        cv2.rectangle(frame_copy, (paste_x1, paste_y1), (paste_x2, paste_y2), border_color, border_thickness)
+
+        return frame_copy
 
     def get_summary(self, track_id):
         entries = self.ocr_history[track_id]
@@ -170,9 +206,14 @@ def main():
     parser.add_argument("-o", "--output", help="Output file")
     parser.add_argument("-v", "--verbose", help="Verbose mode", action="store_true")
     parser.add_argument("-u", "--url", help="URL to Race Timing Website")
+    parser.add_argument("--demo", action="store_true", help="Use dummy Website API for testing")
     args = parser.parse_args()
 
-    api = website_api.WebsiteAPI(args.url)
+    if args.demo:
+        api = website_api.WebsiteAPIDemo(args.url)
+        print("[INFO] Using WebsiteAPIDemo (images will be saved locally)")
+    else:
+        api = website_api.WebsiteAPI(args.url)
     detector = BibDetector("best.pt", args.device)
     tracker = BibTracker(api)
     processor = VideoProcessor(detector, tracker, args.input, args.output, args.verbose)
