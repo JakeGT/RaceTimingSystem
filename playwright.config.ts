@@ -4,33 +4,55 @@ const isWindows = process.platform === 'win32';
 
 const webServer = {
   command: isWindows
-    ? 'cd running && call venv\\Scripts\\activate && pip install -r requirements.txt && python manage.py runserver > NUL 2>&1'
-    : 'cd running && . venv/bin/activate && pip install -r requirements.txt && python manage.py runserver > /dev/null 2>&1',
+    ? 'cd running && call venv\\Scripts\\activate && pip install -r requirements.txt && python manage.py runserver'
+    : 'cd running && . venv/bin/activate && pip install -r requirements.txt && python manage.py runserver',
   url: 'http://127.0.0.1:8000',
-  timeout: 120_000, // Wait up to 2 minutes for the server to start
-  reuseExistingServer: !process.env.CI, // Reuse server if not in CI
+  timeout: 120_000, // 2 minutes
+  reuseExistingServer: !process.env.CI,
 };
 
 export default defineConfig({
   testDir: './tests',
-  retries: 2,
+  retries: process.env.CI ? 2 : 0,
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   workers: process.env.CI ? 1 : undefined,
-  reporter: 'html',
+  reporter: [['html'], ['list']],
 
   use: {
     baseURL: 'http://127.0.0.1:8000',
     headless: true,
     trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
   },
 
-  webServer, // Ensures server starts before tests
+  webServer,
 
   projects: [
+    // Desktop Browsers
     {
-      name: 'chromium',
+      name: 'Desktop Chrome',
       use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'Desktop Firefox',
+      use: { ...devices['Desktop Firefox'] },
+    },
+    {
+      name: 'Desktop Safari',
+      use: { ...devices['Desktop Safari'] },
+    },
+
+    // Mobile Emulation
+    {
+      name: 'Mobile Chrome',
+      use: { ...devices['Pixel 5'] },
+    },
+    {
+      name: 'Mobile Safari',
+      use: { ...devices['iPhone 12'] },
     },
   ],
 });
+

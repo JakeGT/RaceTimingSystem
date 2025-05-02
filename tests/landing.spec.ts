@@ -46,15 +46,22 @@ test.describe('Landing Page Tests', () => {
     });
 
     test('navbar should have dashboard and login/logout button', async ({ page }) => {
-        const dashboardNav = page.locator('nav a:has-text("Dashboard")');
-        const loginNav = page.locator('nav a:has-text("Login")');
+      const hamburger = page.locator('.navbar-toggler');
+      const dashboardNav = page.locator('nav a:has-text("Dashboard")');
+      const loginNav = page.locator('nav a:has-text("Login")');
 
-        await expect(dashboardNav).toBeVisible();
-        await expect(dashboardNav).toHaveAttribute('href', '/dashboard/');
+      // If on mobile and hamburger is visible, click it to expand menu
+      if (await hamburger.isVisible()) {
+        await hamburger.click();
+      }
 
-        await expect(loginNav).toBeVisible();
-        await expect(loginNav).toHaveAttribute('href', '/login/');
+      await expect(dashboardNav).toBeVisible();
+      await expect(dashboardNav).toHaveAttribute('href', '/dashboard/');
+
+      await expect(loginNav).toBeVisible();
+      await expect(loginNav).toHaveAttribute('href', '/login/');
     });
+
 
     //  check if hamburger menu is visible and click it if necessary
     test('should open the hamburger menu if the three lines are visible', async ({ page }) => {
