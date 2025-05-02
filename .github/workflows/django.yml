@@ -1,9 +1,9 @@
 name: Django CI
 
 on:
-#  push:
-#    branches:
-#      - main
+  push:
+    branches:
+      - main
   pull_request:
     branches:
       - main
@@ -23,16 +23,17 @@ jobs:
 
       - name: Install Dependencies
         run: |
+          cd running
           python -m pip install --upgrade pip
-          pip install -r running/requirements.txt
+          pip install -r requirements.txt
 
       - name: Run Migrations
         working-directory: running
         run: |
-          python manage.py migrate || echo "Tests failed but continuing..."
+          python manage.py migrate
 
-      - name: Run Tests (Placeholder - Always Pass)
+      - name: Run Tests
         working-directory: running
         run: |
-          python manage.py test || echo "Tests failed but continuing..."
+          python manage.py test
         continue-on-error: true

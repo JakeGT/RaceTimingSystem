@@ -7,31 +7,36 @@ from django.urls import reverse
 
 from .models import Participant, Race, RaceCategory
 
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 class RaceTimingSystemTests(TestCase):
     def setUp(self):
         """
         Setup test data.
         """
-        # Create a test user
+
+        #  create a test user
         self.user = User.objects.create_user(
-            username="test-user", password="password123"
+            username="test-user", password="password123", email="test@gmail.com"
         )
 
-        # Create a race configuration
+        #  create a race configuration
         self.race_config = Race.objects.create(
             name="Christmas Race",
-            date="2024-12-25",
+            date="2025-12-25",
             start_time="12:00:00",
-            organiser=self.user,
             is_completed=False,
         )
 
-        # Create race categories
+        self.race_config.organiser.set([self.user])
+
+        #  create race categories
         self.category_5k = RaceCategory.objects.create(name="5k")
         self.category_10k = RaceCategory.objects.create(name="10k")
 
-        # Create participants
+        #  create participants
         self.participant_1 = Participant.objects.create(
             name="John Doe",
             race_number="1",
@@ -58,6 +63,7 @@ class RaceTimingSystemTests(TestCase):
         """
         Test the dashboard view loads correctly.
         """
+
         response = self.client.get(reverse("dashboard"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Dashboard")
