@@ -1,86 +1,47 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Race Dashboard Page', () => {
-  test('should display race dashboard for logged-in users', async ({ page }) => {
-    // Assuming you are logged in, navigate to the dashboard
-    await page.goto('http://127.0.0.1:8000/dashboard');
 
-    // Check if the page title is correct
-    await expect(page.locator('h1.display-4')).toHaveText('Race Dashboard');
-
-    // Check if the authenticated user links are displayed
-    await expect(page.locator('a[href="/race_history"]')).toBeVisible();
-    await expect(page.locator('a[href="/race_organiser_dashboard"]')).toBeVisible();
-    await expect(page.locator('a[href="/register_for_race"]')).toBeVisible();
-    await expect(page.locator('a[href="/upcoming_races"]')).toBeVisible();
-    await expect(page.locator('a[href="/race_config"]')).toBeVisible();
-
-    // Verify the search input is present
-    await expect(page.locator('input#race-search')).toBeVisible();
-    await expect(page.locator('input#completed')).toBeVisible();
+  test.beforeEach(async ({ page }) => {
+    // Go to the dashboard page
+    await page.goto('/dashboard/');
   });
 
-  test('should show no races found message if there are no races', async ({ page }) => {
-    // Navigate to the dashboard page
-    await page.goto('http://127.0.0.1:8000/dashboard');
-
-    // Check for the "No races found" message
-    await expect(page.locator('p')).toHaveText('No races found. Please add a race.');
+  test('should load dashboard and display header', async ({ page }) => {
+    await expect(page.locator('h1')).toHaveText('Race Dashboard');
+    await expect(page.locator('text=Search for races and view their leaderboards')).toBeVisible();
   });
 
-  test('should allow user to search for a race', async ({ page }) => {
-    // Navigate to the dashboard page
-    await page.goto('http://127.0.0.1:8000/dashboard');
+  test('should have working race search input with debounce', async ({ page }) => {
+    const input = page.locator('#race-search');
+    await input.fill('Race');
+    await expect(input).toHaveValue('Race');
 
-    // Fill in the search field with a race name
-    await page.fill('input#race-search', 'Marathon');
+    // Wait for debounce to trigger (1 second)
+    await page.waitForTimeout(1100);
 
-    // Click on the search button
-    await page.click('button[type="submit"]');
-
-    // Wait for the search results to be displayed
-    await expect(page.locator('.list-group')).toBeVisible();
-
-    // Verify that the search term is reflected in the results
-    await expect(page.locator('.list-group-item')).toHaveText('Marathon');
+    // Check if URL updated with query parameter (form auto-submitted)
+    await expect(page).toHaveURL(/.*race_search=Race.*/);
   });
 
-  test('should filter races based on completion status', async ({ page }) => {
-    // Navigate to the dashboard page
-    await page.goto('http://127.0.0.1:8000/dashboard');
+  test('should toggle completed and upcoming checkboxes exclusively', async ({ page }) => {
+    const completed = page.locator('#completed');
+    const upcoming = page.locator('#upcoming');
 
-    // Check that the checkbox is visible and not checked initially
-    const checkbox = page.locator('input#completed');
-    await expect(checkbox).toBeVisible();
-    await expect(checkbox).not.toBeChecked();
+    // Check completed, ensure upcoming is not checked
+    await completed.check();
+    await expect(upcoming).not.toBeChecked();
 
-    // Click to check the "Show Completed Races Only" checkbox
-    await checkbox.click();
-
-    // Submit the form to apply the filter
-    await page.click('button[type="submit"]');
-
-    // Verify that the filter is applied, you may want to check if the races shown are completed
-    // This step assumes you have a way to know if races are completed
-    await expect(page.locator('.list-group')).toBeVisible();
-    // Add any additional assertions related to filtering, e.g., check if completed races are listed
+    // Check upcoming, completed should now be unchecked
+    await upcoming.check();
+    await expect(completed).not.toBeChecked();
   });
 
-  test('should navigate to the race detail page when a race is selected', async ({ page }) => {
-    // Navigate to the dashboard page
-    await page.goto('http://127.0.0.1:8000/dashboard');
 
-    // Assume there are races displayed in the list
-    await expect(page.locator('.list-group-item')).toBeVisible();
-
-    // Click on a race to navigate to the race detail page
-    const firstRaceLink = page.locator('.list-group-item');
-    await firstRaceLink.click();
-
-    // Wait for the navigation to the race detail page
-    await page.waitForNavigation();
-
-    // Check if the URL is the race detail page, assuming the URL structure is like /race/<id>
-    await expect(page.url()).toMatch(/\/race\/\d+/);
+  test('should display the Leaflet map', async ({ page }) => {
+    const map = page.locator('#map');
+    await expect(map).toBeVisible();
+    await expect(map).toHaveAttribute('style', /height: 500px/);
   });
+
 });

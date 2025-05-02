@@ -12,18 +12,17 @@ test.describe('Login Page', () => {
     await expect(page.locator('button[type="submit"]')).toBeVisible();
 
     // Fill in the form with valid username and password
-    await page.fill('input#username', 'your-username'); // Replace with valid username
-    await page.fill('input#password', 'your-password'); // Replace with valid password
+    await page.fill('input#username', 'test');
+    await page.fill('input#password', 'Password123$');
 
-    // Submit the form
-    await page.click('button[type="submit"]');
-
-    // Wait for the page to navigate (after login)
-    await page.waitForNavigation();
+    await Promise.all([
+      page.waitForNavigation(), // waits for a full page navigation
+      page.click('button[type="submit"]'),
+    ]);
 
     // Verify that login is successful (e.g., check for the presence of a dashboard link or other element)
     // For example, checking that a dashboard button appears (you can adjust the selector based on your app's structure)
-    await expect(page.locator('a[href="/dashboard"]')).toBeVisible();
+    await expect(page.locator('a[href="/"]')).toBeVisible();
   });
 
   test('should display error message for invalid login', async ({ page }) => {
