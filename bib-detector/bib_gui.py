@@ -3,7 +3,7 @@ import threading
 import torch
 import re
 import cv2
-from PyQt5.QtCore import Qt, QRect
+from PyQt5.QtCore import Qt, QRect, pyqtSignal
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QLineEdit, QPushButton,
     QFileDialog, QComboBox, QCheckBox, QVBoxLayout, QHBoxLayout, QMessageBox,
@@ -14,6 +14,50 @@ from PyQt5.QtMultimediaWidgets import QCameraViewfinder
 from PyQt5.QtGui import QPainter, QPen, QColor
 from bib_detector import BibDetector, BibTracker, VideoProcessor
 import website_api
+
+
+class BibInsetSelector(QWidget):
+    locationSelected = pyqtSignal(str)
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setFixedSize(120, 120)
+        self.selected = "top-left"
+
+    def mousePressEvent(self, event):
+        x, y = event.x(), event.y()
+        w, h = self.width() // 2, self.height() // 2
+
+        if x < w and y < h:
+            self.selected = "top-left"
+        elif x >= w and y < h:
+            self.selected = "top-right"
+        elif x < w and y >= h:
+            self.selected = "bottom-left"
+        else:
+            self.selected = "bottom-right"
+
+        self.locationSelected.emit(self.selected)
+        self.update()
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setPen(QPen(Qt.black, 2))
+
+        # 4 rectangles
+        rects = {
+            "top-left": QRect(0, 0, 60, 60),
+            "top-right": QRect(60, 0, 60, 60),
+            "bottom-left": QRect(0, 60, 60, 60),
+            "bottom-right": QRect(60, 60, 60, 60),
+        }
+
+        for key, rect in rects.items():
+            if key == self.selected:
+                painter.setBrush(QColor(0, 150, 255, 100))  # highlight selected
+            else:
+                painter.setBrush(QColor(200, 200, 200, 50))
+            painter.drawRect(rect)
 
 
 class CropWindow(QWidget):
@@ -186,6 +230,10 @@ class BibDetectorApp(QWidget):
         self.select_crop_button = QPushButton("Select Crop")
         self.select_crop_button.clicked.connect(self.open_crop_window)
 
+        self.inset_selector = BibInsetSelector()
+        self.inset_selector.locationSelected.connect(self.set_bib_inset_location)
+        self.bib_inset_location = "top-left"
+
         self.layout = QVBoxLayout()
         self.add_widgets()
         self.setLayout(self.layout)
@@ -218,10 +266,17 @@ class BibDetectorApp(QWidget):
         crop_layout.addLayout(self.row(self.x2_line, QLabel("Y2:"), self.y2_line))
         crop_group.setLayout(crop_layout)
 
+        # Group 4: Bib Inset Settings
+        inset_group = QGroupBox("Bib Overlay Position")
+        inset_layout = QVBoxLayout()
+        inset_layout.addWidget(self.inset_selector)
+        inset_group.setLayout(inset_layout)
+
         # Assemble the main layout
         self.layout.addWidget(device_camera_group)
         self.layout.addWidget(output_api_group)
         self.layout.addWidget(crop_group)
+        self.layout.addWidget(inset_group)
         self.layout.addWidget(self.verbose_check)
         self.layout.addWidget(self.preview_label)
         self.layout.addWidget(self.preview_widget)
@@ -252,6 +307,9 @@ class BibDetectorApp(QWidget):
 
         if self.camera_combo.count() > 0:
             self.change_camera_preview()
+
+    def set_bib_inset_location(self, location):
+        self.bib_inset_location = location
 
     def load_config(self):
         filename, _ = QFileDialog.getOpenFileName(self, "Select Config File", filter="INI files (*.ini);;All files (*)")
@@ -414,7 +472,7 @@ class BibDetectorApp(QWidget):
         token = self.token_line.text() or None
         api = website_api.WebsiteAPI(url, token)
         detector = BibDetector("best.pt", device)
-        tracker = BibTracker(api)
+        tracker = BibTracker(api, bib_inset_location=self.bib_inset_location)
         processor = VideoProcessor(detector, tracker, input_source, output_file, verbose)
 
         self.hide()
