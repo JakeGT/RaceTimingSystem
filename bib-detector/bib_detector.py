@@ -272,13 +272,16 @@ def main():
     parser.add_argument("-o", "--output", help="Output file")
     parser.add_argument("-v", "--verbose", help="Verbose mode", action="store_true")
     parser.add_argument("-u", "--url", help="URL to Race Timing Website")
+    parser.add_argument("--demo", action="store_true", help="Use dummy Website API for testing")
+    parser.add_argument("--crop", nargs=4, type=int, help="Crop box: x1 y1 x2 y2", default=None)
+    parser.add_argument("-t", "--token", help="API Token")
     args = parser.parse_args()
 
     if args.demo:
         api = website_api.WebsiteAPIDemo(args.url)
         print("[INFO] Using WebsiteAPIDemo (images will be saved locally)")
     else:
-        api = website_api.WebsiteAPI(args.url)
+        api = website_api.WebsiteAPI(args.url, args.token)
     detector = BibDetector("best.pt", args.device)
     tracker = BibTracker(api)
     crop_coords = tuple(args.crop) if args.crop else None

@@ -1,6 +1,7 @@
 import time
 import os
 import cv2
+import requests
 import grequests
 import threading
 
@@ -47,26 +48,42 @@ class WebsiteAPI:
             }
             headers = {"Content-Type": "application/json"}
             if self.token:
-                headers["Authorization"] = f"Bearer {self.token}"
+                headers["Authorization"] = f"Token {self.token}"
 
+            # Send result data with grequests
             data_req = grequests.post(self.url_data, json=data, headers=headers)
             data_responses = grequests.map([data_req], size=1)
             if data_responses and data_responses[0]:
-                if data_responses[0].status_code != 200:
-                    print(f"Error sending data: {data_responses[0].status_code}")
+                try:
+                    print("Data upload response:", data_responses[0].json())
+                except Exception:
+                    print(f"Data upload failed [{data_responses[0].status_code}]: Invalid JSON")
             else:
-                print("No response from server")
+                print("Data - No response from server")
 
+            # Send image with requests (NOT grequests)
             if image is not None:
                 success, buffer = cv2.imencode(".jpg", image)
                 if success:
                     image_bytes = buffer.tobytes()
+                    timestamp_str = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(timestamp))
                     files = {"image": ("image.jpg", image_bytes, "image/jpeg")}
-                    image_req = grequests.post(self.url_image, files=files, headers=headers)
-                    image_responses = grequests.map([image_req], size=1)
-                    if image_responses and image_responses[0] and image_responses[0].status_code != 200:
-                        print(f"Error sending image: {image_responses[0].status_code}")
+                    form_data = {
+                        "timestamp": timestamp_str,
+                        "bib_number": str(bib_number),
+                    }
+                    image_headers = {"Authorization": f"Token {self.token}"} if self.token else {}
+
+                    try:
+                        img_resp = requests.post(self.url_image, data=form_data, files=files, headers=image_headers)
+                        try:
+                            print("Image upload response:", img_resp.json())
+                        except Exception:
+                            print(f"Image upload failed [{img_resp.status_code}]: Invalid JSON")
+                    except Exception as e:
+                        print(f"Image upload request failed: {e}")
                 else:
                     print("Failed to encode image to JPEG")
 
         threading.Thread(target=task, daemon=True).start()
+
