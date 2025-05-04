@@ -70,7 +70,7 @@ function download(token, url) {
             {% endwith %}
 			
 			<div class="col-auto">
-				<button onclick="download('{{ race.token }}', '/race/{{ race.id }}')" class="btn btn-danger btn-lg w-100">
+				<button onclick="download('{{ race.token }}', '{{ SERVER_IP }}/race/{{ race.id }}')" class="btn btn-danger btn-lg w-100">
 					Download Config File
 				</button>
 			</div>
