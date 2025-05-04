@@ -96,6 +96,7 @@ function download(token, url) {
                     <th>Gender</th>
                     <th>Club</th>
                     <th>Team</th>
+                    <th>Bib Number</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -122,6 +123,9 @@ function download(token, url) {
                         </td>
                         <td>
                             <input type="text" name="team_name" value="{{ participant.team_name }}" class="form-control">
+                        </td>
+                        <td>
+                            <input type="text" name="race_number" value="{{ participant.race_number }}" class="form-control" required>
                         </td>
                         <td class="d-flex gap-2">
                             <button type="submit" class="btn btn-success btn-sm rounded" title="Save">
@@ -160,6 +164,9 @@ function download(token, url) {
             </div>
             <div class="col-md-2">
                 <input type="text" name="team_name" class="form-control" placeholder="Team">
+            </div>
+            <div class="col-md-2">
+                <input type="text" name="race_number" class="form-control" placeholder="Bib Number" required>
             </div>
             <div class="col-12 text-center">
                 <button type="submit" class="btn btn-primary">

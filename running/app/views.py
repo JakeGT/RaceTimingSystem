@@ -97,7 +97,7 @@ def upload_json(request, race_id):
 
     if request.method == "POST":
         # check token in header or query string
-        token = request.GET.get("token") or request.headers.get("X-Race-Token")
+        token = request.GET.get("token") or request.headers.get("token")
         if not token:
             return JsonResponse({"error": "Missing upload token"}, status=401)
 
@@ -554,12 +554,26 @@ def race_config(request):
         #  generate secure token
         token = secrets.token_urlsafe(16)
 
+        try:
+            start_time_obj = datetime.strptime(start_time, "%H:%M").time()
+        except ValueError:
+            messages.error(request, "Invalid start time format. Please use HH:MM.")
+            return render(
+                request,
+                "app/race_config.html",
+                {
+                    "race_categories": race_categories,
+                    "participant_categories": participant_categories,
+                    "saved_data": request.POST,
+                },
+            )
+
         race = Race.objects.create(
             name=race_name,
-            date=race_date,
-            start_time=start_time,
-            latitude=latitude,
-            longitude=longitude,
+            date=race_date.date(),
+            start_time=start_time_obj,
+            latitude=float(latitude) if latitude else None,
+            longitude=float(longitude) if longitude else None,
             address=race_location,
             organiser_website=organiser_website,
             social_twitter=social_twitter,
@@ -591,9 +605,9 @@ def race_config(request):
 
         #  race category assignment
         race_category_id = request.POST.get("race_category")
-        if race_category_id:
+        if race_category_id and race_category_id != "none":
             try:
-                race.category = RaceCategory.objects.get(id=race_category_id)
+                race.race_category = RaceCategory.objects.get(id=race_category_id)
                 race.save()
             except RaceCategory.DoesNotExist:
                 logger.warning(
@@ -841,7 +855,7 @@ def upload_participants(request):
                     bib_number = row.get("BibNumber", "").strip()
                     firstname = row.get("Firstname", "").strip()
                     lastname = row.get("Lastname", "").strip()
-                    gender = row.get("Gender", "").strip()
+                    gender = row.get("Gender", "").strip().lower()
                     club_name = row.get("ClubName", "").strip()
                     team_name = row.get("TeamName", "").strip()
                     age_category = row.get("AgeCategory", "").strip()
@@ -937,7 +951,7 @@ def upload_participants(request):
 
             return redirect("upload_results")
 
-        #  handle manual entry form
+        # handle manual entry form
         elif "bib_number" in request.POST:
             bib_number = request.POST.get("bib_number")
             firstname = request.POST.get("firstname")
@@ -947,24 +961,25 @@ def upload_participants(request):
             age_category = request.POST.get("age_category")
             race_category = request.POST.get("race_category")
             age = int(request.POST.get("age", 0))
+            participant_category = request.POST.get("category_id")
 
-            #  validate form data
+            # validate form data
             if not all(
-                [
-                    bib_number,
-                    firstname,
-                    lastname,
-                    gender,
-                    team_name,
-                    age_category,
-                    race_category,
-                    age,
-                ]
+                    [
+                        bib_number,
+                        firstname,
+                        lastname,
+                        gender,
+                        team_name,
+                        age_category,
+                        race_category,
+                        age,
+                    ]
             ):
                 messages.error(request, "Please fill in all required fields.")
                 return redirect("upload_participants")
 
-            #  check for existing participant with the same bib number
+            # check for existing participant with the same bib number
             existing_participant = Participant.objects.filter(
                 race=race, race_number=bib_number
             ).first()
@@ -975,7 +990,7 @@ def upload_participants(request):
                 )
                 return redirect("upload_participants")
 
-            #  create participant
+            # create participant
             participant = Participant(
                 race=race,
                 race_number=bib_number,
@@ -987,11 +1002,9 @@ def upload_participants(request):
                 status="pending",
             )
 
-            #  assign selected category if available
-            if race_category:
-                race_category_obj = RaceCategory.objects.filter(
-                    name=race_category
-                ).first()
+            # assign selected category if available
+            if participant_category and participant_category != "none":
+                race_category_obj = ParticipantCategory.objects.filter(id=participant_category).first()
                 if race_category_obj:
                     participant.category = race_category_obj
 
@@ -1005,14 +1018,19 @@ def upload_participants(request):
 
     #  get all available races
     races = Race.objects.filter(organiser=request.user)
-    categories = RaceCategory.objects.all()  # Fetch all available race categories
+    categories = RaceCategory.objects.all()
+    participant_categories = ParticipantCategory.objects.all()
     logger.info(
         f"Rendering upload participants page with {races.count()} races available."
     )
     return render(
         request,
         "app/upload_participants.html",
-        {"races": races, "categories": categories},
+        {
+            "races": races,
+            "categories": categories,
+            "participant_categories": participant_categories,
+        },
     )
 
 
@@ -1818,7 +1836,7 @@ def upload_image(request, race_id):
 
     if request.method == 'POST' and request.FILES.get('image'):
         #  fetch token either
-        token = request.POST.get('token') or request.GET.get('token') or request.headers.get('X-Race-Token')
+        token = request.POST.get('token') or request.GET.get('token') or request.headers.get('token')
         if not token:
             return JsonResponse({"error": "Missing upload token"}, status=401)
 
@@ -2196,6 +2214,7 @@ def edit_participant(request, race_id, participant_id):
         participant.gender = request.POST.get("gender")
         participant.club_name = request.POST.get("club_name", participant.club_name)
         participant.team_name = request.POST.get("team_name", participant.team_name)
+        participant.race_number = request.POST.get("race_number", participant.race_number)
         participant.save()
         messages.success(request, "Participant details updated successfully.")
 
