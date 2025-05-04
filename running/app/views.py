@@ -2344,17 +2344,28 @@ def remove_organiser(request, race_id, organiser_id):
 
 
 def add_result(request, race_id):
-    race = Race.objects.get(id=race_id)
+    race = get_object_or_404(Race, id=race_id)
 
     if request.method == 'POST':
         participant_id = request.POST.get('participant')
         total_time = request.POST.get('total_time')
 
-        participant = Participant.objects.get(id=participant_id)
+        participant = get_object_or_404(Participant, id=participant_id)
 
-        #  create a new RaceResult instance
-        RaceResult.objects.create(participant=participant, race=race, total_time=total_time)
+        #  check if a RaceResult already exists for this participant in this race
+        existing_result = RaceResult.objects.filter(participant=participant, race=race).first()
 
+        if existing_result:
+            #  if a result exists, update it
+            existing_result.total_time = total_time
+            existing_result.save()
+            message = "Race result updated successfully."
+        else:
+            #  if no result exists, create a new one
+            RaceResult.objects.create(participant=participant, race=race, total_time=total_time)
+            message = "Race result added successfully."
+
+        #  redirect to the race detail page with a success message
         return redirect('organiser_race_detail', race_id=race.id)
 
     participants = Participant.objects.filter(race=race)
