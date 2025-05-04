@@ -1227,7 +1227,7 @@ def race_detail(request, race_id):
 
             except ParticipantCategory.DoesNotExist:
                 logger.warning(f"Age category with ID {age_category} does not exist.")
-                race_results = race_results.none() 
+                race_results = race_results.none()
 
         categories = race.participant_categories.all()
 
@@ -2341,3 +2341,47 @@ def remove_organiser(request, race_id, organiser_id):
 
     race.organiser.remove(organiser)
     return redirect("manage_organiser_permissions", race_id=race.id)
+
+
+def add_result(request, race_id):
+    race = Race.objects.get(id=race_id)
+
+    if request.method == 'POST':
+        participant_id = request.POST.get('participant')
+        total_time = request.POST.get('total_time')
+
+        participant = Participant.objects.get(id=participant_id)
+
+        #  create a new RaceResult instance
+        RaceResult.objects.create(participant=participant, race=race, total_time=total_time)
+
+        return redirect('organiser_race_detail', race_id=race.id)
+
+    participants = Participant.objects.filter(race=race)
+    return render(request, 'add_result.html', {'race': race, 'participants': participants})
+
+
+def edit_result(request, race_id, result_id):
+    race = Race.objects.get(id=race_id)
+    result = get_object_or_404(RaceResult, id=result_id, race=race)
+
+    if request.method == 'POST':
+        result.total_time = request.POST.get('total_time')
+        result.save()
+
+        return redirect('organiser_race_detail', race_id=race.id)
+
+    return render(request, 'edit_result.html', {'race': race, 'result': result})
+
+
+def confirm_delete_result(request, race_id, result_id):
+    race = get_object_or_404(Race, id=race_id)
+    result = get_object_or_404(RaceResult, id=result_id, race=race)
+
+    if request.method == 'POST':
+        #  if POST request, delete the result and redirect
+        result.delete()
+        return redirect('organiser_race_detail', race_id=race.id)
+
+    #  if GET request, display a confirmation page
+    return render(request, 'app/confirm_delete_result.html', {'result': result, 'race': race})
