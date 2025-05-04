@@ -106,36 +106,59 @@ class BibTracker:
                     pass
 
     def add_bib_inset(self, frame, bib_box, margin=10, border_color=(0, 255, 255), border_thickness=2,
-                      inset_fraction=0.2):
+                      inset_fraction=0.2, position="top-left"):
+        """
+        Add a resized inset of the bib_box to a corner of the frame.
+
+        Args:
+            frame: The full video frame.
+            bib_box: Cropped bib box.
+            margin: Margin from frame edges.
+            border_color: Color of the border rectangle.
+            border_thickness: Thickness of the border line.
+            inset_fraction: Fraction of frame width used for inset width (e.g., 0.2 = 20% of width).
+            position: One of 'top-left', 'top-right', 'bottom-left', 'bottom-right'.
+        """
         frame_h, frame_w, _ = frame.shape
         bib_h, bib_w, _ = bib_box.shape
 
-        # Target size for the inset
-        target_inset_w = int(frame_w * inset_fraction)
+        # Target size
+        target_w = int(frame_w * inset_fraction)
         aspect_ratio = bib_h / bib_w
-        target_inset_h = int(target_inset_w * aspect_ratio)
+        target_h = int(target_w * aspect_ratio)
 
-        # Avoid the inset being larger than frame dimensions
-        if target_inset_h + 2 * margin > frame_h or target_inset_w + 2 * margin > frame_w:
-            return frame  # Skip if it won't fit
+        # Check bounds
+        if target_h + 2 * margin > frame_h or target_w + 2 * margin > frame_w:
+            return frame
 
-        # Resize the bib_box
-        resized_bib = cv2.resize(bib_box, (target_inset_w, target_inset_h))
-
-        # Copy the frame so we don't overwrite
+        # Resize bib
+        resized_bib = cv2.resize(bib_box, (target_w, target_h))
         frame_copy = frame.copy()
 
-        # Define top-right placement
-        paste_x1 = frame_w - target_inset_w - margin
-        paste_y1 = margin
-        paste_x2 = frame_w - margin
-        paste_y2 = margin + target_inset_h
+        # Determine top-left corner based on position
+        if position == "top-left":
+            x1 = margin
+            y1 = margin
+        elif position == "top-right":
+            x1 = frame_w - target_w - margin
+            y1 = margin
+        elif position == "bottom-left":
+            x1 = margin
+            y1 = frame_h - target_h - margin
+        elif position == "bottom-right":
+            x1 = frame_w - target_w - margin
+            y1 = frame_h - target_h - margin
+        else:
+            # Fallback to top-right
+            x1 = frame_w - target_w - margin
+            y1 = margin
 
-        # Paste the resized bib_box
-        frame_copy[paste_y1:paste_y2, paste_x1:paste_x2] = resized_bib
+        x2 = x1 + target_w
+        y2 = y1 + target_h
 
-        # Draw a border rectangle
-        cv2.rectangle(frame_copy, (paste_x1, paste_y1), (paste_x2, paste_y2), border_color, border_thickness)
+        # Paste and border
+        frame_copy[y1:y2, x1:x2] = resized_bib
+        cv2.rectangle(frame_copy, (x1, y1), (x2, y2), border_color, border_thickness)
 
         return frame_copy
 
