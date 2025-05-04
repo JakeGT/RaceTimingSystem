@@ -1196,7 +1196,7 @@ def race_detail(request, race_id):
     race_results = RaceResult.objects.filter(race=race)
 
     sort_by = request.GET.get("sort_by", "")
-    participant_category = request.GET.get("participant_category", "")
+    age_category = request.GET.get("age_category", "")
     sort_direction = request.GET.get("sort_direction", "asc")
     gender = request.GET.get("gender", "")
     age = request.GET.get("age", "")
@@ -1215,13 +1215,19 @@ def race_detail(request, race_id):
             race_results = race_results.filter(participant__gender=gender)
             logger.info(f"Filtering race results by gender: {gender}")
 
-        if participant_category:
-            race_results = race_results.filter(
-                participant__participant_category__id=participant_category
-            )
-            logger.info(
-                f"Filtering race results by participant category: {participant_category}"
-            )
+        if age_category:
+            try:
+                #  get the category by ID
+                category = ParticipantCategory.objects.get(id=age_category)
+                category_name = category.name
+
+                #  filter race results by the name of the age category
+                race_results = race_results.filter(participant__age_category=category_name)
+                logger.info(f"Filtering race results by age category: {category_name}")
+
+            except ParticipantCategory.DoesNotExist:
+                logger.warning(f"Age category with ID {age_category} does not exist.")
+                race_results = race_results.none() 
 
         categories = race.participant_categories.all()
 
@@ -1283,13 +1289,15 @@ def race_detail(request, race_id):
     #  if there are no results just show participants
     participants = Participant.objects.filter(race=race)
 
-    if participant_category:
-        race_results = race_results.filter(
-            participant__participant_category__id=participant_category
-        )
-        logger.info(
-            f"Filtering race results by participant category: {participant_category}"
-        )
+    if age_category:
+        try:
+            category = ParticipantCategory.objects.get(id=age_category)
+            category_name = category.name
+            participants = participants.filter(age_category=category_name)
+            logger.info(f"Filtering participants by age category: {category_name}")
+        except ParticipantCategory.DoesNotExist:
+            logger.warning(f"Age category with ID {age_category} does not exist.")
+            participants = participants.none()
 
     #  apply search filter if query exists
     if search_query:
