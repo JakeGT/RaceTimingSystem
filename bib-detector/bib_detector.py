@@ -54,10 +54,11 @@ class BibTracker:
     OCR_TIMESTAMP_THRESHOLD = 1
     MIN_OCR_ENTRIES = 5
 
-    def __init__(self, api, config_path="bib_detector_config.ini"):
+    def __init__(self, api, bib_inset_location="top-left", config_path="bib_detector_config.ini"):
         self.ocr_history = defaultdict(list)
         self.api = api
         self.best_frames = {}
+        self.bib_inset_location = bib_inset_location
 
         if os.path.isfile(config_path):
             print(f"[INFO] Loading config from {config_path}")
@@ -106,7 +107,7 @@ class BibTracker:
                     pass
 
     def add_bib_inset(self, frame, bib_box, margin=10, border_color=(0, 255, 255), border_thickness=2,
-                      inset_fraction=0.2, position="top-left"):
+                      inset_fraction=0.2):
         """
         Add a resized inset of the bib_box to a corner of the frame.
 
@@ -117,7 +118,6 @@ class BibTracker:
             border_color: Color of the border rectangle.
             border_thickness: Thickness of the border line.
             inset_fraction: Fraction of frame width used for inset width (e.g., 0.2 = 20% of width).
-            position: One of 'top-left', 'top-right', 'bottom-left', 'bottom-right'.
         """
         frame_h, frame_w, _ = frame.shape
         bib_h, bib_w, _ = bib_box.shape
@@ -136,16 +136,16 @@ class BibTracker:
         frame_copy = frame.copy()
 
         # Determine top-left corner based on position
-        if position == "top-left":
+        if self.bib_inset_location == "top-left":
             x1 = margin
             y1 = margin
-        elif position == "top-right":
+        elif self.bib_inset_location == "top-right":
             x1 = frame_w - target_w - margin
             y1 = margin
-        elif position == "bottom-left":
+        elif self.bib_inset_location == "bottom-left":
             x1 = margin
             y1 = frame_h - target_h - margin
-        elif position == "bottom-right":
+        elif self.bib_inset_location == "bottom-right":
             x1 = frame_w - target_w - margin
             y1 = frame_h - target_h - margin
         else:
@@ -306,7 +306,7 @@ def main():
     else:
         api = website_api.WebsiteAPI(args.url, args.token)
     detector = BibDetector("best.pt", args.device)
-    tracker = BibTracker(api)
+    tracker = BibTracker(api, "top-left")
     crop_coords = tuple(args.crop) if args.crop else None
     processor = VideoProcessor(detector, tracker, args.input, args.output, args.verbose, crop_coords)
     processor.run()
