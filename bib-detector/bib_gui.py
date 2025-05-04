@@ -7,13 +7,14 @@ from PyQt5.QtCore import Qt, QRect
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QLineEdit, QPushButton,
     QFileDialog, QComboBox, QCheckBox, QVBoxLayout, QHBoxLayout, QMessageBox,
-    QStackedLayout, QInputDialog
+    QStackedLayout, QInputDialog, QGroupBox
 )
 from PyQt5.QtMultimedia import QCameraInfo, QCamera
 from PyQt5.QtMultimediaWidgets import QCameraViewfinder
 from PyQt5.QtGui import QPainter, QPen, QColor
 from bib_detector import BibDetector, BibTracker, VideoProcessor
 import website_api
+
 
 class CropWindow(QWidget):
     def __init__(self, pixmap, parent_app):
@@ -23,19 +24,27 @@ class CropWindow(QWidget):
         self.pixmap = pixmap
         self.start_pos = None
         self.end_pos = None
-        self.is_selecting = False  # New: whether currently selecting
-        self.is_paused = False     # New: whether box is frozen
+        self.is_selecting = False
+        self.is_paused = False
         self.setFixedSize(pixmap.size())
         self.setMouseTracking(True)
 
-        # Confirm and Cancel buttons
+        # Button Layout (bottom-right corner)
         self.confirm_button = QPushButton("Confirm", self)
-        self.confirm_button.move(10, 10)
         self.confirm_button.clicked.connect(self.confirm_crop)
 
         self.cancel_button = QPushButton("Cancel", self)
-        self.cancel_button.move(110, 10)
         self.cancel_button.clicked.connect(self.close)
+
+        self.button_layout = QHBoxLayout()
+        self.button_layout.addStretch()
+        self.button_layout.addWidget(self.confirm_button)
+        self.button_layout.addWidget(self.cancel_button)
+
+        self.main_layout = QVBoxLayout(self)
+        self.main_layout.addStretch()
+        self.main_layout.addLayout(self.button_layout)
+        self.main_layout.setContentsMargins(10, 10, 10, 10)
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
@@ -102,11 +111,13 @@ class CropWindow(QWidget):
             painter.drawRect(rect)
 
 
-
-
 class BibDetectorApp(QWidget):
     def __init__(self):
         super().__init__()
+        self.setAttribute(Qt.WA_StyledBackground, True)
+        self.setObjectName("MainWindow")
+        self.crop_window = None
+        self.available_cameras = None
         self.camera = None
         self.ip_camera_url = None
         self.setWindowTitle("Bib Detector GUI")
@@ -158,7 +169,7 @@ class BibDetectorApp(QWidget):
         self.blank_label.setStyleSheet("background-color: black;")
 
         self.preview_stack.addWidget(self.viewfinder)  # index 0
-        self.preview_stack.addWidget(self.blank_label) # index 1
+        self.preview_stack.addWidget(self.blank_label)  # index 1
         self.preview_widget.setLayout(self.preview_stack)
 
         self.populate_camera_inputs()
@@ -167,6 +178,10 @@ class BibDetectorApp(QWidget):
         self.y1_line = QLineEdit()
         self.x2_line = QLineEdit()
         self.y2_line = QLineEdit()
+        self.x1_line.setPlaceholderText("X1")
+        self.y1_line.setPlaceholderText("Y1")
+        self.x2_line.setPlaceholderText("X2")
+        self.y2_line.setPlaceholderText("Y2")
 
         self.select_crop_button = QPushButton("Select Crop")
         self.select_crop_button.clicked.connect(self.open_crop_window)
@@ -175,20 +190,46 @@ class BibDetectorApp(QWidget):
         self.add_widgets()
         self.setLayout(self.layout)
 
+    from PyQt5.QtWidgets import QGroupBox
+
     def add_widgets(self):
-        self.layout.addLayout(self.row(self.device_label, self.device_combo))
-        self.layout.addLayout(self.row(self.camera_label, self.camera_combo, self.refresh_button, self.connect_ip_button))
-        self.layout.addLayout(self.row(self.output_label, self.output_line, self.output_browse))
-        self.layout.addLayout(self.row(self.url_label, self.url_line))
-        self.layout.addLayout(self.row(self.token_label, self.token_line))
-        self.layout.addWidget(self.load_config_button)
+        # Group 1: Device & Camera
+        device_camera_group = QGroupBox("Hardware Settings")
+        device_camera_layout = QVBoxLayout()
+        device_camera_layout.addLayout(self.row(self.device_label, self.device_combo))
+        device_camera_layout.addLayout(
+            self.row(self.camera_label, self.camera_combo, self.refresh_button, self.connect_ip_button))
+        device_camera_group.setLayout(device_camera_layout)
+
+        # Group 2: Output & API
+        output_api_group = QGroupBox("Output Settings")
+        output_api_layout = QVBoxLayout()
+        output_api_layout.addLayout(self.row(self.output_label, self.output_line, self.output_browse))
+        output_api_layout.addLayout(self.row(self.url_label, self.url_line))
+        output_api_layout.addLayout(self.row(self.token_label, self.token_line))
+        output_api_layout.addWidget(self.load_config_button)
+        output_api_group.setLayout(output_api_layout)
+
+        # Group 3: Crop Settings
+        crop_group = QGroupBox("Crop Area Selection")
+        crop_layout = QVBoxLayout()
+        crop_layout.addWidget(self.select_crop_button)
+        crop_layout.addLayout(self.row(self.x1_line, QLabel("Y1:"), self.y1_line))
+        crop_layout.addLayout(self.row(self.x2_line, QLabel("Y2:"), self.y2_line))
+        crop_group.setLayout(crop_layout)
+
+        # Assemble the main layout
+        self.layout.addWidget(device_camera_group)
+        self.layout.addWidget(output_api_group)
+        self.layout.addWidget(crop_group)
         self.layout.addWidget(self.verbose_check)
         self.layout.addWidget(self.preview_label)
         self.layout.addWidget(self.preview_widget)
-        self.layout.addWidget(self.select_crop_button)
-        self.layout.addLayout(self.row(QLabel("Crop X1:"), self.x1_line, QLabel("Y1:"), self.y1_line))
-        self.layout.addLayout(self.row(QLabel("Crop X2:"), self.x2_line, QLabel("Y2:"), self.y2_line))
         self.layout.addWidget(self.start_button)
+
+        # Set margins and spacing
+        self.layout.setContentsMargins(15, 15, 15, 15)
+        self.layout.setSpacing(12)
 
     def row(self, *widgets):
         h = QHBoxLayout()
@@ -274,6 +315,7 @@ class BibDetectorApp(QWidget):
             self.stop_all_cameras()
 
             self.preview_stack.setCurrentIndex(0)  # Show viewfinder
+            self.blank_label.setText("")  # Clear any IP camera message
 
             self.camera = QCamera(camera_info)
             self.camera.setViewfinder(self.viewfinder)
@@ -317,6 +359,8 @@ class BibDetectorApp(QWidget):
 
         self.stop_all_cameras()
         self.preview_stack.setCurrentIndex(1)  # Show blank screen
+        self.blank_label.setText("Using IP Camera Stream\n(Preview not available)")
+        self.blank_label.setStyleSheet("color: white; font-size: 18px;")
         self.ip_camera_url = ip_address
 
     def is_valid_ip_or_url(self, text):
@@ -335,7 +379,8 @@ class BibDetectorApp(QWidget):
         device = self.device_combo.currentText()
         camera_text = self.camera_combo.currentText().strip()
         selected_camera_info = self.camera_combo.currentData()
-        input_index = self.available_cameras.index(selected_camera_info) if selected_camera_info in self.available_cameras else 0
+        input_index = self.available_cameras.index(
+            selected_camera_info) if selected_camera_info in self.available_cameras else 0
         output_file = self.output_line.text() or None
         url = self.url_line.text()
         verbose = self.verbose_check.isChecked()
@@ -352,7 +397,6 @@ class BibDetectorApp(QWidget):
                 return
         except ValueError:
             crop_coords = None  # If fields are empty or invalid
-
 
         if not url:
             QMessageBox.critical(self, "Missing URL", "Please enter the Race Timing Website URL.")
@@ -383,6 +427,14 @@ class BibDetectorApp(QWidget):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+
+    # Load external stylesheet
+    try:
+        with open("style.qss", "r") as f:
+            app.setStyleSheet(f.read())
+    except Exception as e:
+        print(f"Failed to load stylesheet: {e}")
+
     window = BibDetectorApp()
     window.show()
     sys.exit(app.exec_())

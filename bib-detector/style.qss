@@ -1,0 +1,70 @@
+/* MAIN WINDOW */
+#MainWindow {
+    background-image: url(background.png);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-attachment: fixed;
+    background-color: #2b2b2b;
+}
+
+/* Base widget */
+QWidget {
+    background-color: transparent;
+    color: #f0f0f0;
+    font-family: Arial;
+    font-size: 14px;
+}
+
+/* Inputs (glass-like effect) */
+QLineEdit, QComboBox, QTextEdit {
+    background-color: rgba(60, 63, 65, 160); /* 160/255 transparency */
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 6px;
+}
+
+/* Muted, darker buttons */
+QPushButton {
+    background-color: rgba(70, 130, 180, 140); /* steel blue, 200/255 opacity */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-weight: bold;
+}
+QPushButton:hover {
+    background-color: rgba(100, 160, 210, 220); /* slightly brighter on hover */
+}
+
+/* Group boxes */
+QGroupBox {
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    margin-top: 10px;
+    padding: 10px;
+}
+QGroupBox:title {
+    subcontrol-origin: margin;
+    left: 10px;
+    padding: 0 5px;
+    background-color: transparent;
+    color: #bbbbbb;
+    font-weight: bold;
+}
+
+/* Checkboxes */
+QCheckBox {
+    spacing: 5px;
+}
+
+/* Labels */
+QLabel {
+    padding: 2px;
+}
+
+/* Viewfinder stays clean */
+QCameraViewfinder {
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    background-color: #000;
+}
