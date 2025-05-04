@@ -189,6 +189,10 @@ urlpatterns = [
     ),
 
     path('race/<int:race_id>/add_participant/', views.add_participant, name='add_participant'),
+
+    path('race/<int:race_id>/edit_result/<int:result_id>/', views.edit_result, name='edit_result'),
+    path('race/<int:race_id>/add_result/', views.add_result, name='add_result'),
+    path('race/<int:race_id>/result/delete/<int:result_id>/', views.confirm_delete_result, name='confirm_delete_result'),
 ]
 
 if settings.DEBUG:

@@ -73,7 +73,7 @@
                         <div class="form-group mb-4">
                             <label for="file" class="form-label">Select CSV File</label>
                             <input type="file" name="file" id="file" class="form-control" required>
-                            <small class="form-text text-muted">Please upload a valid CSV file containing the following fields: BibNumber, Firstname, Lastname, Gender, TeamName, and AgeCategory.</small>
+                            <small class="form-text text-muted">Please upload a valid CSV file containing the following fields: BibNumber, Firstname, Lastname, Gender, TeamName, AgeCategory, and Age</small>
                         </div>
 
                         <!-- Submit Button -->
@@ -142,7 +142,8 @@
                         <label for="category" class="form-label">Select Category</label>
                         <select name="category_id" id="category" class="form-control" required>
                             <option value="" selected>Select a Category</option>
-                            {% for category in race.categories.all %}
+                            <option value="none">None</option>
+                            {% for category in participant_categories %}
                                 <option value="{{ category.id }}">{{ category.name }}</option>
                             {% endfor %}
                         </select>

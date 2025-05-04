@@ -552,12 +552,26 @@ def race_config(request):
         #  generate secure token
         token = secrets.token_urlsafe(16)
 
+        try:
+            start_time_obj = datetime.strptime(start_time, "%H:%M").time()
+        except ValueError:
+            messages.error(request, "Invalid start time format. Please use HH:MM.")
+            return render(
+                request,
+                "app/race_config.html",
+                {
+                    "race_categories": race_categories,
+                    "participant_categories": participant_categories,
+                    "saved_data": request.POST,
+                },
+            )
+
         race = Race.objects.create(
             name=race_name,
-            date=race_date,
-            start_time=start_time,
-            latitude=latitude,
-            longitude=longitude,
+            date=race_date.date(),
+            start_time=start_time_obj,
+            latitude=float(latitude) if latitude else None,
+            longitude=float(longitude) if longitude else None,
             address=race_location,
             organiser_website=organiser_website,
             social_twitter=social_twitter,
@@ -589,9 +603,9 @@ def race_config(request):
 
         #  race category assignment
         race_category_id = request.POST.get("race_category")
-        if race_category_id:
+        if race_category_id and race_category_id != "none":
             try:
-                race.category = RaceCategory.objects.get(id=race_category_id)
+                race.race_category = RaceCategory.objects.get(id=race_category_id)
                 race.save()
             except RaceCategory.DoesNotExist:
                 logger.warning(
@@ -839,7 +853,7 @@ def upload_participants(request):
                     bib_number = row.get("BibNumber", "").strip()
                     firstname = row.get("Firstname", "").strip()
                     lastname = row.get("Lastname", "").strip()
-                    gender = row.get("Gender", "").strip()
+                    gender = row.get("Gender", "").strip().lower()
                     club_name = row.get("ClubName", "").strip()
                     team_name = row.get("TeamName", "").strip()
                     age_category = row.get("AgeCategory", "").strip()
@@ -935,7 +949,7 @@ def upload_participants(request):
 
             return redirect("upload_results")
 
-        #  handle manual entry form
+        # handle manual entry form
         elif "bib_number" in request.POST:
             bib_number = request.POST.get("bib_number")
             firstname = request.POST.get("firstname")
@@ -945,24 +959,25 @@ def upload_participants(request):
             age_category = request.POST.get("age_category")
             race_category = request.POST.get("race_category")
             age = int(request.POST.get("age", 0))
+            participant_category = request.POST.get("category_id")
 
-            #  validate form data
+            # validate form data
             if not all(
-                [
-                    bib_number,
-                    firstname,
-                    lastname,
-                    gender,
-                    team_name,
-                    age_category,
-                    race_category,
-                    age,
-                ]
+                    [
+                        bib_number,
+                        firstname,
+                        lastname,
+                        gender,
+                        team_name,
+                        age_category,
+                        race_category,
+                        age,
+                    ]
             ):
                 messages.error(request, "Please fill in all required fields.")
                 return redirect("upload_participants")
 
-            #  check for existing participant with the same bib number
+            # check for existing participant with the same bib number
             existing_participant = Participant.objects.filter(
                 race=race, race_number=bib_number
             ).first()
@@ -973,7 +988,7 @@ def upload_participants(request):
                 )
                 return redirect("upload_participants")
 
-            #  create participant
+            # create participant
             participant = Participant(
                 race=race,
                 race_number=bib_number,
@@ -985,11 +1000,9 @@ def upload_participants(request):
                 status="pending",
             )
 
-            #  assign selected category if available
-            if race_category:
-                race_category_obj = RaceCategory.objects.filter(
-                    name=race_category
-                ).first()
+            # assign selected category if available
+            if participant_category and participant_category != "none":
+                race_category_obj = ParticipantCategory.objects.filter(id=participant_category).first()
                 if race_category_obj:
                     participant.category = race_category_obj
 
@@ -1003,14 +1016,19 @@ def upload_participants(request):
 
     #  get all available races
     races = Race.objects.filter(organiser=request.user)
-    categories = RaceCategory.objects.all()  # Fetch all available race categories
+    categories = RaceCategory.objects.all()
+    participant_categories = ParticipantCategory.objects.all()
     logger.info(
         f"Rendering upload participants page with {races.count()} races available."
     )
     return render(
         request,
         "app/upload_participants.html",
-        {"races": races, "categories": categories},
+        {
+            "races": races,
+            "categories": categories,
+            "participant_categories": participant_categories,
+        },
     )
 
 
@@ -1176,7 +1194,7 @@ def race_detail(request, race_id):
     race_results = RaceResult.objects.filter(race=race)
 
     sort_by = request.GET.get("sort_by", "")
-    participant_category = request.GET.get("participant_category", "")
+    age_category = request.GET.get("age_category", "")
     sort_direction = request.GET.get("sort_direction", "asc")
     gender = request.GET.get("gender", "")
     age = request.GET.get("age", "")
@@ -1195,13 +1213,19 @@ def race_detail(request, race_id):
             race_results = race_results.filter(participant__gender=gender)
             logger.info(f"Filtering race results by gender: {gender}")
 
-        if participant_category:
-            race_results = race_results.filter(
-                participant__participant_category__id=participant_category
-            )
-            logger.info(
-                f"Filtering race results by participant category: {participant_category}"
-            )
+        if age_category:
+            try:
+                #  get the category by ID
+                category = ParticipantCategory.objects.get(id=age_category)
+                category_name = category.name
+
+                #  filter race results by the name of the age category
+                race_results = race_results.filter(participant__age_category=category_name)
+                logger.info(f"Filtering race results by age category: {category_name}")
+
+            except ParticipantCategory.DoesNotExist:
+                logger.warning(f"Age category with ID {age_category} does not exist.")
+                race_results = race_results.none()
 
         categories = race.participant_categories.all()
 
@@ -1263,13 +1287,15 @@ def race_detail(request, race_id):
     #  if there are no results just show participants
     participants = Participant.objects.filter(race=race)
 
-    if participant_category:
-        race_results = race_results.filter(
-            participant__participant_category__id=participant_category
-        )
-        logger.info(
-            f"Filtering race results by participant category: {participant_category}"
-        )
+    if age_category:
+        try:
+            category = ParticipantCategory.objects.get(id=age_category)
+            category_name = category.name
+            participants = participants.filter(age_category=category_name)
+            logger.info(f"Filtering participants by age category: {category_name}")
+        except ParticipantCategory.DoesNotExist:
+            logger.warning(f"Age category with ID {age_category} does not exist.")
+            participants = participants.none()
 
     #  apply search filter if query exists
     if search_query:
@@ -2195,6 +2221,7 @@ def edit_participant(request, race_id, participant_id):
         participant.gender = request.POST.get("gender")
         participant.club_name = request.POST.get("club_name", participant.club_name)
         participant.team_name = request.POST.get("team_name", participant.team_name)
+        participant.race_number = request.POST.get("race_number", participant.race_number)
         participant.save()
         messages.success(request, "Participant details updated successfully.")
 
@@ -2313,3 +2340,58 @@ def remove_organiser(request, race_id, organiser_id):
 
     race.organiser.remove(organiser)
     return redirect("manage_organiser_permissions", race_id=race.id)
+
+
+def add_result(request, race_id):
+    race = get_object_or_404(Race, id=race_id)
+
+    if request.method == 'POST':
+        participant_id = request.POST.get('participant')
+        total_time = request.POST.get('total_time')
+
+        participant = get_object_or_404(Participant, id=participant_id)
+
+        #  check if a RaceResult already exists for this participant in this race
+        existing_result = RaceResult.objects.filter(participant=participant, race=race).first()
+
+        if existing_result:
+            #  if a result exists, update it
+            existing_result.total_time = total_time
+            existing_result.save()
+            message = "Race result updated successfully."
+        else:
+            #  if no result exists, create a new one
+            RaceResult.objects.create(participant=participant, race=race, total_time=total_time)
+            message = "Race result added successfully."
+
+        #  redirect to the race detail page with a success message
+        return redirect('organiser_race_detail', race_id=race.id)
+
+    participants = Participant.objects.filter(race=race)
+    return render(request, 'add_result.html', {'race': race, 'participants': participants})
+
+
+def edit_result(request, race_id, result_id):
+    race = Race.objects.get(id=race_id)
+    result = get_object_or_404(RaceResult, id=result_id, race=race)
+
+    if request.method == 'POST':
+        result.total_time = request.POST.get('total_time')
+        result.save()
+
+        return redirect('organiser_race_detail', race_id=race.id)
+
+    return render(request, 'edit_result.html', {'race': race, 'result': result})
+
+
+def confirm_delete_result(request, race_id, result_id):
+    race = get_object_or_404(Race, id=race_id)
+    result = get_object_or_404(RaceResult, id=result_id, race=race)
+
+    if request.method == 'POST':
+        #  if POST request, delete the result and redirect
+        result.delete()
+        return redirect('organiser_race_detail', race_id=race.id)
+
+    #  if GET request, display a confirmation page
+    return render(request, 'app/confirm_delete_result.html', {'result': result, 'race': race})

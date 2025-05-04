@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center">Confirm Deletion of Race Result</h1>
+    <p class="text-center">Are you sure you want to delete the race result for <strong>{{ result.participant.name }}</strong> (Race Number: {{ result.participant.race_number }})?</p>
+    <p class="text-center">Total Time: {{ result.total_time }}</p>
+
+    <form method="POST" class="text-center">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Yes, Delete Result</button>
+    </form>
+
+    <a href="{% url 'organiser_race_detail' race.id %}" class="btn btn-secondary mt-3">Cancel</a>
+</div>
+{% endblock %}
