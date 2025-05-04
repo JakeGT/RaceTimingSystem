@@ -94,10 +94,9 @@ def upload_json(request, race_id):
     """
     Backend API for the upload of runner results data, requires the token with the associated race
     """
-
     if request.method == "POST":
-        # check token in header or query string
-        token = request.GET.get("token") or request.headers.get("token")
+        auth_header = request.headers.get('Authorization', '')
+        token = auth_header.replace("Token ", "") if auth_header.startswith("Token ") else None
         if not token:
             return JsonResponse({"error": "Missing upload token"}, status=401)
 
@@ -121,7 +120,7 @@ def upload_json(request, race_id):
         try:
             participant = Participant.objects.get(race=race, race_number=bib_number)
         except Participant.DoesNotExist:
-            return JsonResponse({"error": "Participant not found"}, status=404)
+            return JsonResponse({"message": "Participant not found"}, status=202)
 
         start_time = race.start_time
         result_time_obj = parse_time(result_time)
@@ -137,7 +136,6 @@ def upload_json(request, race_id):
         RaceResult.objects.create(
             participant=participant, race=race, total_time=str(time_difference)
         )
-
         return JsonResponse({"message": "Data processed and race result created."})
 
     return JsonResponse({"error": "Invalid request method"}, status=400)
@@ -1844,7 +1842,8 @@ def upload_image(request, race_id):
 
     if request.method == 'POST' and request.FILES.get('image'):
         #  fetch token either
-        token = request.POST.get('token') or request.GET.get('token') or request.headers.get('token')
+        auth_header = request.headers.get('Authorization', '')
+        token = auth_header.replace("Token ", "") if auth_header.startswith("Token ") else None
         if not token:
             return JsonResponse({"error": "Missing upload token"}, status=401)
 
