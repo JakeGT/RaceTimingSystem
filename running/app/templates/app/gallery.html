@@ -4,22 +4,6 @@
 
 {% block content %}
 <div class="container mt-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="mb-0">Image Gallery</h2>
-
-        <!-- Upload Image Button + Form -->
-        <form method="POST" action="{% url 'upload_image' race.id %}" enctype="multipart/form-data" class="d-flex align-items-center gap-2">
-            {% csrf_token %}
-            <input type="hidden" name="race_id" value="{{ race.id }}">
-        
-            <!-- Token input field -->
-            <input type="text" name="token" placeholder="Enter token" class="form-control" required>
-        
-            <input type="datetime-local" name="timestamp" class="form-control" required>
-            <input type="file" name="image" class="form-control" required>
-            <button type="submit" class="btn btn-success">Upload Image</button>
-        </form>
-    </div>
 
     <!-- Message Box for Django Messages -->
     {% if messages %}
