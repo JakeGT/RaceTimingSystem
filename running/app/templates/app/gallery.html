@@ -19,7 +19,6 @@
             <input type="file" name="image" class="form-control" required>
             <button type="submit" class="btn btn-success">Upload Image</button>
         </form>
-
     </div>
 
     <!-- Message Box for Django Messages -->
@@ -36,40 +35,84 @@
     </div>
     {% endif %}
 
+    <!-- Unverified Bib Numbers Section -->
+    <h3>Unverified Bib Numbers</h3>
     <div class="row">
         {% for image in images %}
-        <div class="col-md-4 mb-4">
-            <div class="card">
-                <img src="{{ image.image.url }}" class="card-img-top img-fluid" alt="Image">
-                <div class="card-body">
-                    <p><strong>Time:</strong> {{ image.timestamp|date:"H:i" }}</p>
-                    <p><strong>Race:</strong> {{ image.race.name }}</p>
-            
-                    <!-- Form to Submit Bib Number -->
-                    <form method="POST" class="mb-2">
-                        {% csrf_token %}
-                        <input type="hidden" name="image_id" value="{{ image.id }}">
-                        <input type="hidden" name="image_timestamp" value="{{ image.timestamp|date:'d M Y, g:i A' }}">
-                        <div class="form-group">
-                            <label for="bib_number_{{ forloop.counter }}">Bib Number:</label>
-                            <input type="text" class="form-control" id="bib_number_{{ forloop.counter }}" name="bib_number" placeholder="Enter Bib Number">
-                        </div>
-                        <button type="submit" class="btn btn-primary">Submit</button>
-                    </form>
-            
-                    <!-- Form to Delete Image -->
-                    <form method="POST" onsubmit="return confirm('Are you sure you want to delete this image?');">
-                        {% csrf_token %}
-                        <input type="hidden" name="delete_image_id" value="{{ image.id }}">
-                        <button type="submit" class="btn btn-danger">Delete Image</button>
-                    </form>
+            {% if image.bib_number == -1 %}
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <img src="{{ image.image.url }}" class="card-img-top img-fluid" alt="Image">
+                    <div class="card-body">
+                        <p><strong>Time:</strong> {{ image.timestamp|date:"H:i" }}</p>
+                        <p><strong>Race:</strong> {{ image.race.name }}</p>
+
+                        <!-- Form to Submit Bib Number -->
+                        <form method="POST" class="mb-2">
+                            {% csrf_token %}
+                            <input type="hidden" name="image_id" value="{{ image.id }}">
+                            <input type="hidden" name="image_timestamp" value="{{ image.timestamp|date:'d M Y, g:i A' }}">
+                            <div class="form-group">
+                                <label for="bib_number_{{ forloop.counter }}">Bib Number:</label>
+                                <input type="text" class="form-control" id="bib_number_{{ forloop.counter }}" name="bib_number" placeholder="Enter Bib Number">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </form>
+
+                        <!-- Form to Delete Image -->
+                        <form method="POST" onsubmit="return confirm('Are you sure you want to delete this image?');">
+                            {% csrf_token %}
+                            <input type="hidden" name="delete_image_id" value="{{ image.id }}">
+                            <button type="submit" class="btn btn-danger">Delete Image</button>
+                        </form>
+                    </div>
                 </div>
             </div>
-
-        </div>
+            {% endif %}
         {% empty %}
-        <p class="text-center">No images available.</p>
+        <p class="text-center">No unverified images available.</p>
         {% endfor %}
     </div>
+
+    <!-- Verified Bib Numbers Section -->
+    <h3>Verified Bib Numbers</h3>
+    <div class="row">
+        {% for image in images %}
+            {% if image.bib_number != -1 %}
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <img src="{{ image.image.url }}" class="card-img-top img-fluid" alt="Image">
+                    <div class="card-body">
+                        <p><strong>Time:</strong> {{ image.timestamp|date:"H:i" }}</p>
+                        <p><strong>Race:</strong> {{ image.race.name }}</p>
+
+                        <!-- Form to Update Bib Number -->
+                        <form method="POST" class="mb-2">
+                            {% csrf_token %}
+                            <input type="hidden" name="image_id" value="{{ image.id }}">
+                            <input type="hidden" name="image_timestamp" value="{{ image.timestamp|date:'d M Y, g:i A' }}">
+                            <div class="form-group">
+                                <label for="bib_number_verified_{{ forloop.counter }}">Bib Number:</label>
+                                <input type="text" class="form-control" id="bib_number_verified_{{ forloop.counter }}" name="bib_number" value="{{ image.bib_number }}">
+                            </div>
+                            <button type="submit" class="btn btn-warning">Update</button>
+                        </form>
+
+                        <!-- Form to Delete Image -->
+                        <form method="POST" onsubmit="return confirm('Are you sure you want to delete this image?');">
+                            {% csrf_token %}
+                            <input type="hidden" name="delete_image_id" value="{{ image.id }}">
+                            <button type="submit" class="btn btn-danger">Delete Image</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        {% empty %}
+        <p class="text-center">No images with verified bib numbers available.</p>
+        {% endfor %}
+    </div>
+
+
 </div>
 {% endblock %}
