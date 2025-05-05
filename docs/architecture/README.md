@@ -7,8 +7,9 @@ use. The system includes the following primary components:
 1. **Frontend Client**  
 2. **Backend Server (Django)**  
 3. **Database (SQLite)**  
-4. **Computer Vision Script (YOLOv11 model)**  
-5. **Cloud Storage and Hosting Services (via University hosting)**
+4. **Computer Vision Client - Bib Detector** 
+5. **Computer Vision Client - GUI**
+6. **Cloud Storage and Hosting Services (via University hosting)**
 
 The architecture diagram at the end of this document provides a visual representation of the components and how they
 interact with one another.
@@ -48,7 +49,7 @@ information
   - Stores race event details (race date, participants, results)
   - Provides simple and efficient querying for retrieving race data
   
-### 4. Computer Vision Script (YOLOv11 model)
+### 4. Computer Vision Client - Bib Detector
 A script which takes in camera input, processes using the computer vision models, in order to recognise bibs.
 Uses OCR (Optical Character Recognition) in order to extract the bib number, and accurately calculates the time for that 
 runner.
@@ -59,7 +60,20 @@ runner.
   - Identifies and reads bib numbers using image processing techniques
   - Provides time stamps for each runner crossing the finish line
 
-### 5. Storage and Hosting Services (Provided by the university)
+### 5. Computer Vision Client - GUI
+The GUI that allows the user to configure the settings for the bib detector. It allows the user to select the following:
+ - Camera
+ - Hardware Accelerator/CPU
+ - Output file to save the recorded video
+ - Race Timing URL to link to the Django Backend
+ - API Token for the Django Backend to ensure authorisation
+ - Load Config from file to autofill Django Backend connection details
+ - Select Crop Area to crop the video feed to a smaller subsection of the feed
+ - Bib overlay position for the position of the enlarged bib overlay included in the still image of the runner sent to the Django backend
+ - Verbose Mode
+ - Camera preview for local/USB cameras (not available for cameras over network)
+
+### 6. Storage and Hosting Services (Provided by the university)
 Hosting and storage services will be used to host the backend and store large video files, images, and race data, in the
 SQLite database.
 

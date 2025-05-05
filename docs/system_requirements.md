@@ -1,26 +1,55 @@
 ## Requirements
-This section outlines the development and operational requirements for the Automatic Race Timing System. It provides a
+This section outlines the operational requirements for the Automatic Race Timing System. It provides a
 comprehensive overview of the necessary resources for both continued development and system operation, including
 estimated costs where applicable.
 
-#### Development Requirements
+### Hardware Requirements
 
-##### Hardware Requirements:
-For development purposes, the following hardware is recommended:
-- **Development Machine**
-  - CPU: Intel i5 or equivalent (for general development tasks)
-  - RAM: Minimum 8GB (16GB or more preferred for heavier tasks like model training)
-  - GPU: NVIDIA GPU with CUDA support (e.g., GTX 1060 or above for GPU accelerated model building)
-  - Storage: At least 1GB, for storing the website/user data, as well as storing video footage/images (for larger races
-  more storage could be required)
-  - OS: Any OS may be used (e.g., Windows, Linux)
+#### Django Backend
+- **Minimum Requirements**
+  - CPU: 1 Core
+  - RAM: 1GB
+  - Storage: 25GB
+- **Recommended System**
+  - CPU: 2+ Cores
+  - RAM: 2GB
+  - Storage: 25GB
+
+**NOTE:** System requirements will scale with number of races and users
+
+#### Computer Vision - Bib Detector Client
+- **Mininum Requirements**
+  - CPU: Intel i7 8565U or AMD Ryzen 5 4500U or equivalent
+  - RAM: 4GB
+  - Storage: 1GB
+  - USB Port or Network Access for Cameras
+  - Network Access to upload results
+- **Recommended System**
+  - CPU: Intel i7 10875H or AMD Ryzen 7 5800H or Apple M1 or equivalent
+  - RAM: 8GB
+  - Storage: 1GB
+  - GPU: Nvidia RTX 2060
+  - USB Port or Network Access for Cameras
+  - Network Access to upload results
+
+<details>
+<summary>AMD GPUs</summary>
+ROCm Support on AMD GPUs is handled through PyTorch. Please refer to [PyTorch Documentation](https://pytorch.org/get-started/locally)
+</details>
+
+<details>
+<summary>Apple M Chips </summary>
+Apple M Chips are handled through MPS in PyTorch. Please refer to [Apple Developer](https://developer.apple.com/metal/pytorch/)
+</details>
+
+
 - **Peripheral Devices**
-  - High-resolution camera for capturing race footage
+  - Minimum 720p camera or mobile phone with Droidcam
   - External storage could be necessary for very large race datasets with video storage
 
 ##### Software Requirements:
 - **Operating System**: Windows 10/11, macOS, or Linux (Ubuntu 20.04+ recommended)
-- **Python 3.10+** (Required for Django 5.x and other dependencies)
+- **Python 3.13** (Required for Django 5.x and other dependencies)
 - Django 5.x: The primary framework for web development, may work on earlier versions.
   Install Django using pip:
 ```python 
