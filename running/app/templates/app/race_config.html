@@ -81,7 +81,9 @@
                                         <option value="{{ category.id }}" {% if saved_data.participant_categories and category.id|stringformat:"s" in saved_data.participant_categories %}selected{% endif %}>{{ category.name }}</option>
                                     {% endfor %}
                                 </select>
+                                <small class="form-text text-muted">Hold Ctrl (Windows) or Cmd (Mac) to select multiple categories.</small>
                             </div>
+
 
                             <!-- Manage Buttons -->
                             <div class="d-flex justify-content-between mb-4">

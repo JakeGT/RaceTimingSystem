@@ -1,0 +1,522 @@
+BibNumber,Firstname,Lastname,ClubName,OldCategory,Gender,AgeCategory,TeamName,Age
+377,Ceri,Rees,Unlisted Club,MV50,Male,M50,None,50
+129,Ed,Dickinson,Falmouth Running Club,Sen. Male,Male,MSEN,None,75
+182,Paul,Grieve,Greenbow Running Club,Sen. Male,Male,MSEN,None,75
+422,Alex,Sparks,Teignbridge Trotters,Sen. Male,Male,MSEN,None,75
+294,Eirin,Mc Daid,Ranelagh Harriers,Sen. Male,Male,MSEN,None,75
+224,Sam,Husband,Greenbow Running Club,Sen. Male,Male,MSEN,None,75
+458,Rik,Tumber,Axe Valley Runners,Sen. Male,Male,MSEN,None,75
+313,Charlie,Milward,Erme Valley Harriers,Sen. Male,Male,MSEN,None,75
+128,Patrick,Devine-Wright,Axe Valley Runners,MV50,Male,M50,None,50
+20,Ruth,Barnes,Falmouth Running Club,FV45,Female,W45,None,45
+449,Archie,Thomas,None,MV45,Male,M45,None,45
+274,Tim,Lenton,Axe Valley Runners,MV50,Male,M50,None,50
+271,Hugh,Lea,None,MV45,Male,M45,None,45
+167,Wes,Frewin,Runny Runs,Sen. Male,Male,MSEN,None,75
+246,Alice,Kelly,Exmouth Harriers,Sen. Female,Male,WSEN,None,75
+519,Colin,Densham,South West Road Runners,Sen. Male,Male,MSEN,None,75
+465,Dave,Walker-Blair,None,Sen. Male,Male,MSEN,None,75
+276,Paul,Lock,Greenbow Running Club,Sen. Male,Male,MSEN,None,75
+450,Daniel,Thomas,Bridport Runners,Sen. Male,Male,MSEN,None,75
+425,James,Speak,Victoria Park Harriers and Tower Hamlets,Sen. Male,Male,MSEN,None,75
+230,Tim,James,Exeter Triathlon Club,MV40,Male,M40,None,40
+109,Tim,Cross,None,Sen. Male,Male,MSEN,None,75
+6,Peter,Allen,Erme Valley Harriers,Sen. Male,Male,MSEN,None,75
+205,Daniel,Hill,None,Sen. Male,Male,MSEN,None,75
+281,Michael,Lyness,None,Sen. Male,Male,MSEN,None,75
+5,Alistair,Allen,Greenbow Running Club,Sen. Male,Male,MSEN,None,75
+308,Jo,Meek,Tavistock AC,FV45,Female,W45,None,45
+69,Benjamin,Bunce,South West Road Runners,Sen. Male,Male,MSEN,None,75
+222,Jamie,Howard,South West Road Runners,MV45,Male,M45,None,45
+143,Jack,Eade,South West Road Runners,Sen. Male,Male,MSEN,None,75
+518,Scott,Hunter,South West Road Runners,MV40,Male,M40,None,40
+142,Elizabeth,Dyson,Haldon Trail Runners,Sen. Female,Male,WSEN,None,75
+424,George,Speak,None,Sen. Male,Male,MSEN,None,75
+239,Amy,Jones,South West Road Runners,FV40,Female,W40,None,40
+68,Nick,Bruce-White,South West Road Runners,MV45,Male,M45,None,45
+268,James,Large,None,Sen. Male,Male,MSEN,None,75
+138,Ian,Duffield,None,MV40,Male,M40,None,40
+459,James,Turner,Truro Running Club,MV45,Male,M45,None,45
+152,John,English,None,MV45,Male,M45,None,45
+234,Alan,Jeffrey,Bodmin Running Club,MV50,Male,M50,None,50
+250,Alex,Kerr,None,MV40,Male,M40,None,40
+293,Richard,Maunder,None,MV45,Male,M45,None,45
+305,Anthony,McMahon,None,MV40,Male,M40,None,40
+362,Ang,Pieris,None,MV45,Male,M45,None,45
+343,Tom,O?Neill,None,Sen. Male,Male,MSEN,None,75
+353,Fergus,Pate,None,MV40,Male,M40,None,40
+351,Shaun,Parkin,None,MV50,Male,M50,None,50
+331,Matt,Neal,None,Sen. Male,Male,MSEN,None,75
+415,Martin,Shoots,Minehead RC,MV55,Male,M55,None,55
+332,Julian,Nelmes,Exmouth Harriers,MV50,Male,M50,None,50
+164,Adharanand,Finn,Torbay Tri Club,MV50,Male,M50,None,50
+304,Jack,McLarty,None,Sen. Male,Male,MSEN,None,75
+62,Joe,Brooke,None,Sen. Male,Male,MSEN,None,75
+347,Rupert,Pady,Axe Valley Runners,MV55,Male,M55,None,55
+319,Lee,Moran,Axe Valley Runners,MV45,Male,M45,None,45
+18,Andrew,Balfour,None,Sen. Male,Male,MSEN,None,75
+121,Luke,Day,Ilfracombe Running Club,Sen. Male,Male,MSEN,None,75
+124,Ellie,Debenham,South West Road Runners,FV40,Female,W40,None,40
+291,Stuart,Mathieson,None,MV45,Male,M45,None,45
+42,Sam,Blood,Greenbow Running Club,Sen. Male,Male,MSEN,None,75
+132,Jan,Dolezel,Haldon Trail Runners,MV40,Male,M40,None,40
+232,Antony,Jarvis,Bude Rats (Run and Tri),MV50,Male,M50,None,50
+188,Helen,Harbottle,South Molton Strugglers,FV55,Female,W55,None,55
+136,Mark,Drew,None,MV55,Male,M55,None,55
+185,Tom,Hall,None,Sen. Male,Male,MSEN,None,75
+23,Thomas,Basford,None,MV40,Male,M40,None,40
+162,Samuel,Fielding,Exeter Harriers,Sen. Male,Male,MSEN,None,75
+393,Sam,Rostron,None,Sen. Male,Male,MSEN,None,75
+21,Jacob,Barratt,None,Sen. Male,Male,MSEN,None,75
+371,Stuart,Queen,Plymouth Musketeers Running Club,MV50,Male,M50,None,50
+207,Graham,Hill,None,MV55,Male,M55,None,55
+282,Ed,MacLaren,None,MV40,Male,M40,None,40
+329,Marcus,Myers,None,Sen. Male,Male,MSEN,None,75
+36,Jon,Bickham,None,Sen. Male,Male,MSEN,None,75
+53,Ben,Bradford,None,MV45,Male,M45,None,45
+467,Ewan,Walton,Teignbridge Trotters,MV45,Male,M45,None,45
+39,Paul,Bisset,None,MV45,Male,M45,None,45
+203,Daniel,Hiley,None,Sen. Male,Male,MSEN,None,75
+310,Rosie,Mew,South West Road Runners,Sen. Female,Male,WSEN,None,75
+277,Kevin,Lofts,Torbay AAC,MV50,Male,M50,None,50
+473,Scott,Watkins,None,MV45,Male,M45,None,45
+406,Simon,Scotthorne,North Devon Road Runners,MV60,Male,M60,None,60
+258,Simon,Kirby,Greenbow Running Club,Sen. Male,Male,MSEN,None,75
+475,Robin,Watson,Falmouth Running Club,MV60,Male,M60,None,60
+168,Sylvan,Friend,Runny Runs,MV40,Male,M40,None,40
+464,Michael,Walker,Emersons Green Running Club,Sen. Male,Male,MSEN,None,75
+443,Alex,Swan,None,Sen. Male,Male,MSEN,None,75
+165,James,Foster,Greenbow Running Club,Sen. Male,Male,MSEN,None,75
+32,Joe,Bereza,Emersons Green Running Club,Sen. Female,Male,WSEN,None,75
+151,David,Engledew,Erme Valley Harriers,MV65,Male,M65,None,65
+82,Daniel,Case,Tamar Trotters,Sen. Male,Male,MSEN,None,75
+199,Mia,Hempstead,None,Sen. Female,Male,WSEN,None,75
+506,Hannah,Worth,Tavistock AC,FV40,Female,W40,None,40
+217,Rory,Honney,None,Sen. Male,Male,MSEN,None,75
+16,George,Baker,None,Sen. Male,Male,MSEN,None,75
+485,Lucy,Westoby,South West Road Runners,Sen. Female,Male,WSEN,None,75
+367,Jason,Potter,Axe Valley Runners,Sen. Male,Male,MSEN,None,75
+29,John,Bennett,Honiton RC,MV45,Male,M45,None,45
+297,Simon,McClellan,Axe Valley Runners,MV55,Male,M55,None,55
+255,Kris,King,Haldon Trail Runners,MV55,Male,M55,None,55
+146,Nicholas,Einchcomb,South West Road Runners,MV60,Male,M60,None,60
+366,Samuel,Post-Gorvett,None,Sen. Male,Male,MSEN,None,75
+156,Karen,Eyre,Axe Valley Runners,FV50,Female,W50,None,50
+106,Jonathan,Creedy,None,Sen. Male,Male,MSEN,None,75
+76,Tom,Cannon,Emersons Green Running Club,MV40,Male,M40,None,40
+92,Daniel,Clewley,None,Sen. Male,Male,MSEN,None,75
+58,Thomas,Brew,None,Sen. Male,Male,MSEN,None,75
+455,Cameron,Tippett,None,Sen. Male,Male,MSEN,None,75
+405,Ian,Scott,None,MV50,Male,M50,None,50
+365,Tom,Poland,Okehampton RC,MV40,Male,M40,None,40
+509,Justin,Wylie,Greenbow Running Club,MV45,Male,M45,None,45
+96,Andrew,Coates,South West Road Runners,MV40,Male,M40,None,40
+312,Oliver,Mills,None,MV45,Male,M45,None,45
+86,Lawrence,Charles-Jones,None,Sen. Male,Male,MSEN,None,75
+45,Kerry,Board,Axe Valley Runners,FV45,Female,W45,None,45
+302,John,McGuinness,None,Sen. Male,Male,MSEN,None,75
+298,Jeanette,Mcfadzean,South West Road Runners,FV55,Female,W55,None,55
+471,Jessica,Watkins,Sidmouth Running Club,Sen. Female,Male,WSEN,None,75
+375,Jenny,Reay,Exmouth Harriers,FV65,Female,W65,None,65
+511,Alexia,Zilli Mcleod,Tamar Trotters,FV40,Female,W40,None,40
+460,Ruth,Tuthill,Team Project Run,FV45,Female,W45,None,45
+212,Rupert,Holden,Budleigh Runners,MV55,Male,M55,None,55
+175,Daniel,Gittins,Perran Trail Runners,Sen. Male,Male,MSEN,None,75
+59,Kelly,Brewer,None,Sen. Female,Male,WSEN,None,75
+470,Steven,Waters,Torbay Tri Club,Sen. Male,Male,MSEN,None,75
+266,Jeremy,Larcombe,Axe Valley Runners,Sen. Male,Male,MSEN,None,75
+490,Alan,Wilcox,North Bristol Running Group,MV55,Male,M55,None,55
+130,Jack,Diggle,Plymstock Road Runners,Sen. Male,Male,MSEN,None,75
+438,Adrian,Strawbridge,Axe Valley Runners,MV45,Male,M45,None,45
+140,Matthew,Duree,None,MV55,Male,M55,None,55
+386,Alan,Ritchie,None,MV50,Male,M50,None,50
+43,Anthea,Board,Haldon Trail Runners,FV60,Female,W60,None,60
+173,Rebecca,Gilbert,Haldon Trail Runners,FV40,Female,W40,None,40
+22,Russell,Barrowcliffe,None,Sen. Male,Male,MSEN,None,75
+19,Martin,Barnard,Sidmouth Running Club,MV45,Male,M45,None,45
+187,George,Hancock,None,Sen. Male,Male,MSEN,None,75
+392,Michael,Rooney,Truro Running Club,Sen. Male,Male,MSEN,None,75
+243,Jimmy,Joy,Exmouth Harriers,MV60,Male,M60,None,60
+171,Sarah,Geijsels,South West Road Runners,Sen. Female,Male,WSEN,None,75
+34,Jonathan,Berridge,Truro Running Club,MV50,Male,M50,None,50
+445,Ray,Tedstone,South Devon AC,Sen. Male,Male,MSEN,None,75
+71,John,Burnett,Yellow Brick Road,MV50,Male,M50,None,50
+229,Lucy,James,None,Sen. Female,Male,WSEN,None,75
+77,Luke,Carnaby,None,Sen. Male,Male,MSEN,None,75
+338,Mark,Newson,Honiton RC,MV55,Male,M55,None,55
+114,Max,Dartnall,None,Sen. Male,Male,MSEN,None,75
+145,Steve,Edmonds,None,MV40,Male,M40,None,40
+17,Laurence,Baldwin,South West Road Runners,MV40,Male,M40,None,40
+463,Mike,Wadsworth,Axe Valley Runners,MV65,Male,M65,None,65
+24,Harry,Bass,None,Sen. Male,Male,MSEN,None,75
+317,David,Moir,Bovey Valley Runners,Sen. Male,Male,MSEN,None,75
+91,Kevin Christopher,Clements,Yellow Brick Road,MV55,Male,M55,None,55
+436,Adam,Stobbs,Exeter Harriers,MV50,Male,M50,None,50
+379,Shaun,Rendle,Tamar Trotters,MV50,Male,M50,None,50
+48,Henry,Booth,None,Sen. Male,Male,MSEN,None,75
+101,Robert,Coombs,Haldon Trail Runners,MV60,Male,M60,None,60
+254,Claire,King,Fremington Trailblazers,FV50,Female,W50,None,50
+108,Charlie,Crocker,None,Sen. Male,Male,MSEN,None,75
+516,Martyn,Densham,South West Road Runners,Sen. Male,Male,MSEN,None,75
+306,Lee,Meaden,None,Sen. Male,Male,MSEN,None,75
+419,Chris,Simpson,South Molton Strugglers,MV50,Male,M50,None,50
+197,James,Hawker,Axe Valley Runners,MV45,Male,M45,None,45
+446,Matthew,Temlett,None,Sen. Male,Male,MSEN,None,75
+117,Rhys,Davies,None,Sen. Male,Male,MSEN,None,75
+500,Eleanor,Wood,Axe Valley Runners,FV65,Female,W65,None,65
+520,Wayne,Baxter,South West Road Runners,MV40,Male,M40,None,40
+257,Ian,Kinnersley,Axe Valley Runners,MV60,Male,M60,None,60
+380,Cameron,Richards,None,Sen. Male,Male,MSEN,None,75
+328,Robert,Murch,North Devon Road Runners,MV45,Male,M45,None,45
+503,Jack,Woodward,None,Sen. Male,Male,MSEN,None,75
+135,Bev,Dowrick,None,FV45,Female,W45,None,45
+225,Stephen,Hussey,South West Road Runners,MV55,Male,M55,None,55
+448,Ollie,Thom,None,Sen. Male,Male,MSEN,None,75
+70,Matthew,Burbidge,None,MV40,Male,M40,None,40
+385,Simon,Ridley,Brixham Harriers,MV60,Male,M60,None,60
+163,Morgan,Figgins,None,Sen. Male,Male,MSEN,None,75
+413,Luke,Shere,None,Sen. Male,Male,MSEN,None,75
+37,Howard,Bidmead,Honiton RC,MV65,Male,M65,None,65
+54,Matt,Bradley,Emersons Green Running Club,MV45,Male,M45,None,45
+103,Jer,Court,Emersons Green Running Club,MV45,Male,M45,None,45
+510,Daniel,Zillwood,None,MV45,Male,M45,None,45
+368,Katie,Potter,Torbay Tri Club,Sen. Female,Male,WSEN,None,75
+333,Edward,Nelson,Runny Runs,MV50,Male,M50,None,50
+200,Jack,Hensels Pelling,None,Sen. Male,Male,MSEN,None,75
+120,William,Davis,Honiton RC,Sen. Male,Male,MSEN,None,75
+316,Edward,Mitchell,Runny Runs,MV40,Male,M40,None,40
+118,Mike,Davis,Runny Runs,Sen. Male,Male,MSEN,None,75
+372,Miriam,Quick,None,FV40,Female,W40,None,40
+394,Mark,Rowbotham,Chichester Runners & AC,MV50,Male,M50,None,50
+115,Judy,Davey,Honiton RC,FV60,Female,W60,None,60
+325,Graham,Mullin,Exmouth Harriers,MV50,Male,M50,None,50
+403,Sean,Schofield,None,MV40,Male,M40,None,40
+238,Frances,Johnson,Egdon Heath Harriers,FV55,Female,W55,None,55
+322,Robbie,Morgan,Egdon Heath Harriers,MV60,Male,M60,None,60
+388,Andrew,Robertson,None,Sen. Male,Male,MSEN,None,75
+112,Mark,Dallyn,Honiton RC,MV55,Male,M55,None,55
+78,Arron,Carpenter,None,MV45,Male,M45,None,45
+10,James,Ashforth,Axe Valley Runners,Sen. Male,Male,MSEN,None,75
+235,Monique,Jeffrey-Jones,Bodmin Running Club,FV50,Female,W50,None,50
+481,Andrew,West,Axe Valley Runners,MV65,Male,M65,None,65
+252,Andrew,Kew,None,MV40,Male,M40,None,40
+411,Nick,Shaw,Runny Runs,MV40,Male,M40,None,40
+157,Jonathan,Farquharson,South West Road Runners,MV55,Male,M55,None,55
+242,Thomas,Jordan,None,Sen. Male,Male,MSEN,None,75
+495,Keith,Williams,None,MV55,Male,M55,None,55
+339,Graham,Newton,Axe Valley Runners,MV65,Male,M65,None,65
+486,Rebecca,Whinter,None,Sen. Female,Male,WSEN,None,75
+404,Cory,Schultze,South West Road Runners,MV40,Male,M40,None,40
+195,Peter,Hawes,South West Road Runners,MV55,Male,M55,None,55
+521,Richard,Stone,South West Road Runners,MV40,Male,M40,None,40
+437,Jacqui,Stokes,Axe Valley Runners,FV40,Female,W40,None,40
+66,Ned,Brown,Runny Runs,MV40,Male,M40,None,40
+116,Steve,Davey,Honiton RC,MV60,Male,M60,None,60
+15,David,Austin,Plymouth Musketeers Running Club,MV40,Male,M40,None,40
+261,Laurence,Knowles,None,Sen. Male,Male,MSEN,None,75
+363,Kelcey,Pillage,None,Sen. Female,Male,WSEN,None,75
+434,Rebecca,Stevens,Honiton RC,FV55,Female,W55,None,55
+341,Liz,Noakes,None,FV60,Female,W60,None,60
+285,Justin,Marney,None,MV55,Male,M55,None,55
+154,Kristian,Evely,None,Sen. Male,Male,MSEN,None,75
+416,Rebecca,Shuttleworth,None,Sen. Female,Male,WSEN,None,75
+442,Charlie,Sumner,Exeter Triathlon Club,MV60,Male,M60,None,60
+484,Stephen,Western,Greenbow Running Club,Sen. Male,Male,MSEN,None,75
+245,Mike,Kay,South West Road Runners,MV60,Male,M60,None,60
+469,Nutarisa,Warren,Haldon Trail Runners,Sen. Female,Male,WSEN,None,75
+275,Mike,Leworthy,None,MV40,Male,M40,None,40
+75,Alison,Caldwell,Tamar Trotters,FV45,Female,W45,None,45
+514,Cat,Camborieux,None,FV50,Female,W50,None,50
+420,Jeremy,Slade,Axe Valley Runners,MV55,Male,M55,None,55
+508,David,Wright,None,MV45,Male,M45,None,45
+429,Rob,Spicer,None,MV45,Male,M45,None,45
+354,Andrew,Patten,None,MV45,Male,M45,None,45
+441,Ken,Summers,Erme Valley Harriers,MV65,Male,M65,None,65
+428,Adam,Speare,Tamar Trotters,MV55,Male,M55,None,55
+433,Debra,Stevens,South West Road Runners,Sen. Female,Male,WSEN,None,75
+134,John,Dowell,None,MV60,Male,M60,None,60
+466,Jack,Walter,None,Sen. Male,Male,MSEN,None,75
+480,Luke,Weekes,None,Sen. Male,Male,MSEN,None,75
+288,Molly,Marvin,Okehampton RC,Sen. Female,Male,WSEN,None,75
+290,Sarah,Marvin,Okehampton RC,FV50,Female,W50,None,50
+307,Kate,Medlicott,Erme Valley Harriers,FV55,Female,W55,None,55
+223,Lisa,Howell,None,FV50,Female,W50,None,50
+444,Sam,Tapsell,None,MV50,Male,M50,None,50
+400,Mark,Sanders,None,MV55,Male,M55,None,55
+148,James,Ellison,None,Sen. Male,Male,MSEN,None,75
+191,Richard,Harris,Honiton RC,MV65,Male,M65,None,65
+504,Tom,Woodward,None,Sen. Male,Male,MSEN,None,75
+160,Andrew,Ferguson,Truro Running Club,MV55,Male,M55,None,55
+14,Jessica,Attrill,None,Sen. Female,Male,WSEN,None,75
+126,Roz,Debenham,South West Road Runners,FV40,Female,W40,None,40
+133,Holly,Doran,Plymouth Musketeers Running Club,Sen. Female,Male,WSEN,None,75
+340,Kelly,Nickels,Axe Valley Runners,FV40,Female,W40,None,40
+26,Peter,Bates,None,MV55,Male,M55,None,55
+127,Linda,Derry,Truro Running Club,FV55,Female,W55,None,55
+159,Daniel,Fenton,None,Sen. Male,Male,MSEN,None,75
+241,Marlowe,Jordan,None,MV45,Male,M45,None,45
+56,Sallie,Brennan,Tamar Trotters,FV45,Female,W45,None,45
+452,Wendy,Thomas,Bridport Runners,Sen. Female,Male,WSEN,None,75
+345,Simon,Oliver,Ilfracombe Running Club,MV65,Male,M65,None,65
+454,Emma,Thorne,None,FV45,Female,W45,None,45
+477,Shaun,Watts,100 Marathon Club,MV50,Male,M50,None,50
+202,Chris,Hewlins,Plymouth Musketeers Running Club,MV40,Male,M40,None,40
+28,Kerry,Bell,South Devon AC,FV60,Female,W60,None,60
+193,David,Harrison,None,MV65,Male,M65,None,65
+286,John,Marshall,None,MV60,Male,M60,None,60
+248,Barbara,Kenneally,None,Sen. Female,Male,WSEN,None,75
+61,Stephen,Brinklow,None,MV45,Male,M45,None,45
+249,Andrew,Keogh,None,Sen. Male,Male,MSEN,None,75
+262,Michal,Konopko,None,Sen. Male,Male,MSEN,None,75
+161,Paula,Ferris,Honiton RC,FV45,Female,W45,None,45
+110,Christian,Crowther-Smith,None,MV40,Male,M40,None,40
+105,Thomas,Coxon,Full on Tri,MV40,Male,M40,None,40
+141,Kyle,Durman,None,MV45,Male,M45,None,45
+190,Zoe,Harp,Axe Valley Runners,Sen. Female,Male,WSEN,None,75
+373,Aaron,Rawlins,Axe Valley Runners,MV40,Male,M40,None,40
+189,Rob,Harp,Axe Valley Runners,Sen. Male,Male,MSEN,None,75
+41,Suzi,Blackett,Axe Valley Runners,FV40,Female,W40,None,40
+46,Haydn,Boehm,Axe Valley Runners,MV45,Male,M45,None,45
+213,George,Holman,South Devon AC,Sen. Male,Male,MSEN,None,75
+85,Helen,Chapell,Erme Valley Harriers,FV50,Female,W50,None,50
+259,Felicity,Knell,None,FV45,Female,W45,None,45
+169,Helen,Frow,None,FV55,Female,W55,None,55
+125,Jenny,Debenham,South West Road Runners,FV45,Female,W45,None,45
+439,Dale,Stringer,None,Sen. Male,Male,MSEN,None,75
+226,Phil,Hyde,None,Sen. Male,Male,MSEN,None,75
+369,Joe,Poustie,None,Sen. Male,Male,MSEN,None,75
+315,Andrew,Mitchell,Erme Valley Harriers,MV50,Male,M50,None,50
+502,Laura,Woodhall,None,FV45,Female,W45,None,45
+280,Susan,Lyle,Brixham Harriers,FV60,Female,W60,None,60
+209,Tim,Hill,None,MV40,Male,M40,None,40
+97,David,Cockcroft,None,MV65,Male,M65,None,65
+72,Ruth,Butler,None,FV45,Female,W45,None,45
+181,Joe,Grenham,None,MV60,Male,M60,None,60
+47,Helen,Boiling,Budleigh Runners,FV55,Female,W55,None,55
+57,Nicky,Brenton,Bodmin Running Club,FV55,Female,W55,None,55
+240,Neil,Jordain,South Devon AC,MV45,Male,M45,None,45
+320,Alan,Morbey,Axe Valley Runners,MV65,Male,M65,None,65
+314,Andrea,Mitchell,Erme Valley Harriers,FV55,Female,W55,None,55
+356,Michael,Peace,Ranelagh Harriers,MV65,Male,M65,None,65
+247,Peter,Kelly,None,MV60,Male,M60,None,60
+237,Victoria,John,Lonely Goat RC,FV50,Female,W50,None,50
+176,Jeremy,Goddard,South Devon AC,MV55,Male,M55,None,55
+355,Sophie,Pavelle,None,Sen. Female,Male,WSEN,None,75
+350,Sue,Park,Fremington Trailblazers,FV60,Female,W60,None,60
+494,Katie,Williams,South West Road Runners,Sen. Female,Male,WSEN,None,75
+483,Pippa,Westall,Honiton RC,FV60,Female,W60,None,60
+269,Toby,Larkworthy,Holbeton Harriers,Sen. Male,Male,MSEN,None,75
+49,Guy,Boswell,Plymouth Musketeers Running Club,MV60,Male,M60,None,60
+391,Peter,Roissetter,(no club),MV55,Male,M55,None,55
+27,Amanda,Bearman,Lonely Goat RC,FV45,Female,W45,None,45
+489,Sarah,Widnell,None,FV50,Female,W50,None,50
+80,Ro,Cartwright,None,FV60,Female,W60,None,60
+51,Annie,Bover,Bude Rats (Run and Tri),FV45,Female,W45,None,45
+396,Kelly,Rowsell,Yeovil Town RRC,FV45,Female,W45,None,45
+323,Lawrie,Morris,Yeovil Town RRC,MV55,Male,M55,None,55
+482,Kate,West,None,Sen. Female,Male,WSEN,None,75
+515,John,Outhwaite,None,MV65,Male,M65,None,65
+292,Catherine,Matthews,Haldon Trail Runners,FV40,Female,W40,None,40
+270,David,Lawry,Runny Runs,MV40,Male,M40,None,40
+178,Patrick,Goudge,Runny Runs,Sen. Male,Male,MSEN,None,75
+409,Paul,Sharples,Teignbridge Trotters,MV65,Male,M65,None,65
+383,Kat,Ridler-Murray,None,FV45,Female,W45,None,45
+279,Lisa,Lund,None,FV50,Female,W50,None,50
+326,Adrianne,Mullins,Axe Valley Runners,FV40,Female,W40,None,40
+327,Anthony,Mullins,Axe Valley Runners,MV45,Male,M45,None,45
+357,Catharine,Pearce,None,Sen. Female,Male,WSEN,None,75
+273,James,Leigh,None,Sen. Male,Male,MSEN,None,75
+334,Nigel,Newbery,Budleigh Runners,MV65,Male,M65,None,65
+432,Spencer,Stallion,None,MV40,Male,M40,None,40
+233,Lucy,Jay,None,FV60,Female,W60,None,60
+399,Mandy,Sanders,None,FV55,Female,W55,None,55
+33,Amanda,Berridge,Truro Running Club,FV45,Female,W45,None,45
+497,Susan,Willoughby,Crediton Running Network,Sen. Female,Male,WSEN,None,75
+418,Carine,Silver,LDWA,FV45,Female,W45,None,45
+150,Alison,Engledew,Erme Valley Harriers,FV65,Female,W65,None,65
+387,Janet,Ritchie,Carn Runners,FV60,Female,W60,None,60
+493,Debbie,Williams,Axe Valley Runners,FV55,Female,W55,None,55
+421,Henry,Smith,Axe Valley Runners,MV60,Male,M60,None,60
+170,Lynda,Garcia,South West Road Runners,FV60,Female,W60,None,60
+303,Mathew,McLaren,None,Sen. Male,Male,MSEN,None,75
+131,Gavin,Dillon,None,MV40,Male,M40,None,40
+431,Elliott,Stallion,None,MV40,Male,M40,None,40
+90,Kim,Clark,Wells City Harriers,FV65,Female,W65,None,65
+123,Simone,De Rose,None,Sen. Male,Male,MSEN,None,75
+79,Dawn,Carrah,Axe Valley Runners,FV60,Female,W60,None,60
+166,Kyle,Foster,None,Sen. Male,Male,MSEN,None,75
+263,Jake,Langdon,None,Sen. Male,Male,MSEN,None,75
+67,Dan,Browning,None,MV45,Male,M45,None,45
+158,Kevin,Feeney,Axe Valley Runners,MV65,Male,M65,None,65
+284,Julia,Mallon,Axe Valley Runners,FV50,Female,W50,None,50
+215,Helen,Holmes,Axe Valley Runners,FV55,Female,W55,None,55
+384,Melissa,Ridley,None,Sen. Female,Male,WSEN,None,75
+461,Ellen,Twist,None,FV40,Female,W40,None,40
+44,Jessica,Board,Axe Valley Runners,Sen. Female,Male,WSEN,None,75
+260,Alice,Knight,Wells City Harriers,FV55,Female,W55,None,55
+352,Andrew,Pate,Wells City Harriers,MV65,Male,M65,None,65
+492,Sheila,Wilcox,North Bristol Running Group,FV55,Female,W55,None,55
+272,Ben,Leaney,Bucky Runners,Sen. Male,Male,MSEN,None,75
+186,Guy,Hammersley,Purbeck Runners,MV65,Male,M65,None,65
+451,Hannah,Thomas,Truro Running Club,FV45,Female,W45,None,45
+65,Lorraine,Brown,Truro Running Club,FV50,Female,W50,None,50
+346,Jo,Orsman,Axe Valley Runners,FV40,Female,W40,None,40
+93,Rory,Clisby,None,MV40,Male,M40,None,40
+370,Cherry,Powell,South Devon AC,FV55,Female,W55,None,55
+414,Sally,Shoolbraid,Bovey Valley Runners,FV60,Female,W60,None,60
+321,Caroline,Morgan,Egdon Heath Harriers,FV55,Female,W55,None,55
+218,Verity,Hookway,The Orcs (Off Road and Coastal Running),FV55,Female,W55,None,55
+83,Helen,Catherall,None,FV55,Female,W55,None,55
+144,Rebecca,Eastburn,Axe Valley Runners,FV40,Female,W40,None,40
+287,Emily,Martin,None,Sen. Female,Male,WSEN,None,75
+517,Evie,Drew,None,Sen. Female,Male,WSEN,None,75
+147,Erin,Ellis,Axe Valley Runners,Sen. Female,Male,WSEN,None,75
+364,Susie,Pitt,None,FV65,Female,W65,None,65
+60,Darren,Bridle,ORC's,MV45,Male,M45,None,45
+11,Anita,Atherton,South West Road Runners,FV55,Female,W55,None,55
+12,Lawrence,Atherton,South West Road Runners,MV60,Male,M60,None,60
+296,Amanda,McCann,Exmouth Harriers,FV50,Female,W50,None,50
+219,Lorraine,Horne,Exmouth Running Belles,FV55,Female,W55,None,55
+283,Steve,Maclure,Axe Valley Runners,MV50,Male,M50,None,50
+122,Mark,Day,Axe Valley Runners,MV55,Male,M55,None,55
+330,James,Nash,South Devon AC,Sen. Male,Male,MSEN,None,75
+430,Rebekah,Stackhouse,None,FV40,Female,W40,None,40
+412,Nikki,Shaw,Brixham Harriers,FV60,Female,W60,None,60
+342,Lucia,Nurse,None,FV50,Female,W50,None,50
+476,Louise,Watts,Exmouth Running Belles,FV55,Female,W55,None,55
+491,David,Wilcox,Truro Running Club,MV45,Male,M45,None,45
+214,Mark,Holman,South Devon AC,MV65,Male,M65,None,65
+251,Angela,Kerr,Axe Valley Runners,FV65,Female,W65,None,65
+479,Roger,Webb,South Devon AC,MV65,Male,M65,None,65
+496,Paul,Williams,South Devon AC,MV55,Male,M55,None,55
+88,Sarah,Clapham,Sidmouth Running Club,FV50,Female,W50,None,50
+94,Dan,Clist,Axe Valley Runners,MV45,Male,M45,None,45
+84,Rebecca,Caulfield,None,FV40,Female,W40,None,40
+55,Will,Brandon,Teign Valley Hash House Harriers,MV55,Male,M55,None,55
+474,Janet,Watson,Carn Runners,FV65,Female,W65,None,65
+410,Shaz,Sharples,Teignbridge Trotters,FV55,Female,W55,None,55
+402,Sarah,Sargent,None,FV50,Female,W50,None,50
+447,Amy,Tew,Exmouth Harriers,FV40,Female,W40,None,40
+89,Chris,Clark,Wells City Harriers,MV65,Male,M65,None,65
+183,Sue,Grigg,Women on the Run,FV65,Female,W65,None,65
+227,Helena,Irving,None,Sen. Female,Male,WSEN,None,75
+174,Alice,Gill,Sidmouth Running Club,Sen. Female,Male,WSEN,None,75
+311,Rebecca,Millington,None,Sen. Female,Male,WSEN,None,75
+7,Arthur,Argles,None,Sen. Male,Male,MSEN,None,75
+13,Eleanor,Atkinson,None,Sen. Female,Male,WSEN,None,75
+210,Catherine,Hilton,Sidmouth Running Club,FV50,Female,W50,None,50
+427,Nia,Speak,None,Sen. Female,Male,WSEN,None,75
+423,Anna,Speak,None,Sen. Female,Male,WSEN,None,75
+267,John,Larcombe,Axe Valley Runners,MV65,Male,M65,None,65
+390,Emily,Roissetter,Tavistock AC,Sen. Female,Male,WSEN,None,75
+361,Richard,Pidsley,None,MV55,Male,M55,None,55
+381,Emma,Richardson,Axe Valley Runners,FV50,Female,W50,None,50
+4,Gary,Albon,None,MV60,Male,M60,None,60
+389,Mayra,Rodriguez Bennadji,None,Sen. Female,Male,WSEN,None,75
+104,Roy,Couzens,None,MV65,Male,M65,None,65
+139,Cheryl,Dunn,Teignbridge Trotters,Sen. Female,Male,WSEN,None,75
+426,Katy,Speak,None,FV60,Female,W60,None,60
+64,Andrew,Brown,Truro Running Club,MV60,Male,M60,None,60
+278,Clare,Luke,Sidmouth Running Club,Sen. Female,Male,WSEN,None,75
+472,Sarah,Watkins,Sidmouth Running Club,FV60,Female,W60,None,60
+220,Carol,Hounsell,Sidmouth Running Club,FV45,Female,W45,None,45
+201,Peter,Hesketh,None,MV60,Male,M60,None,60
+244,Meddie,Joyce,None,FV55,Female,W55,None,55
+512,Joanna,Wright,None,Sen. Female,Male,WSEN,None,75
+179,Ian,Grail,None,MV55,Male,M55,None,55
+395,Lois,Rowlands,Okehampton RC,FV55,Female,W55,None,55
+289,Nick,Marvin,Okehampton RC,MV60,Male,M60,None,60
+40,David,Black,Bovey Valley Runners,MV55,Male,M55,None,55
+38,Jill,Bishop,Bovey Valley Runners,FV65,Female,W65,None,65
+192,Robert,Harris,Running Forever RC,MV45,Male,M45,None,45
+397,Jacqui,Royse,Running Forever RC,FV50,Female,W50,None,50
+299,Grant,McGill,None,MV60,Male,M60,None,60
+2,Nicola,Aindow,Team Wine and Trail Shoes,FV50,Female,W50,None,50
+336,Jessica,Newman,None,FV40,Female,W40,None,40
+468,Christie,Ward,Sidmouth Running Club,FV55,Female,W55,None,55
+180,Laura,Greenhill,None,FV50,Female,W50,None,50
+253,Bryan,King,Plymouth Musketeers Running Club,MV65,Male,M65,None,65
+456,Dean,Trice,Plymouth Musketeers Running Club,MV55,Male,M55,None,55
+457,Travis,Trice,Plymouth Musketeers Running Club,Sen. Male,Male,MSEN,None,75
+256,Louise,King,Plymouth Musketeers Running Club,FV60,Female,W60,None,60
+111,Minnie,Dabinett,South Devon AC,Sen. Female,Male,WSEN,None,75
+359,Colin,Peters,South Devon AC,MV55,Male,M55,None,55
+236,Mark,Jelley,South West Road Runners,MV55,Male,M55,None,55
+216,Teresa,Holmes,Teignbridge Trotters,FV65,Female,W65,None,65
+360,Brendon,Phillips,None,Sen. Male,Male,MSEN,None,75
+137,Richard,Drew,None,Sen. Male,Male,MSEN,None,75
+300,Nicky,McGill,None,FV50,Female,W50,None,50
+382,Max,Richardson,Axe Valley Runners,Sen. Male,Male,MSEN,None,75
+1,Alexander,Adams,None,Sen. Male,Male,MSEN,None,75
+3,Benjamin,Akyol,Teignbridge Trotters,MV40,Male,M40,None,40
+8,Jonathan,Armes,Haldon Trail Runners,MV55,Male,M55,None,55
+9,Jimmy,Armstrong,None,Sen. Male,Male,MSEN,None,75
+25,James,Batchelor,None,Sen. Male,Male,MSEN,None,75
+30,Louise,Bennett,Honiton RC,FV40,Female,W40,None,40
+31,Naomi,Benson,Plymouth Harriers,Sen. Female,Male,WSEN,None,75
+35,Karen,Bevan-Mogg,None,FV50,Female,W50,None,50
+50,Carol,Bourner,None,FV45,Female,W45,None,45
+52,Carly,Bowditch,None,Sen. Female,Male,WSEN,None,75
+63,Lee,Brooker,Axe Valley Runners,Sen. Male,Male,MSEN,None,75
+73,Tom,Butt,None,MV40,Male,M40,None,40
+74,Angus,Calderwood,None,Sen. Male,Male,MSEN,None,75
+81,Richard,Carus,None,MV50,Male,M50,None,50
+87,Liam,Clancy,None,Sen. Male,Male,MSEN,None,75
+95,Matthew,Clist,Axe Valley Runners,MV45,Male,M45,None,45
+98,Adam,Colbert,Poole AC,Sen. Male,Male,MSEN,None,75
+99,Russell,Collins,None,Sen. Male,Male,MSEN,None,75
+100,Andy,Cooke,Exeter Triathlon Club,Sen. Male,Male,MSEN,None,75
+102,Daniel,Cottrell,None,Sen. Male,Male,MSEN,None,75
+107,Martin,Croad,None,MV45,Male,M45,None,45
+113,Matthew,Dalton,Climb South West,MV50,Male,M50,None,50
+119,Suzanne,Davis,None,FV45,Female,W45,None,45
+149,Jasper,Emanuel,Runny Runs,MV40,Male,M40,None,40
+153,Ben,Epps,Haldon Trail Runners,MV50,Male,M50,None,50
+155,Richard,Everson,South West Road Runners,MV60,Male,M60,None,60
+172,Fiona,German,South West Road Runners,Sen. Female,Male,WSEN,None,75
+177,Flora,Gordon,None,Sen. Female,Male,WSEN,None,75
+184,Kevin,Hagley,South West Road Runners,MV60,Male,M60,None,60
+194,Paul,Harrison,Tiverton Harriers,MV60,Male,M60,None,60
+196,Alfie,Hawker,None,Sen. Male,Male,MSEN,None,75
+198,Louise,Hempstead,Exmouth Harriers,FV50,Female,W50,None,50
+204,Annabel,Hill,None,Sen. Female,Male,WSEN,None,75
+206,Geoffrey,Hill,South West Road Runners,MV50,Male,M50,None,50
+208,Susan,Hill,Exmouth Harriers,FV65,Female,W65,None,65
+211,Peter,Hoban,None,MV60,Male,M60,None,60
+221,Liz,Househam,Plymstock Road Runners,FV55,Female,W55,None,55
+228,Richard,Jackson,Axe Valley Runners,MV50,Male,M50,None,50
+231,Scott,Jamieson,Exmouth Harriers,MV45,Male,M45,None,45
+264,Vince,Langdon,South Devon AC,MV55,Male,M55,None,55
+265,Richard,Lapwood,Ashburton Hash House Harriers,Sen. Male,Male,MSEN,None,75
+295,Declan,Mccaffery,None,Sen. Male,Male,MSEN,None,75
+301,Sarah Jayne,Mcglade,None,Sen. Female,Male,WSEN,None,75
+309,Pete,Merrick,None,MV60,Male,M60,None,60
+318,Josh,Monk,Runny Runs,Sen. Male,Male,MSEN,None,75
+324,Suzanne,Mounter,None,FV50,Female,W50,None,50
+335,Grant,Newman,None,Sen. Male,Male,MSEN,None,75
+337,Jonathan,Newman,None,MV45,Male,M45,None,45
+344,Chloe,Olford,Teignbridge Trotters,Sen. Female,Male,WSEN,None,75
+348,Andrew,Palmer,Honiton RC,MV45,Male,M45,None,45
+349,Tom,Panton,None,MV45,Male,M45,None,45
+358,Helen,Perry-Smith,Plymouth Coasters,Sen. Female,Male,WSEN,None,75
+374,Louise,Rawlins,Axe Valley Runners,FV50,Female,W50,None,50
+376,Kathryn,Reed,None,FV50,Female,W50,None,50
+378,David,Reid,None,MV60,Male,M60,None,60
+398,Chloe,Sanders,None,Sen. Female,Male,WSEN,None,75
+401,Robert,Sargent,None,MV55,Male,M55,None,55
+407,Max,Secchi,None,MV55,Male,M55,None,55
+408,Ricky,Seldon,None,Sen. Male,Male,MSEN,None,75
+417,Tim,Sibley,Axe Valley Runners,MV50,Male,M50,None,50
+435,Monica,Stewart,None,FV55,Female,W55,None,55
+440,Alice,Stuckey,Haldon Trail Runners,Sen. Female,Male,WSEN,None,75
+453,Oliver,Thompson,None,Sen. Male,Male,MSEN,None,75
+462,Tim,Vialls,South West Road Runners,MV60,Male,M60,None,60
+478,Louise,Webb,Chagford Runners,FV50,Female,W50,None,50
+487,Matt,Whisker,Taunton AC,MV45,Male,M45,None,45
+488,Samuel,White,Run Fit Run Fast,MV40,Male,M40,None,40
+498,Rachael,Wilsher,Lonely Goat RC,FV60,Female,W60,None,60
+499,Alex,Wood,None,MV40,Male,M40,None,40
+501,Josie,Wood,None,FV40,Female,W40,None,40
+505,Olivia,Woosey,None,Sen. Female,Male,WSEN,None,75
+507,Vicki,Wraight,Axe Valley Runners,FV40,Female,W40,None,40
+513,Tony,Freeman,None,MV60,Male,M60,None,60
