@@ -3,33 +3,36 @@
 ## Executive Summary
 
 Across the world, people compete in running races that span a variety of ages, abilities, and formats. These events 
-require accurate and reliable timing systems. While professional races often use RFID-based timing, this technology is
-expensive and requires specialist setup—placing it out of reach for many amateur and grassroots events.
+require accurate and reliable timing systems. While professional races currently use RFID-based timing systems, this
+technology is out-dated, expensive and requires specialist setup — placing it out of reach for many amateur and
+grassroots events.
 
-Traditionally, these races rely on manual timing with stopwatches and clipboards, or tablets with custom apps. However,
-these methods are prone to human error and can struggle when multiple runners cross the finish line simultaneously.
+Traditionally, the aforementioned smaller races rely on manual timing with stopwatches and clipboards, or tablets with custom
+apps. However, these methods are prone to human error and can struggle when multiple runners are crossing the finish 
+line simultaneously.
 
 This project offers a modern, low-cost alternative by leveraging advances in computer vision and the widespread
-availability of high-quality cameras. Our system enables organisers to time races using one or more cameras positioned
-near the finish line. The system detects runners and their bib numbers from video, timestamps when they cross the line,
-and posts results to a website in near real time.
+availability of high-quality cameras. Our system enables organisers to time races using a camera positioned
+near the finish line. The system detects runners and their bib numbers from the video feed, timestamps when they cross the
+finish line, and posts results to a website in near real time, provided a stable connection to the internet.
 
-The setup consists of a camera connected to a laptop. A locally running computer vision pipeline detects runners,
-identifies bib numbers via OCR, and records their finishing times. These results are uploaded to a Django-based website
-via a REST API, where race data can be viewed live.
+The organiser setup consists of a single camera, connected to a nearby laptop. A locally running computer vision pipeline 
+detects runners, identifies bib numbers via OCR, and records their finishing times. These results are uploaded to a 
+Django-based website via REST API calls, where race data can be viewed live.
 
-Compared to RFID systems, our approach is significantly cheaper and requires minimal technical expertise. It also
+Compared to RFID systems, our approach is significantly cheaper and was designed woth non-technical users in mind. It also
 compares favourably to manual timing, offering accuracy within 1-2 seconds while avoiding typical human errors. Since it
-uses commonly available tools—laptops, webcams or action cams - it is accessible to organisers with little to no technical
+uses commonly available tools — laptops, webcams or action cams - it is accessible to organisers with little to no technical
 background.
 
 Naturally, challenges exist. Poor lighting, bad weather, or unorthodox bib placements (e.g., worn on thighs instead of
-chests) can impact recognition. However, most races avoid such conditions, and the system’s performance can be enhanced 
-with multi-camera setups and modest organiser training. The system is also designed to run efficiently on most modern 
-laptops, reducing hardware barriers to entry.
+chests) can impact recognition. However, most races avoid such conditions, and the system’s performance could be further
+enhanced by implementing multi-camera setups. The system is also designed to run efficiently on most modern laptops,
+reducing the hardware barriers required to entry.
 
-In summary, this solution gives everyone access to reliable race timing. By blending practicality with accessible
-technology, it provides an accurate, scalable, and affordable system for event organisers worldwide.
+By making accurate race timing accessible and affordable, this solution opens the door for thousands of small and 
+medium-sized events worldwide to offer professional-grade results without professional-grade costs. It combines modern
+technology with practical simplicity — allowing organisers to deliver a better race experience.
 
 ## Developers
 
@@ -48,7 +51,7 @@ This project is licensed under the GNU GENERAL PUBLIC LICENSE. See the [LICENSE]
 The project relies on the following core technologies:
 
 ### Backend (Django Website)
-- Python 3.10+
+- Python 3.13+
 - Django 4.x
 - SQLite (default database)
 - Django REST Framework
