@@ -102,29 +102,26 @@ pip install -r requirements.txt
 ```
 
 ### Hardware Accelerators
-<details>
-<summary>CUDA</summary>
+CUDA: 
 To use CUDA acceleration, install PyTorch with CUDA. For more details, refer to the [PyTorch Documentation](https://pytorch.org/get-started/locally/).
 
 ```bash
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
 ```
 
-</details>
 
-<details>
-<summary>Other accelerators (ROCm, MPS)</summary>
+Other accelerators (ROCm, MPS): 
 The bib detection model was built on YOLOv11 with PyTorch. Any accelerator with PyTorch support should be supported in this application as well.
-</details>
+
 
 **IMPORTANT: It is recommended to use the bib detector with hardware acceleration as the accuracy of the bib tracker will decrease with lower framerates.**
 
 ### Install Droidcam to Use Phone Camera
 
 #### Android
+Connect over USB:
 [Google Play Store](https://play.google.com/store/apps/details?id=com.dev47apps.obsdroidcam)
-<details>
-<summary>Connect over USB</summary>
+
 Enable USB Debugging:
 
 1. Open settings
@@ -134,7 +131,6 @@ Enable USB Debugging:
 5. Toggle USB debugging
 
 For more details refer to: [Android Developers](https://developer.android.com/studio/debug/dev-options)
-</details>
 
 
 ## third party integrations installations
