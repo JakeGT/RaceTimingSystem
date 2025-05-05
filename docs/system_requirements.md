@@ -9,11 +9,11 @@ estimated costs where applicable.
 - **Minimum Requirements**
   - CPU: 1 Core
   - RAM: 1GB
-  - Storage: 25GB
+  - Storage: 1GB + Amount for Images
 - **Recommended System**
   - CPU: 2+ Cores
   - RAM: 2GB
-  - Storage: 25GB
+  - Storage: 1GB + Amount for Images
 
 **NOTE:** System requirements will scale with number of races and users
 
@@ -32,15 +32,10 @@ estimated costs where applicable.
   - USB Port or Network Access for Cameras
   - Network Access to upload results
 
-<details>
-<summary>AMD GPUs</summary>
-ROCm Support on AMD GPUs is handled through PyTorch. Please refer to [PyTorch Documentation](https://pytorch.org/get-started/locally)
-</details>
 
-<details>
-<summary>Apple M Chips </summary>
+ROCm Support on AMD GPUs is handled through PyTorch. Please refer to [PyTorch Documentation](https://pytorch.org/get-started/locally)
+
 Apple M Chips are handled through MPS in PyTorch. Please refer to [Apple Developer](https://developer.apple.com/metal/pytorch/)
-</details>
 
 
 - **Peripheral Devices**
@@ -91,7 +86,7 @@ or MPS (Apple).
 - Hardware:
   - Laptop with GPU: **£600 - £800** (one-time cost)
   - Camera or Phone: **£300 - £500** (one-time cost)
-  - Cloud Hosting: **£10 - £45/month** (depending on usage, it unlikely any more than the £10 subscription is required)
+  - Cloud Hosting: **£10 - £45/month** (depending on usage, its unlikely any more than the £10 subscription is required)
 - Software:
   - Free for Django, CUDA, and open-source libraries.
 - Labor Costs:
