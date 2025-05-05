@@ -14,6 +14,7 @@ from PyQt5.QtMultimediaWidgets import QCameraViewfinder
 from PyQt5.QtGui import QPainter, QPen, QColor
 from bib_detector import BibDetector, BibTracker, VideoProcessor
 import website_api
+from bib_csv import BibCSV
 
 
 class BibInsetSelector(QWidget):
@@ -187,6 +188,11 @@ class BibDetectorApp(QWidget):
         self.output_browse = QPushButton("Browse")
         self.output_browse.clicked.connect(self.browse_output)
 
+        self.results_label = QLabel("Results Folder:")
+        self.results_line = QLineEdit()
+        self.results_browse = QPushButton("Browse")
+        self.results_browse.clicked.connect(self.browse_results_folder)
+
         self.url_label = QLabel("Race Timing URL:")
         self.url_line = QLineEdit()
 
@@ -253,6 +259,7 @@ class BibDetectorApp(QWidget):
         output_api_group = QGroupBox("Output Settings")
         output_api_layout = QVBoxLayout()
         output_api_layout.addLayout(self.row(self.output_label, self.output_line, self.output_browse))
+        output_api_layout.addLayout(self.row(self.results_label, self.results_line, self.results_browse))
         output_api_layout.addLayout(self.row(self.url_label, self.url_line))
         output_api_layout.addLayout(self.row(self.token_label, self.token_line))
         output_api_layout.addWidget(self.load_config_button)
@@ -367,6 +374,11 @@ class BibDetectorApp(QWidget):
         if filename:
             self.output_line.setText(filename)
 
+    def browse_results_folder(self):
+        folder = QFileDialog.getExistingDirectory(self, "Select Results Folder")
+        if folder:
+            self.results_line.setText(folder)
+
     def change_camera_preview(self):
         camera_info = self.camera_combo.currentData()
         if camera_info:
@@ -440,6 +452,7 @@ class BibDetectorApp(QWidget):
         input_index = self.available_cameras.index(
             selected_camera_info) if selected_camera_info in self.available_cameras else 0
         output_file = self.output_line.text() or None
+        results_folder = self.results_line.text() or None
         url = self.url_line.text()
         verbose = self.verbose_check.isChecked()
 
@@ -469,10 +482,15 @@ class BibDetectorApp(QWidget):
             # Using IP camera URL
             input_source = self.ip_camera_url
 
+        if results_folder:
+            bib_csv = BibCSV(results_folder)
+        else:
+            bib_csv = None
+
         token = self.token_line.text() or None
         api = website_api.WebsiteAPI(url, token)
         detector = BibDetector("best.pt", device)
-        tracker = BibTracker(api, bib_inset_location=self.bib_inset_location)
+        tracker = BibTracker(api, bib_inset_location=self.bib_inset_location, bib_csv=bib_csv)
         processor = VideoProcessor(detector, tracker, input_source, output_file, verbose)
 
         self.hide()

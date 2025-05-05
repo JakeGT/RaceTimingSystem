@@ -8,7 +8,7 @@ from collections import defaultdict, Counter
 from ultralytics import YOLO
 import easyocr
 import website_api
-
+from bib_csv import BibCSV
 # Custom VideoCapture class to set resolution to 1080x1920
 class CustomVideoCapture(cv2.VideoCapture):
     def __init__(self, src, apiPreference=cv2.CAP_ANY):
@@ -64,12 +64,13 @@ class BibTracker:
     OCR_TIMESTAMP_THRESHOLD = 1
     MIN_OCR_ENTRIES = 5
 
-    def __init__(self, api, bib_inset_location="top-left", config_path="bib_detector_config.ini"):
+    def __init__(self, api, bib_inset_location="top-left", config_path="bib_detector_config.ini", bib_csv=None):
         # Initialise tracker state, API, best frames, and bib inset display location.
         self.ocr_history = defaultdict(list)
         self.api = api
         self.best_frames = {}
         self.bib_inset_location = bib_inset_location
+        self.bib_csv=bib_csv
 
         # Load the configuration from the config file if available.
         if os.path.isfile(config_path):
@@ -207,13 +208,16 @@ class BibTracker:
         expired = []
         for track_id, entries in self.ocr_history.items():
             if entries and (current_time - max(ts for _, ts in entries)) > self.OCR_TIMESTAMP_THRESHOLD:
+                max_ts = max(ts for _, ts in entries)
                 count = len(entries)
                 if count >= self.MIN_OCR_ENTRIES:
                     mode_val = Counter([text for text, _ in entries]).most_common(1)[0][0]
                 else:
                     mode_val = -1
                 image = self.best_frames.get(track_id, (None, None))[1]
-                self.api.send_result(time.time(), mode_val, track_id, count, image)
+                self.api.send_result(max_ts, mode_val, track_id, count, image)
+                if self.bib_csv:
+                    self.bib_csv.add_entry(max_ts, mode_val, track_id, image)
                 expired.append(track_id)
         for tid in expired:
             del self.ocr_history[tid]
@@ -326,6 +330,7 @@ def main():
     parser.add_argument("--demo", action="store_true", help="Use dummy Website API for testing")
     parser.add_argument("--crop", nargs=4, type=int, help="Crop box: x1 y1 x2 y2", default=None)
     parser.add_argument("-t", "--token", help="API Token")
+    parser.add_argument("-c", "--csv", help="CSV Filename")
     args = parser.parse_args()
 
     if args.demo:
@@ -334,9 +339,11 @@ def main():
     else:
         api = website_api.WebsiteAPI(args.url, args.token)
 
+    if args.csv:
+        bib_csv = BibCSV(args.csv)
     # Create an instance of BibDetector using the provided device and pre-trained model, and initialise and run the various video pipeline components.
     detector = BibDetector("best.pt", args.device)
-    tracker = BibTracker(api, "top-left")
+    tracker = BibTracker(api, "top-left", bib_csv=bib_csv)
     crop_coords = tuple(args.crop) if args.crop else None
     processor = VideoProcessor(detector, tracker, args.input, args.output, args.verbose, crop_coords)
     processor.run()
