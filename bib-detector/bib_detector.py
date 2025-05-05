@@ -268,7 +268,7 @@ class VideoProcessor:
 
             # Initialise video writer if an output file is provided.
             if self.output_file and self.out is None:
-                self.out = cv2.VideoWriter(self.output_file, cv2.VideoWriter_fourcc(*'mp4v'), 30, (combined_w, frame_h))
+                self.out = cv2.VideoWriter(self.output_file, cv2.VideoWriter_fourcc(*'mp4v'), 15, (combined_w, frame_h))
 
             tracked_bibs = {}
 
