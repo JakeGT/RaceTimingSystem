@@ -133,6 +133,67 @@ Enable USB Debugging:
 For more details refer to: [Android Developers](https://developer.android.com/studio/debug/dev-options)
 
 
-## third party integrations installations
-TODO - discuss how  to set up facebook, github and google sign in. Discuss how to generate google app passwords, and
-putting both in the .env
+## Third party integrations installations
+### Setting Up OAuth for Social Login
+
+The system supports social login via **Google**, **GitHub**, and **Facebook**, allowing users to log in without creating
+a new password. Instead, they can use accounts they already have, which improves both user experience and security.
+
+This guide explains how to set up OAuth credentials for each provider, how to generate a Google App Password (for
+optional email integration), and how to securely store these credentials in your `.env` file.
+
+
+#### Google OAuth Setup
+
+1. Go to the [Google Cloud Console](https://console.cloud.google.com/).
+2. Create a new project or choose an existing one.
+3. Navigate to **APIs & Services > Credentials**.
+4. Click **Create Credentials > OAuth Client ID**.
+5. Choose **Web Application** and provide the following:
+   - **Authorised redirect URIs** (e.g., `http://127.0.0.1:8000/accounts/google/login/callback/`).
+6. Once created, note down your:
+   - `GOOGLE_CLIENT_ID`
+   - `GOOGLE_CLIENT_SECRET`
+
+##### Generating a Google App Password (for email integration)
+
+If your Google account has two-factor authentication enabled, you'll need an App Password to allow Django to send emails using your account:
+
+1. Visit your [Google Account Security Settings](https://myaccount.google.com/security).
+2. Under **Signing in to Google**, select **App Passwords**.
+3. Choose the app (e.g., "Mail") and the device (e.g., "Django"), then click **Generate**.
+4. Add the password that is shown to the `.env` file for `EMAIL_HOST_PASSWORD`.
+
+#### GitHub OAuth Setup
+
+1. Go to [GitHub Developer Settings](https://github.com/settings/developers).
+2. Click **New OAuth App**.
+3. Fill out the form:
+   - **Application name**: your application's name.
+   - **Homepage URL**: e.g., `http://127.0.0.1:8000/`.
+   - **Authorisation callback URL**:  
+     `http://127.0.0.1:8000/accounts/github/login/callback/`.
+4. After saving, you'll receive:
+   - `GITHUB_CLIENT_ID`
+   - `GITHUB_CLIENT_SECRET`
+
+---
+
+#### Facebook OAuth Setup
+
+1. Go to the [Facebook Developers Console](https://developers.facebook.com/).
+2. Create a new app (select the "Consumer" app type).
+3. In the left menu, go to **Facebook Login > Settings** and enter:
+   - **Valid OAuth Redirect URIs**:  
+     `http://127.0.0.1:8000/accounts/facebook/login/callback/`.
+4. Go to **Settings > Basic** to find your:
+   - `FACEBOOK_APP_ID`
+   - `FACEBOOK_APP_SECRET`
+
+Note: For production use, your Facebook app may need to be reviewed and made live before it can be used by others.
+
+#### Adding Secrets to the `.env` File
+
+After you’ve collected your credentials, add them to the `.env` file located in `running/running/`. This file allows
+Django to access your secret keys securely without exposing them in source code.
+
