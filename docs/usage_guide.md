@@ -17,33 +17,48 @@ development.
 
 #### Screenshot of Login Page:
 
-![Login Page](path/to/login_page_screenshot.png)
+![Login Page](screenshots/login.png)
 
-### 2. Uploading Race Data (JSON)
+### 2. Configuring a Race
 
-After logging in, you can upload race data in JSON format. This is an essential step for setting up race results and timings.
+Create a race via the organiser dashboard:
 
-- Navigate to the **Upload JSON** page by going to: `Race → [Race ID] → Upload`.
-- On this page, you can select the JSON file that contains race data and click **Upload**.
+#### Screenshot of Race Config Page:
 
-#### Screenshot of Upload JSON Page:
+![Race Configuration Page](screenshots/config.png)
 
-![Upload JSON](path/to/upload_json_screenshot.png)
+### 2. Uploading Race Data (CSV)
+
+After logging in, you can upload race participant data in CSV format. This is an essential step for setting up race
+results and timings.
+
+- Navigate to the **Upload Participants** page by going to: `Organiser Dashboard → Upload Participants`.
+- On this page, you can select the CSV file that contains race data and the correct race and click **Upload**.
+
+#### Screenshot of Upload Participant CSV Page:
+
+![Upload Participant CSV](screenshots/upload_participants.png)
 
 ### 3. Managing Participants
 
 As an organiser or admin, you can manage participants' information from the **Manage Participants** page.
 
-- Go to `Organiser Dashboard → Manage Participants`.
+- Go to `Organiser Dashboard → [Race ID]`.
 - On this page, you can view, edit, and delete participant records.
 
 ### 4. Viewing Race Results
 
 After uploading race data, you can view the results on the **Race Details** page.
 
-- Navigate to `Race → [Race ID] → Race Details`.
+- Navigate to `Dashboard → [Race Name]`.
 - This page will show the race leaderboard and the results for each participant.
 
 #### Screenshot of Race Details Page:
 
-![Race Results](path/to/race_results_screenshot.png)
+![Race Results](screenshots/leaderboard.png)
+
+The website contains a host of other features. To see them all, explore the Dashboard and Navigation Menu, which include
+tools for account management, real-time result viewing, and data export. Organisers can monitor race status, upload
+timing data from the bib detection system, and update race configurations as needed. The system is designed to be
+intuitive and accessible, even for users with minimal technical experience. For a full overview of capabilities, refer
+to the user guide or explore the interface directly.
