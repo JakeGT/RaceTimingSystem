@@ -58,16 +58,13 @@ pip install -r requirements.txt
 python bib_gui.py
 ```
 
-### 7. Start the Computer Vision Model through the GUI
-
-
-### 8. Frontend Assets
+### 7. Frontend Assets
 
 - Static files are managed through Django's `collectstatic` command.
 - Bootstrap is used for styling.
 - You can extend templates in `templates/` to modify UI.
 
-### 9. Testing
+### 8. Testing
 
 Unit tests for the website can be run with:
 
@@ -75,7 +72,7 @@ Unit tests for the website can be run with:
 python manage.py test
 ```
 
-Further tests can be run using:
+Further website tests can be run using:
 
 Installing Playwright:
 1. **Install Node.js:** Make sure you have Node.js installed. If not, download and install it from the official Node.js website.
@@ -86,13 +83,13 @@ Installing Playwright:
     ```
 
 3. Run playwright tests
-```bash
-npx playwright test
-```
+   ```bash
+   npx playwright test
+   ```
 
 To see the complete results run
-```bash
-npx playwright show-report
-```
+   ```bash
+   npx playwright show-report
+   ```
 
 After completing the steps above, the environment will be fully ready for extending, debugging, or testing the system.
