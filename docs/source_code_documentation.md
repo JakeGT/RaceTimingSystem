@@ -23,4 +23,4 @@ POST operations.
 Most endpoints are protected and require authentication.
 
 ## SPDX License Identifier
-TODO
+GPL-3.0-or-later
