@@ -19,7 +19,7 @@ jobs:
         run: npx playwright install --with-deps
       - name: Run Playwright tests (Placeholder - Always Pass)
         run: |
-          npx playwright test landing.spec.ts
+          npx playwright test
         continue-on-error: true
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
