@@ -57,6 +57,18 @@ After uploading race data, you can view the results on the **Race Details** page
 
 ![Race Results](screenshots/leaderboard.png)
 
+### 5. Manual Bib Validation
+
+If using the computer vision script, unknown bib numbers will require manual validation, this can be done by the gallery 
+page
+
+- Navigate to `Organiser Dashboard → [Race Name] → Manual Bib Validation (Gallery)`.
+- This page will show the bibs which require validation.
+
+#### Screenshot of Manual Bib Validation Page:
+
+![Race Results](screenshots/gallery.png)
+
 The website contains a host of other features. To see them all, explore the Dashboard and Navigation Menu, which include
 tools for account management, real-time result viewing, and data export. Organisers can monitor race status, upload
 timing data from the bib detection system, and update race configurations as needed. The system is designed to be
