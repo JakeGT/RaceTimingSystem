@@ -24,20 +24,30 @@ cv2.VideoCapture = CustomVideoCapture
 
 class BibDetector:
     def __init__(self, model_path, device):
+        # Initialise the bib detector with a YOLO detection model and an OCR reader.
+        # Load the YOLO model using the given model path.
         self.model = YOLO(model_path)
+        # Initialise the EasyOCR reader for English.
         self.reader = easyocr.Reader(['en'], gpu=(device != "cpu"))
+        # Store the device setting for later use during detection.
         self.device = device
 
     def detect(self, source, verbose=False):
+        # Detect objects in the provided image, video stream, or file where detections are to occur using the YOLO model.
         return self.model.track(source=source, device=self.device, stream=True, verbose=verbose,
                                 tracker="bytetrack.yaml")
 
     def extract_bib_text(self, image):
+        # Convert the image from BGR to grayscale.
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        # Apply thresholding to improve text recognition performance
         _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        # Use the EasyOCR reader to detect text areas in the thresholded image.
         results = self.reader.readtext(thresh, detail=1)
 
+        # Initialise variables to keep track of the most likely bib region.
         best_text, largest_height, final_conf = "", 0, 0
+        # Iterate through each detected text instance and return the selected text and its confidence score.
         for detection in results:
             bbox, text, conf = detection
             pts = np.array(bbox, dtype=np.int32)
@@ -55,11 +65,13 @@ class BibTracker:
     MIN_OCR_ENTRIES = 5
 
     def __init__(self, api, bib_inset_location="top-left", config_path="bib_detector_config.ini"):
+        # Initialise tracker state, API, best frames, and bib inset display location.
         self.ocr_history = defaultdict(list)
         self.api = api
         self.best_frames = {}
         self.bib_inset_location = bib_inset_location
 
+        # Load the configuration from the config file if available.
         if os.path.isfile(config_path):
             print(f"[INFO] Loading config from {config_path}")
             self.load_config(config_path)
@@ -67,6 +79,7 @@ class BibTracker:
             print(f"[INFO] No config file found. Using default settings.")
 
     def load_config(self, path):
+        # Read the config file and update the relevant class attributes.
         try:
             with open(path, "r") as f:
                 for line in f:
@@ -92,6 +105,7 @@ class BibTracker:
             print(f"[ERROR] Failed to load config: {e}")
 
     def update(self, track_id, bib_box, detector, frame):
+        # Process the detected bib_box and update the OCR history and best frame if the OCR result is valid.
         if bib_box.size == 0:
             return
         text, conf = detector.extract_bib_text(bib_box)
@@ -100,6 +114,7 @@ class BibTracker:
             if numbers:
                 try:
                     self.ocr_history[track_id].append((int(numbers), time.time()))
+                    # Save the frame with the inset if the current confidence is higher.
                     if track_id not in self.best_frames or conf > self.best_frames[track_id][0]:
                         new_frame = self.add_bib_inset(frame, bib_box)
                         self.best_frames[track_id] = (conf, new_frame)
@@ -122,20 +137,20 @@ class BibTracker:
         frame_h, frame_w, _ = frame.shape
         bib_h, bib_w, _ = bib_box.shape
 
-        # Target size
+        # Calculate the target size for the inset while preserving the bib_box aspect ratio.
         target_w = int(frame_w * inset_fraction)
         aspect_ratio = bib_h / bib_w
         target_h = int(target_w * aspect_ratio)
 
-        # Check bounds
+        # Ensure the inset fits within the frame while considering the margins.
         if target_h + 2 * margin > frame_h or target_w + 2 * margin > frame_w:
             return frame
 
-        # Resize bib
+        # Resize the bib_box and copy the frame.
         resized_bib = cv2.resize(bib_box, (target_w, target_h))
         frame_copy = frame.copy()
 
-        # Determine top-left corner based on position
+        # Determine inset position (the top-left corner) based on the configured location.
         if self.bib_inset_location == "top-left":
             x1 = margin
             y1 = margin
@@ -156,17 +171,19 @@ class BibTracker:
         x2 = x1 + target_w
         y2 = y1 + target_h
 
-        # Paste and border
+        # Paste the inset onto the frame copy and draw a border around it.
         frame_copy[y1:y2, x1:x2] = resized_bib
         cv2.rectangle(frame_copy, (x1, y1), (x2, y2), border_color, border_thickness)
 
         return frame_copy
 
     def get_summary(self, track_id):
+        # Return the most common bib number from the OCR history for a given track.
         entries = self.ocr_history[track_id]
         return Counter([e[0] for e in entries]).most_common(1)[0][0] if entries else "Unknown"
 
     def draw_info(self, panel, tracked_bibs, frame_width):
+        # Draw the tracking information and OCR summaries onto the side panel.
         y_offset = 20
         for track_id, (x1, y1, x2, y2) in tracked_bibs.items():
             cv2.line(panel, (x2, (y1 + y2) // 2), (frame_width + 10, y_offset + 5), (255, 0, 0), 1)
@@ -185,6 +202,7 @@ class BibTracker:
             y_offset += 10
 
     def expire_old_entries(self):
+        # For each tracker, if the latest OCR entry is older than the threshold send the results and expire the entry.
         current_time = time.time()
         expired = []
         for track_id, entries in self.ocr_history.items():
@@ -205,6 +223,7 @@ class BibTracker:
 
 class VideoProcessor:
     def __init__(self, detector, tracker, input_source, output_file=None, verbose=False, crop_coords=None):
+        # Initialise the detection and tracking modules, video source, and optional output and crop settings.
         self.detector = detector
         self.tracker = tracker
         self.input_source = input_source
@@ -214,6 +233,7 @@ class VideoProcessor:
         self.crop_coords = self.validate_crop_coords(crop_coords)
 
     def validate_crop_coords(self, coords):
+        # Ensure crop coordinates are either None or a valid tuple (x1, y1, x2, y2)
         if coords is None:
             return None
         if len(coords) != 4:
@@ -224,6 +244,7 @@ class VideoProcessor:
         return coords
 
     def run(self):
+        # Process video frames including detection, cropping, tracking, and displaying and saving the output.
         results = self.detector.detect(source=self.input_source, verbose=self.verbose)
         crop_coords = self.crop_coords
 
@@ -231,15 +252,17 @@ class VideoProcessor:
             frame = result.orig_img
             frame_h, frame_w, _ = frame.shape
 
-            # Step 1: Crop frame
+            # Crop the frame if the crop coordinates are specified.
             if crop_coords:
                 x1_crop, y1_crop, x2_crop, y2_crop = crop_coords
                 frame = frame[y1_crop:y2_crop, x1_crop:x2_crop]
                 frame_h, frame_w, _ = frame.shape  # Update dimensions
 
+            # Create a side panel for displaying tracking information.
             side_panel = np.ones((frame_h, 300, 3), dtype=np.uint8) * 50
             combined_w = frame_w + 300
 
+            # Initialise video writer if an output file is provided.
             if self.output_file and self.out is None:
                 self.out = cv2.VideoWriter(self.output_file, cv2.VideoWriter_fourcc(*'mp4v'), 30, (combined_w, frame_h))
 
@@ -248,33 +271,36 @@ class VideoProcessor:
             for box in result.boxes:
                 x1, y1, x2, y2 = map(int, box.xyxy[0])
 
-                # Step 2: Ignore boxes outside crop area
                 if crop_coords:
                     center_x = (x1 + x2) // 2
                     center_y = (y1 + y2) // 2
+                    # Skip boxes whose centre is outside the crop region.
                     if not (x1_crop <= center_x <= x2_crop and y1_crop <= center_y <= y2_crop):
                         continue
 
-                    # Step 3: Shift coordinates to match cropped frame
+                    # Shift coordinates to match the cropped frame.
                     x1 -= x1_crop
                     x2 -= x1_crop
                     y1 -= y1_crop
                     y2 -= y1_crop
 
+                # Ignore detections smaller than expected by drawing a red box.
                 if (x2 - x1 < BibTracker.MIN_BIB_WIDTH or y2 - y1 < BibTracker.MIN_BIB_HEIGHT):
                     cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
                     continue
 
+                # Draw a green rectangle for valid detections.
                 cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
                 track_id = int(box.id[0]) if hasattr(box, "id") and box.id is not None else None
                 tracked_bibs[track_id] = (x1, y1, x2, y2)
-
+                
                 bib_box = frame[y1:y2, x1:x2]
                 self.tracker.update(track_id, bib_box, self.detector, frame)
 
             self.tracker.draw_info(side_panel, tracked_bibs, frame_w)
             self.tracker.expire_old_entries()
 
+            # Combine the frame with its side panel and show the combined output. Exit if 'q' is pressed.
             combined = np.hstack((frame, side_panel))
             if self.output_file:
                 self.out.write(combined)
@@ -283,12 +309,14 @@ class VideoProcessor:
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
 
+        # Release the video writer and close any open windows.
         if self.out:
             self.out.release()
         cv2.destroyAllWindows()
 
 
 def main():
+    # Setup a commandline argument parser for various key arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--device", help="Select CUDA Device", default="cpu")
     parser.add_argument("-i", "--input", help="Input stream (file or device)", default=0)
@@ -305,6 +333,8 @@ def main():
         print("[INFO] Using WebsiteAPIDemo (images will be saved locally)")
     else:
         api = website_api.WebsiteAPI(args.url, args.token)
+
+    # Create an instance of BibDetector using the provided device and pre-trained model, and initialise and run the various video pipeline components.
     detector = BibDetector("best.pt", args.device)
     tracker = BibTracker(api, "top-left")
     crop_coords = tuple(args.crop) if args.crop else None
