@@ -7,9 +7,9 @@ It covers the backend (Django server), the computer vision module, and how to ru
 
 Before starting, ensure the following are installed on your development machine:
 
-- **Python 3.10+**
+- **Python 3.13+**
 - **pip** (Python package manager)
-- **Git**
+- **Git** *(recommended)*
 - **virtualenv** *(recommended)*
 - **GitHub account** (to access and clone the repo)
 - **A webcam or access to video footage** 
@@ -28,44 +28,12 @@ python3 -m venv venv
 venv\Scripts\activate  # On Mac: source venv/bin/activate
 ```
 
-### 3. Install Python Dependencies
+### 3. Install Python Dependencies (for the website)
 
 ```bash
+cd running
 pip install -r requirements.txt
 ```
-
-The `requirements.txt` includes:
-
-- asgiref
-- cachetools
-- certifi
-- cffi
-- charset-normalizer
-- cryptography
-- defusedxml
-- Django
-- django-environ
-- dotenv
-- environ
-- google-auth
-- idna
-- oauthlib
-- pillow
-- pyasn1
-- pyasn1_modules
-- pycparser
-- PyJWT
-- pyotp
-- python-dotenv
-- python3-openid
-- qrcode
-- requests
-- requests-oauthlib
-- rsa
-- social-auth-app-django
-- social-auth-core
-- sqlparse
-- urllib3
 
 ### 4. Set Up and Run the Django Server
 
@@ -79,20 +47,29 @@ python manage.py runserver
 Access the local site at:  
 **http://127.0.0.1:8000**
 
-### 5. Run the Computer Vision Pipeline
+### 5. Install Python Dependencies (for the CV model)
+```bash
+cd ../../bib-detector # Assuming you were still in the website directory
+pip install -r requirements.txt
+```
 
-TODO
+### 6. Run the GUI
+```bash
+python bib_gui.py
+```
+
+### 7. Start the Computer Vision Model through the GUI
 
 
-### 6. Frontend Assets
+### 8. Frontend Assets
 
 - Static files are managed through Django's `collectstatic` command.
 - Bootstrap is used for styling.
 - You can extend templates in `templates/` to modify UI.
 
-### 7. Testing
+### 9. Testing
 
-Unit tests can be run with:
+Unit tests for the website can be run with:
 
 ```bash
 python manage.py test
@@ -118,4 +95,4 @@ To see the complete results run
 npx playwright show-report
 ```
 
-After completing the steps above, your environment will be fully ready for extending, debugging, or testing the system.
+After completing the steps above, the environment will be fully ready for extending, debugging, or testing the system.

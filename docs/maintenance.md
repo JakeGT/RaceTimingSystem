@@ -7,14 +7,14 @@ performed. Below are the recommended maintenance practices.
 
 It's crucial to back up both the application data and database to prevent data loss.
 
-- **Database Backup**: Regularly back up the SQLite database (or any other database used). this ca nbe automated by 
+- **Database Backup**: Regularly back up the SQLite database (or any other database used). this can be automated by 
 setting up cron jobs or using database management tools.
   - For SQLite, simply copy the `.db` file to a backup location.
   - For PostgreSQL or MySQL, use the database's built-in backup tools (`pg_dump` for PostgreSQL or `mysqldump` for
   MySQL).
 
-- **File Backup**: If your system involves storing large files (e.g., race images), ensure you back up the media files
-in `media/` directory regularly.
+- **File Backup**: If the system is being used to store large files (e.g., high number of race images), ensure you back 
+up the media files in `media/` directory regularly.
 
 ### 2. **User Management**
 
@@ -44,7 +44,7 @@ following command:
 
 ### 4. **Database Maintenance**
 
-Perform regular maintenance on your database to ensure optimal performance:
+Perform regular maintenance on the database to ensure optimal performance:
 
 - **Optimise Database**: Run optimisation commands periodically to clean up unused data and indexes. For SQLite, this 
 can be done with the `VACUUM` command:
@@ -76,5 +76,5 @@ Ensure your system is secure by regularly reviewing security practices:
 
 - **Secure Configuration**: Ensure that the `SECRET_KEY` cannot be found in `settings.py` and only in the .env
 
-- **Two-Factor Authentication (2FA)**: For extra security accounts should enable 2 factor authentication via the profile 
+- **Two-Factor Authentication (2FA)**: For extra security accounts should enable 2-factor authentication via the profile 
 page
