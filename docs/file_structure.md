@@ -69,7 +69,7 @@ The repository is structured as follows:
 
 ## Description
 
-- **`bib-detector/`**: Contains the OCR and computer vision models and scripts.
+- **`bib-detector/`**: Contains the bib detector client that is run on the machine locally at the race.
 - **`running/`**: Main Django application including views, templates, and models.
 - **`docs/`**: Project documentation including architecture diagrams and planning.
 - **`scripts/`**: Utility scripts used during development or deployment.
