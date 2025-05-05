@@ -27,7 +27,7 @@ estimated costs where applicable.
 - **Recommended System**
   - CPU: Intel i7 10875H or AMD Ryzen 7 5800H or Apple M1 or equivalent
   - RAM: 8GB
-  - Storage: 1GB
+  - Storage: 64GB - When storing the recorded race footage
   - GPU: Nvidia RTX 2060
   - USB Port or Network Access for Cameras
   - Network Access to upload results
@@ -51,37 +51,17 @@ Apple M Chips are handled through MPS in PyTorch. Please refer to [Apple Develop
 - **Operating System**: Windows 10/11, macOS, or Linux (Ubuntu 20.04+ recommended)
 - **Python 3.13** (Required for Django 5.x and other dependencies)
 - Django 5.x: The primary framework for web development, may work on earlier versions.
-  Install Django using pip:
-```python 
-pip install django
-```
 - Database: SQLite
-- Other python dependencies must be installed using:
+- Python dependencies can be found at `bib-detector\requirements.txt` and `running\requirements.txt` and can be installed using:
 ```python
 pip install -r requirements.txt
 ```
-- CUDA Toolkit (or other GPU-acceleration libraries): Required for GPU-accelerated tasks (e.g., training the computer
+- **RECOMMENDED**: CUDA Toolkit (or other GPU-acceleration libraries): Required for GPU-accelerated tasks (e.g., training the computer
 vision model). Only necessary if using an NVIDIA GPU. For non-NVIDIA setups, consider alternatives such as ROCm (AMD)
-or OpenCL.
-- **GitHub**: For version control
+or MPS (Apple).
+- **Git**: For version control
 
-#### Operational Requirements
-##### Hardware Requirements:
-For running the system in a production environment, the following hardware is required:
-- Laptop/PC with GPU enabled: The system will run on a machine with GPU enabled for better processing, especially for
-tasks such as running the computer vision models. The laptop must also have access to the internet in order to upload
-the results data to the website live.
-- Server Requirements: The system shall be hosted via the university hosting service, however it is possible to perform
-self-hosting this could be done in two different ways:
-  - Server Requirements:
-    - Processor: Intel i5 or equivalent (for general development tasks)
-    - RAM: 8GB minimum
-    - Storage: 64GB SSD (expandable as needed for race footage storage)
-    - GPU: NVIDIA 1060 (optional for Computer Vision AI-based processing)
-  - Cloud Hosting:
-    - Recommended Cloud Provider: AWS, Azure, or Google Cloud
-
-##### Software Requirements:
+##### Django Backend - Software Requirements:
 - Hosting Environment:
   - Cloud-hosted (AWS, Azure, or University hosting) OR on-premise server
   - Nginx or Apache for web server management
@@ -110,7 +90,7 @@ self-hosting this could be done in two different ways:
 #### Summary of Estimated Costs:
 - Hardware:
   - Laptop with GPU: **£600 - £800** (one-time cost)
-  - Camera: **£300 - £500** (one-time cost)
+  - Camera or Phone: **£300 - £500** (one-time cost)
   - Cloud Hosting: **£10 - £45/month** (depending on usage, it unlikely any more than the £10 subscription is required)
 - Software:
   - Free for Django, CUDA, and open-source libraries.

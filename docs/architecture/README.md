@@ -59,6 +59,8 @@ runner.
   - Detects runners in video footage
   - Identifies and reads bib numbers using image processing techniques
   - Provides time stamps for each runner crossing the finish line
+  - Uploads timestamp and bib number to the Django Backend
+  - Uploads an Image with enlarged bib overlay to the Django backend for manual verification
 
 ### 5. Computer Vision Client - GUI
 The GUI that allows the user to configure the settings for the bib detector. It allows the user to select the following:
