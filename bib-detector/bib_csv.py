@@ -16,13 +16,9 @@ class BibCSV:
         if not os.path.exists(self.csv_filename):
             with open(self.csv_filename, mode="w", newline='') as file:
                 writer = csv.writer(file)
-                writer.writerow(['BibNumber', 'Result', 'TrackerID'])
+                writer.writerow(['BibNumber', 'Result', 'TrackerID', "filename"])
 
     def add_entry(self, timestamp, bib_number, tracker_id, image=None):
-        with open(self.csv_filename, mode="a", newline='') as file:
-            writer = csv.writer(file)
-            writer.writerow([bib_number, timestamp, tracker_id])
-
         if image is not None:
             formatted_time = time.strftime("%H%M%S", time.gmtime(timestamp))
             if bib_number == -1:
@@ -31,3 +27,9 @@ class BibCSV:
                 filename = f"{self.confident_dir}/{tracker_id}_{formatted_time}.jpg"
             cv2.imwrite(filename, image)
             print(f"Saved image: {filename}")
+
+        with open(self.csv_filename, mode="a", newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow([bib_number, timestamp, tracker_id, f"{tracker_id}_{formatted_time}"])
+
+
