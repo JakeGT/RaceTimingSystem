@@ -102,20 +102,18 @@ pip install -r requirements.txt
 ```
 
 ### Hardware Accelerators
-<details>
-<summary>CUDA</summary>
+CUDA:
+
 To use CUDA acceleration, install PyTorch with CUDA. For more details, refer to the [PyTorch Documentation](https://pytorch.org/get-started/locally/).
 
 ```bash
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
 ```
 
-</details>
+Other accelerators (ROCm, MPS):
 
-<details>
-<summary>Other accelerators (ROCm, MPS)</summary>
 The bib detection model was built on YOLOv11 with PyTorch. Any accelerator with PyTorch support should be supported in this application as well.
-</details>
+
 
 **IMPORTANT: It is recommended to use the bib detector with hardware acceleration as the accuracy of the bib tracker will decrease with lower framerates.**
 
