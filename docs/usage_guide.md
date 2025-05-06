@@ -102,3 +102,15 @@ Starting from the top:
  - Camera Preview: Displays the currently selected camera. Does not work for IP cameras.
 
 Once sufficient fields are filled, just click the start detection button and the Bib Detector Client will start and begin tracking and uploading results.
+
+
+### 2. Local Bib Corrector (No Internet Access)
+If there was no internet access during the race and the live times could not be uploaded, the results can be saved locally to a CSV as explained above. The following program allows the user to correct bibs that were classed as insufficiently confident.
+
+#### 1. Start by selecting the folder the results have been saved to.
+
+![img.png](img.png)
+#### 2. The following screen will display the image, the filename, and the tracker ID. You can enter the corrected BibNumber at the bottom and click save.
+![img_2.png](img_2.png)
+#### 3. Bib has been corrected and results.csv will have been updated. The next bib to be corrected will show next.
+![img_1.png](img_1.png)

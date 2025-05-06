@@ -79,7 +79,7 @@ class WebsiteAPI:
                         try:
                             print("Image upload response:", img_resp.json())
                         except Exception:
-                            print(f"Image upload failed [{img_resp.status_code}]: Invalid JSON")
+                            print(f"Status Code - [{img_resp.status_code}]: Invalid JSON")
                     except Exception as e:
                         print(f"Image upload request failed: {e}")
                 else:
