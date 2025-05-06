@@ -1275,9 +1275,15 @@ def race_detail(request, race_id):
                     else "participant__age"
                 )
             elif sort_by == "total_time":
-                race_results = race_results.order_by(
-                    "-total_time" if sort_direction == "desc" else "total_time"
-                )
+                try:
+                    race_results = sorted(
+                        race_results,
+                        key=lambda r: datetime.strptime(r.total_time, "%H:%M:%S"),
+                        reverse=(sort_direction == "desc")
+                    )
+                except Exception as e:
+                    logger.error(f"Error sorting race results by total_time: {e}")
+                    messages.error(request, "Could not sort results by total time.")
 
         #  get club data for each participant and add it to the context
         clubs = set(race_results.values_list("participant__club_name", flat=True))
