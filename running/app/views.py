@@ -1932,7 +1932,7 @@ def gallery_view(request, race_id):
     A view for organisers to manually validate or edit bib numbers
     for a specific race and manage images.
     """
-
+    
     race = get_object_or_404(Race, id=race_id)
     logger.info(f"Race with ID {race_id} found.")
 
@@ -1940,7 +1940,6 @@ def gallery_view(request, race_id):
     logger.info(f"Found {images.count()} images associated with race ID {race_id}.")
 
     if request.method == "POST":
-        #  handle delete request
         if 'delete_image_id' in request.POST:
             delete_image_id = request.POST.get('delete_image_id')
             image_to_delete = images.filter(id=delete_image_id).first()
@@ -1954,7 +1953,6 @@ def gallery_view(request, race_id):
                 messages.error(request, "Image not found.")
             return redirect('gallery_view', race_id=race.id)
 
-        #  handle bib number submission or update
         bib_number = request.POST.get("bib_number")
         image_id = request.POST.get("image_id")
         image_timestamp = request.POST.get("image_timestamp")
@@ -1966,168 +1964,85 @@ def gallery_view(request, race_id):
 
         image = images.filter(id=image_id).first()
         if not image:
-            logger.warning(
-                f"Image with ID {image_id} not found or does not belong to race ID {race_id}."
-            )
+            logger.warning(f"Image with ID {image_id} not found or does not belong to race ID {race_id}.")
             messages.error(request, "Image not found or does not belong to this race.")
-            return render(
-                request,
-                "app/gallery.html",
-                {"images": images, "MEDIA_URL": settings.MEDIA_URL, "race": race},
-            )
+            return render(request, "app/gallery.html", {
+                "images": images, "MEDIA_URL": settings.MEDIA_URL, "race": race,
+            })
 
-        @login_and_2fa_required
-        def gallery_view(request, race_id):
-            """
-            A view for organisers to manually validate or edit bib numbers
-            for a specific race and manage images.
-            """
+        old_bib_number = image.bib_number
 
-            race = get_object_or_404(Race, id=race_id)
-            logger.info(f"Race with ID {race_id} found.")
+        try:
+            image.bib_number = int(bib_number)
+            image.save()
+            logger.info(f"Updated Image ID {image_id} with bib number {bib_number}")
+        except ValueError:
+            logger.error(f"Invalid bib number provided: {bib_number}")
+            messages.error(request, "Invalid bib number. Please enter a number.")
+            return redirect('gallery_view', race_id=race.id)
 
-            images = Image.objects.filter(race=race)
-            logger.info(f"Found {images.count()} images associated with race ID {race_id}.")
+        if str(old_bib_number) != bib_number:
+            try:
+                old_participant = Participant.objects.get(race=race, race_number=old_bib_number)
+                timestamp = datetime.strptime(image_timestamp, "%d %b %Y, %I:%M %p")
+                if timezone.is_naive(timestamp):
+                    timestamp = timezone.make_aware(timestamp)
+                formatted_time = timestamp.strftime("%H:%M:%S")
 
-            if request.method == "POST":
-                #  handle delete request
-                if 'delete_image_id' in request.POST:
-                    delete_image_id = request.POST.get('delete_image_id')
-                    image_to_delete = images.filter(id=delete_image_id).first()
+                matching_result = RaceResult.objects.filter(
+                    participant=old_participant, race=race, total_time=formatted_time
+                ).first()
 
-                    if image_to_delete:
-                        logger.info(f"Deleting image with ID {delete_image_id}.")
-                        image_to_delete.delete()
-                        messages.success(request, "Image deleted successfully.")
-                    else:
-                        logger.warning(f"Attempted to delete non-existent image ID {delete_image_id}.")
-                        messages.error(request, "Image not found.")
-                    return redirect('gallery_view', race_id=race.id)
+                if matching_result:
+                    logger.info(f"Deleting old race result for participant {old_participant.name} at time {formatted_time}.")
+                    matching_result.delete()
+                    messages.info(request, "Previous race result deleted due to bib number change.")
 
-                #  handle bib number submission or update
-                bib_number = request.POST.get("bib_number")
-                image_id = request.POST.get("image_id")
-                image_timestamp = request.POST.get("image_timestamp")
+            except Participant.DoesNotExist:
+                logger.warning(f"No participant found with old bib number {old_bib_number}, skipping deletion.")
+            except ValueError:
+                logger.error(f"Invalid timestamp format for deletion: {image_timestamp}")
 
-                logger.info(
-                    f"Received POST request for bib number: {bib_number}, image ID: {image_id},"
-                    f" and timestamp: {image_timestamp}."
+        try:
+            participant = Participant.objects.get(race=race, race_number=bib_number)
+            logger.info(f"Participant with bib number {bib_number} found: {participant.name}")
+
+            existing_result = RaceResult.objects.filter(participant=participant, race=race).first()
+            if existing_result:
+                logger.info(f"Deleting existing race result for participant {participant.name}.")
+                existing_result.delete()
+                messages.info(request, "Existing result deleted. Creating new result.")
+
+            try:
+                timestamp = datetime.strptime(image_timestamp, "%d %b %Y, %I:%M %p")
+                if timezone.is_naive(timestamp):
+                    timestamp = timezone.make_aware(timestamp)
+
+                elapsed = timestamp - race.start_time
+                hours, remainder = divmod(elapsed.total_seconds(), 3600)
+                minutes, seconds = divmod(remainder, 60)
+                total_time = f"{int(hours):02}:{int(minutes):02}:{int(seconds):02}"
+
+                RaceResult.objects.create(
+                    participant=participant,
+                    race=race,
+                    total_time=total_time
                 )
 
-                image = images.filter(id=image_id).first()
-                if not image:
-                    logger.warning(
-                        f"Image with ID {image_id} not found or does not belong to race ID {race_id}."
-                    )
-                    messages.error(request, "Image not found or does not belong to this race.")
-                    return render(
-                        request,
-                        "app/gallery.html",
-                        {"images": images, "MEDIA_URL": settings.MEDIA_URL, "race": race},
-                    )
+                logger.info(f"Race result created for participant: {participant.name} with time: {total_time}.")
+                messages.success(request, f"Race result created for {participant.name}!")
 
-                # get old bib number before update
-                old_bib_number = image.bib_number
+            except ValueError:
+                logger.error(f"Invalid timestamp format provided: {image_timestamp}. Expected format: '%d %b %Y, %I:%M %p'.")
+                messages.error(request, "Invalid timestamp format. Please check the input.")
 
-                # update bib number on the image
-                try:
-                    image.bib_number = int(bib_number)
-                    image.save()
-                    logger.info(f"Updated Image ID {image_id} with bib number {bib_number}")
-                except ValueError:
-                    logger.error(f"Invalid bib number provided: {bib_number}")
-                    messages.error(request, "Invalid bib number. Please enter a number.")
-                    return redirect('gallery_view', race_id=race.id)
+        except Participant.DoesNotExist:
+            logger.error(f"No participant found with bib number {bib_number} for race ID {race_id}.")
+            messages.error(request, "No participant found with the given bib number for this race.")
 
-                # try to delete previous race result if bib number was changed
-                if str(old_bib_number) != bib_number:
-                    try:
-                        old_participant = Participant.objects.get(race=race, race_number=old_bib_number)
-                        timestamp = datetime.strptime(image_timestamp, "%d %b %Y, %I:%M %p")
-                        if timezone.is_naive(timestamp):
-                            timestamp = timezone.make_aware(timestamp)
-                        formatted_time = timestamp.strftime("%H:%M:%S")
-
-                        matching_result = RaceResult.objects.filter(
-                            participant=old_participant,
-                            race=race,
-                            total_time=formatted_time
-                        ).first()
-
-                        if matching_result:
-                            logger.info(
-                                f"Deleting old race result for participant {old_participant.name} at time {formatted_time}.")
-                            matching_result.delete()
-                            messages.info(request, "Previous race result deleted due to bib number change.")
-
-                    except Participant.DoesNotExist:
-                        logger.warning(f"No participant found with old bib number {old_bib_number}, skipping deletion.")
-                    except ValueError:
-                        logger.error(f"Invalid timestamp format for deletion: {image_timestamp}")
-
-                #  try to find the participant and update race result
-                try:
-                    participant = Participant.objects.get(race=race, race_number=bib_number)
-                    logger.info(
-                        f"Participant with bib number {bib_number} found: {participant.name}"
-                    )
-
-                    # remove existing result if it exists
-                    existing_result = RaceResult.objects.filter(participant=participant, race=race).first()
-                    if existing_result:
-                        logger.info(f"Deleting existing race result for participant {participant.name}.")
-                        existing_result.delete()
-                        messages.info(request, "Existing result deleted. Creating new result.")
-
-                    # convert string timestamp to datetime
-                    try:
-                        timestamp = datetime.strptime(image_timestamp, "%d %b %Y, %I:%M %p")
-                        if timezone.is_naive(timestamp):
-                            timestamp = timezone.make_aware(timestamp)
-                        #  calculate elapsed time since race start
-                        elapsed = timestamp - race.start_time
-
-                        #  format as HH:MM:SS
-                        hours, remainder = divmod(elapsed.total_seconds(), 3600)
-                        minutes, seconds = divmod(remainder, 60)
-                        total_time = f"{int(hours):02}:{int(minutes):02}:{int(seconds):02}"
-
-                        #  create new race result with elapsed time
-                        RaceResult.objects.create(
-                            participant=participant,
-                            race=race,
-                            total_time=total_time
-                        )
-
-                        logger.info(
-                            f"Race result created for participant: {participant.name} with time: {time}."
-                        )
-                        messages.success(
-                            request, f"Race result created for {participant.name}!"
-                        )
-
-                    except ValueError:
-                        logger.error(
-                            f"Invalid timestamp format provided: {image_timestamp}. "
-                            f"Expected format: '%d %b %Y, %I:%M %p'."
-                        )
-                        messages.error(
-                            request, "Invalid timestamp format. Please check the input."
-                        )
-
-                except Participant.DoesNotExist:
-                    logger.error(
-                        f"No participant found with bib number {bib_number} for race ID {race_id}."
-                    )
-                    messages.error(
-                        request, "No participant found with the given bib number for this race."
-                    )
-
-    return render(
-        request,
-        "app/gallery.html",
-        {"images": images, "MEDIA_URL": settings.MEDIA_URL, "race": race},
-    )
+    return render(request, "app/gallery.html", {
+        "images": images, "MEDIA_URL": settings.MEDIA_URL, "race": race,
+    })
 
 
 def custom_404(request, exception):
