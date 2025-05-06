@@ -40,7 +40,7 @@ technology with practical simplicity — allowing organisers to deliver a better
 - Max Bennett
 - Angelo Palmer 
 - Lucy Dechaine
-- James Adams
+- James Adam
 
 ## License
 
