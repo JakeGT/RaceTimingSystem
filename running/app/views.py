@@ -2385,23 +2385,27 @@ def add_result(request, race_id):
         participant_id = request.POST.get('participant')
         total_time = request.POST.get('total_time')
 
-        participant = get_object_or_404(Participant, id=participant_id)
+        total_time = request.POST.get('total_time')
+        pattern = r"^(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d$"
 
-        #  check if a RaceResult already exists for this participant in this race
-        existing_result = RaceResult.objects.filter(participant=participant, race=race).first()
+        if re.match(pattern, total_time):
+            participant = get_object_or_404(Participant, id=participant_id)
 
-        if existing_result:
-            #  if a result exists, update it
-            existing_result.total_time = total_time
-            existing_result.save()
-            message = "Race result updated successfully."
-        else:
-            #  if no result exists, create a new one
-            RaceResult.objects.create(participant=participant, race=race, total_time=total_time)
-            message = "Race result added successfully."
+            #  check if a RaceResult already exists for this participant in this race
+            existing_result = RaceResult.objects.filter(participant=participant, race=race).first()
 
-        #  redirect to the race detail page with a success message
-        return redirect('organiser_race_detail', race_id=race.id)
+            if existing_result:
+                #  if a result exists, update it
+                existing_result.total_time = total_time
+                existing_result.save()
+                message = "Race result updated successfully."
+            else:
+                #  if no result exists, create a new one
+                RaceResult.objects.create(participant=participant, race=race, total_time=total_time)
+                message = "Race result added successfully."
+
+            #  redirect to the race detail page with a success message
+            return redirect('organiser_race_detail', race_id=race.id)
 
     participants = Participant.objects.filter(race=race)
     return render(request, 'add_result.html', {'race': race, 'participants': participants})
@@ -2412,8 +2416,12 @@ def edit_result(request, race_id, result_id):
     result = get_object_or_404(RaceResult, id=result_id, race=race)
 
     if request.method == 'POST':
-        result.total_time = request.POST.get('total_time')
-        result.save()
+        total_time = request.POST.get('total_time')
+        pattern = r"^(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d$"
+
+        if re.match(pattern, total_time):
+            result.total_time = total_time
+            result.save()
 
         return redirect('organiser_race_detail', race_id=race.id)
 
