@@ -124,8 +124,11 @@ def upload_json(request, race_id):
         except Participant.DoesNotExist:
             return JsonResponse({"message": "Participant not found"}, status=202)
 
-        start_time = race.start_time
-        finish_time = datetime.fromtimestamp(result_time, tz=tz.utc)
+        start_time_naive = datetime.combine(race.date, race.start_time)
+        start_time = start_time_naive.replace(tzinfo=tz.utc)
+        print(start_time)
+        finish_time = datetime.fromtimestamp(float(result_time), tz=tz.utc)
+        print(finish_time)
 
         time_difference = finish_time - start_time
 
@@ -508,7 +511,6 @@ def race_config(request):
         }
 
         try:
-            print(start_datetime_iso)
             aware_start_dt_utc = parser.isoparse(start_datetime_iso)
         except Exception as e:
             messages.error(request, "Invalid date/time format. Please ensure it's a valid ISO 8601 string.")
@@ -521,8 +523,6 @@ def race_config(request):
                     "saved_data": request.POST,
                 },
             )
-        print(timezone.now())
-        print(aware_start_dt_utc)
         if aware_start_dt_utc < timezone.now():
             messages.error(request, "Race start time cannot be in the past.")
             return render(
@@ -701,9 +701,9 @@ def upload_results(request):
                         break
 
                     bib_number = row[0].strip()
-                    finish_time = datetime.fromtimestamp(row[1].strip(), tz=tz.utc)
-                    start_time = race.start_time
-                    
+                    finish_time = datetime.fromtimestamp(float(row[1].strip()))
+                    start_time_naive = datetime.combine(race.date, race.start_time)
+                    start_time = start_time_naive.replace(tzinfo=tz.utc)
                     result_time = str(finish_time - start_time)
 
 
