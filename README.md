@@ -120,8 +120,17 @@ The project relies on the following core technologies:
      python manage.py runserver
      ```
   
-- Computer Vision Script
-TODO
+- Computer Vision - Bib Detector Client
+1. Navigate to 'bib-detector' directory:
+```bash
+cd bib-detector
+```
+
+2. Start the bib detector GUI
+```bash
+python bib_gui.py
+```
+3. Fill out required fields and press Start Detection
 
 ## Screenshots
 Screenshots of the product can be found in `docs/screenshots`
