@@ -126,15 +126,9 @@ def upload_json(request, race_id):
             return JsonResponse({"message": "Participant not found"}, status=202)
 
         start_time = race.start_time
-        result_time_obj = parse_time(result_time)
+        finish_time = datetime.fromtimestamp(result_time, tz=tz.utc)
 
-        start_time_datetime = datetime.combine(date.min, start_time)
-        result_time_datetime = datetime.combine(date.min, result_time_obj)
-
-        if result_time_datetime < start_time_datetime:
-            result_time_datetime += timedelta(days=1)
-
-        time_difference = result_time_datetime - start_time_datetime
+        time_difference = finish_time - start_time
 
         RaceResult.objects.create(
             participant=participant, race=race, total_time=str(time_difference)
@@ -709,7 +703,11 @@ def upload_results(request):
                         break
 
                     bib_number = row[0].strip()
-                    result_time = row[1].strip()
+                    finish_time = datetime.fromtimestamp(row[1].strip(), tz=tz.utc)
+                    start_time = race.start_time
+                    
+                    result_time = str(finish_time - start_time)
+
 
                     if not bib_number or not result_time:
                         logger.warning(
