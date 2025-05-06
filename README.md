@@ -120,7 +120,7 @@ The project relies on the following core technologies:
      python manage.py runserver
      ```
   
-- Computer Vision - Bib Detector Client
+- Computer Vision - Bib Detector Client:
 1. Navigate to 'bib-detector' directory:
 ```bash
 cd bib-detector
