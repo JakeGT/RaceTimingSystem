@@ -138,7 +138,7 @@ For more details, check out the [development environment](docs/development_envir
 ## Installation guide
 For more details, check out the [installation guide](docs/installation.md).
 
-## File Structure
+## Repository Layout and Test/CI Setup
 For more details, check out the [file structure](docs/file_structure.md).
 
 ## Maintenance
