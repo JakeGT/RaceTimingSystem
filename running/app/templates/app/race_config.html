@@ -149,6 +149,9 @@
                         </div>
 
 
+                        <input type="hidden" name="start_datetime_iso" id="start_datetime_iso">
+
+
 
                         <!-- Submit -->
                         <div class="form-group text-center mt-4">
@@ -206,6 +209,27 @@
                     updateStartTimeMin(selectedDates[0]);
                 }
             });
+
+            function updateISODateTime() {
+                const date = raceDateInput.value;
+                const time = startTimeInput.value;
+
+                if (!date || !time) {
+                    document.getElementById("start_datetime_iso").value = "";
+                    return;
+                }
+
+                const localDateTime = new Date(`${date}T${time}`);
+                const utcISOString = localDateTime.toISOString();  // Always in UTC
+
+                document.getElementById("start_datetime_iso").value = utcISOString;
+                console.log(utcISOString);
+        }
+
+        raceDateInput.addEventListener('change', updateISODateTime);
+        startTimeInput.addEventListener('change', updateISODateTime);
+        updateISODateTime()
+
 
             function updateStartTimeMin(selectedDate) {
                 const today = new Date();

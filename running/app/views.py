@@ -8,6 +8,8 @@ import json
 import re
 import secrets
 from datetime import date, datetime, timedelta
+from dateutil import parser
+from datetime import timezone as tz
 from collections import defaultdict
 from functools import wraps
 
@@ -468,6 +470,7 @@ def race_config(request):
     View for creating and cofiguring a race.
     """
 
+
     logger.info(f"Accessing race configuration page by user: {request.user.username}")
 
     race_categories = RaceCategory.objects.all()
@@ -478,6 +481,7 @@ def race_config(request):
         race_name = request.POST["race_name"]
         race_date_str = request.POST["race_date"]
         start_time = request.POST["start_time"]
+        start_datetime_iso = request.POST.get("start_datetime_iso")
         no_location = request.POST.get("no_location", False)
         race_location = request.POST.get("race_location", "")
         latitude = request.POST.get("latitude")
@@ -511,20 +515,23 @@ def race_config(request):
         }
 
         try:
-            race_date = make_aware(datetime.strptime(race_date_str, "%Y-%m-%d"))
-            if race_date.date() < datetime.now().astimezone().date():
-                messages.error(request, "Race date cannot be in the past.")
-                return render(
-                    request,
-                    "app/race_config.html",
-                    {
-                        "race_categories": race_categories,
-                        "participant_categories": participant_categories,
-                        "saved_data": request.POST,
-                    },
-                )
-        except ValueError:
-            messages.error(request, "Invalid race date format. Please use YYYY-MM-DD.")
+            print(start_datetime_iso)
+            aware_start_dt_utc = parser.isoparse(start_datetime_iso)
+        except Exception as e:
+            messages.error(request, "Invalid date/time format. Please ensure it's a valid ISO 8601 string.")
+            return render(
+                request,
+                "app/race_config.html",
+                {
+                    "race_categories": race_categories,
+                    "participant_categories": participant_categories,
+                    "saved_data": request.POST,
+                },
+            )
+        print(timezone.now())
+        print(aware_start_dt_utc)
+        if aware_start_dt_utc < timezone.now():
+            messages.error(request, "Race start time cannot be in the past.")
             return render(
                 request,
                 "app/race_config.html",
@@ -569,8 +576,8 @@ def race_config(request):
 
         race = Race.objects.create(
             name=race_name,
-            date=race_date.date(),
-            start_time=start_time_obj,
+            date=aware_start_dt_utc.date(),
+            start_time=aware_start_dt_utc.time(),
             latitude=float(latitude) if latitude else None,
             longitude=float(longitude) if longitude else None,
             address=race_location,
