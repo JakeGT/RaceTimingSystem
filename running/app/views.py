@@ -94,6 +94,7 @@ def upload_json(request, race_id):
     """
     Backend API for the upload of runner results data, requires the token with the associated race
     """
+
     if request.method == "POST":
         auth_header = request.headers.get('Authorization', '')
         token = auth_header.replace("Token ", "") if auth_header.startswith("Token ") else None
@@ -956,26 +957,35 @@ def upload_participants(request):
             lastname = request.POST.get("lastname")
             gender = request.POST.get("gender")
             team_name = request.POST.get("team_name")
+            club_name = request.POST.get("club_name")
             age_category = request.POST.get("age_category")
-            race_category = request.POST.get("race_category")
-            age = int(request.POST.get("age", 0))
+            age = request.POST.get("age")
             participant_category = request.POST.get("category_id")
 
-            # validate form data
-            if not all(
-                    [
-                        bib_number,
-                        firstname,
-                        lastname,
-                        gender,
-                        team_name,
-                        age_category,
-                        race_category,
-                        age,
-                    ]
-            ):
-                messages.error(request, "Please fill in all required fields.")
+            #  collect missing fields
+            missing_fields = []
+            if not bib_number:
+                missing_fields.append("Bib Number")
+            if not firstname:
+                missing_fields.append("First Name")
+            if not lastname:
+                missing_fields.append("Last Name")
+            if not gender:
+                missing_fields.append("Gender")
+            if not team_name:
+                missing_fields.append("Team Name")
+            if not club_name:
+                missing_fields.append("Club Name")
+            if not age_category:
+                missing_fields.append("Age Category")
+            if not age or not age.isdigit() or int(age) <= 0:
+                missing_fields.append("Valid Age")
+
+            if missing_fields:
+                messages.error(request, f"Please fill in the following fields: {', '.join(missing_fields)}")
                 return redirect("upload_participants")
+
+            age = int(age)
 
             # check for existing participant with the same bib number
             existing_participant = Participant.objects.filter(
