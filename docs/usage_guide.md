@@ -1,6 +1,6 @@
 # Usage Guide – First Steps
 
-## Overview
+## Overview - Django Website
 The following guide covers the basic usage of the Automated Race Timing System. This will help you get started quickly
 and complete a simple task to verify that the system installation works properly. 
 
@@ -74,3 +74,31 @@ tools for account management, real-time result viewing, and data export. Organis
 timing data from the bib detection system, and update race configurations as needed. The system is designed to be
 intuitive and accessible, even for users with minimal technical experience. For a full overview of capabilities, refer
 to the user guide or explore the interface directly.
+
+## Overview - Bib Detector Client
+The following guide will demonstrate how to use the bib detector client.
+
+### 1. Starting the Bib Detector Client
+To start the bib detector client, load the virtual environment as instructed in [Installation Guide](installation.md).
+Once the virtual environment is loaded, you can start the Bib Detector GUI with
+```bash
+bib_gui.py
+```
+This will load the user interface.
+
+![Bib Detector GUI](screenshots/bib_detector_gui.png)
+
+
+Starting from the top:
+ - Device: Choose the hardware device to run the model on. It is recommended you run this on hardware acceleration (CUDA:0)
+ - Camera Input: This drop down box allows you to select a camera from your available cameras. Additionally, if you have set up Droidcam as described in the [Installation Guide](installation.md), you can either select the phone connected via USB or type in the IP address and port number of the Droidcam (IP:PORT - eg. 127.0.0.1:4747). **NOTE**: When connecting to a camera over network, the preview will not work.
+ - Output File: Saves the recording of the race locally
+ - Results Folder: Saves a copy of the results to a CSV as well as still images of the runners and their bibs. 
+ - Race Timing URL: URL to the race webpage.
+ - API Token: Required for authentication. Copy from race management webpage.
+ - Load Config: Load config that can be downloaded from race management webpage to autofill the above 2 required boxes.
+ - Select Crop: Crop the camera feed.
+ - Bib Overlay Position: Which corner the enlarged bib appears in the still images.
+ - Camera Preview: Displays the currently selected camera. Does not work for IP cameras.
+
+Once sufficient fields are filled, just click the start detection button and the Bib Detector Client will start and begin tracking and uploading results.

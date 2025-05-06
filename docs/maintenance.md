@@ -3,6 +3,8 @@
 To ensure the continued reliability and security of the Automatic Race Timing System, regular maintenance tasks must be
 performed. Below are the recommended maintenance practices.
 
+The bib detector client is self-contained and does not require regular maintenance.
+
 ## 1. **Regular Backups**
 
 It's crucial to back up both the application data and database to prevent data loss.

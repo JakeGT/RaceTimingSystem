@@ -16,12 +16,12 @@ class BibCSV:
         if not os.path.exists(self.csv_filename):
             with open(self.csv_filename, mode="w", newline='') as file:
                 writer = csv.writer(file)
-                writer.writerow(['Result', 'BibNumber', 'TrackerID'])
+                writer.writerow(['BibNumber', 'Result', 'TrackerID'])
 
     def add_entry(self, timestamp, bib_number, tracker_id, image=None):
         with open(self.csv_filename, mode="a", newline='') as file:
             writer = csv.writer(file)
-            writer.writerow([timestamp, bib_number, tracker_id])
+            writer.writerow([bib_number, timestamp, tracker_id])
 
         if image is not None:
             formatted_time = time.strftime("%H%M%S", time.gmtime(timestamp))

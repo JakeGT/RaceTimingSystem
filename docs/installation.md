@@ -102,26 +102,29 @@ pip install -r requirements.txt
 ```
 
 ### Hardware Accelerators
-CUDA: 
+<details>
+<summary>CUDA</summary>
 To use CUDA acceleration, install PyTorch with CUDA. For more details, refer to the [PyTorch Documentation](https://pytorch.org/get-started/locally/).
 
 ```bash
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
 ```
 
+</details>
 
-Other accelerators (ROCm, MPS): 
+<details>
+<summary>Other accelerators (ROCm, MPS)</summary>
 The bib detection model was built on YOLOv11 with PyTorch. Any accelerator with PyTorch support should be supported in this application as well.
-
+</details>
 
 **IMPORTANT: It is recommended to use the bib detector with hardware acceleration as the accuracy of the bib tracker will decrease with lower framerates.**
 
 ### Install Droidcam to Use Phone Camera
-
+The following instructions only apply to Windows PCs and Linux PCs.
 #### Android
-Connect over USB:
 [Google Play Store](https://play.google.com/store/apps/details?id=com.dev47apps.obsdroidcam)
 
+Connect over USB
 Enable USB Debugging:
 
 1. Open settings
@@ -131,6 +134,20 @@ Enable USB Debugging:
 5. Toggle USB debugging
 
 For more details refer to: [Android Developers](https://developer.android.com/studio/debug/dev-options)
+
+Install the Droidcam PC Client [here](https://droidcam.app/).
+
+To connect over USB to PC, please follow instructions from [Droidcam's Help page](https://droidcam.app/help/#usb).
+
+#### iPhone
+[Apple App Store](https://apps.apple.com/us/app/droidcam-webcam-obs-camera/id1510258102)
+
+To connect over USB to PC, please follow instructions from [Droidcam's Help page](https://droidcam.app/help/#usb).
+
+#### Mac Devices [Experimental]
+Please refer to [Iriun Webcam](https://iriun.net/) to connect your android phone to your Mac. For more details, please read the following [MIT teaching article](https://open.mit.edu/c/teachremote/2gu/using-your-android-phone-as-a-web-camera-on-the).
+
+iPhones can natively act as webcams on Mac devices. Please refer to the [Apple Documentation](https://support.apple.com/en-gb/guide/mac-help/mchl77879b8a/mac).
 
 
 ## Third party integrations installations
