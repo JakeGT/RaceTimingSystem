@@ -1266,6 +1266,12 @@ def race_detail(request, race_id):
                 )
                 logger.info(f"Filtering race results by age: {min_age}-{max_age}")
 
+        clubs = set(race_results.values_list("participant__club_name", flat=True))
+        logger.info(f"Found the following clubs in the race results: {', '.join(clubs)}")
+
+        teams = set(race_results.values_list("participant__team_name", flat=True))
+        logger.info(f"Found the following teams in the race results: {', '.join(teams)}")
+
         if sort_by:
             logger.info(f"Sorting race results by {sort_by} in {sort_direction} order.")
             if sort_by == "name":
@@ -1290,14 +1296,6 @@ def race_detail(request, race_id):
                 except Exception as e:
                     logger.error(f"Error sorting race results by total_time: {e}")
                     messages.error(request, "Could not sort results by total time.")
-
-        #  get club data for each participant and add it to the context
-        clubs = set(race_results.values_list("participant__club_name", flat=True))
-        logger.info(f"Found the following clubs in the race results: {', '.join(clubs)}")
-
-        #  get team data for each participant and add it to the context
-        teams = set(race_results.values_list("participant__team_name", flat=True))
-        logger.info(f"Found the following teams in the race results: {', '.join(teams)}")
 
         return render(
             request,
