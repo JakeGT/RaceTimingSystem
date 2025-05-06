@@ -514,8 +514,8 @@ def race_config(request):
         }
 
         try:
-            aware_start_dt = parser.isoparse(start_datetime_iso)
-            aware_start_dt_utc = aware_start_dt.astimezone(tz.utc)
+            print(start_datetime_iso)
+            aware_start_dt_utc = parser.isoparse(start_datetime_iso)
         except Exception as e:
             messages.error(request, "Invalid date/time format. Please ensure it's a valid ISO 8601 string.")
             return render(
@@ -527,7 +527,8 @@ def race_config(request):
                     "saved_data": request.POST,
                 },
             )
-
+        print(timezone.now())
+        print(aware_start_dt_utc)
         if aware_start_dt_utc < timezone.now():
             messages.error(request, "Race start time cannot be in the past.")
             return render(
@@ -574,8 +575,8 @@ def race_config(request):
 
         race = Race.objects.create(
             name=race_name,
-            date=aware_start_dt.date(),
-            start_time=start_time_obj,
+            date=aware_start_dt_utc.date(),
+            start_time=aware_start_dt_utc.time(),
             latitude=float(latitude) if latitude else None,
             longitude=float(longitude) if longitude else None,
             address=race_location,

@@ -149,7 +149,7 @@
                         </div>
 
 
-                        <input type="hidden" name="start_datetine_iso" id="start_datetime_iso">
+                        <input type="hidden" name="start_datetime_iso" id="start_datetime_iso">
 
 
 
@@ -216,24 +216,19 @@
 
                 if (!date || !time) {
                     document.getElementById("start_datetime_iso").value = "";
-                    return
+                    return;
                 }
+
                 const localDateTime = new Date(`${date}T${time}`);
-                const isoWithOffset = localDateTime.toISOString()
+                const utcISOString = localDateTime.toISOString();  // Always in UTC
 
-                const tzOffset = -localDateTime.getTimezoneOffset()
-                const sign = tzOffset >= 0 ? '+' : '-';
-                const pad = n => String(Math.floor(Math.abs(n))).padStart(2, '0');
-                const offsetHours = pad(tzOffset / 60);
-                const offsetMinutes = pad(tzOffset % 60);
+                document.getElementById("start_datetime_iso").value = utcISOString;
+                console.log(utcISOString);
+        }
 
-                const isoWithLocalOffset = localDateTime.toISOString().replace("Z", `${sign}${offsetHours}:${offsetMinutes}`)
-                document.getElementById("start_datetime_iso").value = isoWithLocalOffset;
-            }
-
-            raceDateInput.addEventListener('change', updateISODateTime);
-            startTimeInput.addEventListener('change', updateISODateTime);
-
+        raceDateInput.addEventListener('change', updateISODateTime);
+        startTimeInput.addEventListener('change', updateISODateTime);
+        updateISODateTime()
 
 
             function updateStartTimeMin(selectedDate) {
