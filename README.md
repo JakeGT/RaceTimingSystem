@@ -124,7 +124,7 @@ The project relies on the following core technologies:
 TODO
 
 ## Screenshots
-Screenshots of the product can be found in `/screenshots`
+Screenshots of the product can be found in `docs/screenshots`
 
 ## Future Work
 In order for further expansion feature could be added which include:
