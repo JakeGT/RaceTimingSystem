@@ -39,9 +39,8 @@ class WebsiteAPI:
 
     def send_result(self, timestamp, bib_number, tracker_id, num_entries, image):
         def task():
-            formatted_time = time.strftime("%H:%M:%S", time.gmtime(timestamp))
             data = {
-                "time": formatted_time,
+                "time": timestamp,
                 "bib_number": bib_number,
                 "tracker_id": tracker_id,
                 "num_entries": num_entries,
