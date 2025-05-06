@@ -89,12 +89,12 @@
                             <div class="col-md-2">
                                 <label class="form-label text-dark">Sort By</label>
                                 <select name="sort_by" class="form-select">
-                                    <option value="">Default</option>
+                                    <option value="total_time" {% if request.GET.sort_by == 'total_time' or not request.GET.sort_by %}selected{% endif %}>Total Time</option>
                                     <option value="name" {% if request.GET.sort_by == 'name' %}selected{% endif %}>Name</option>
                                     <option value="age" {% if request.GET.sort_by == 'age' %}selected{% endif %}>Age</option>
-                                    <option value="total_time" {% if request.GET.sort_by == 'total_time' %}selected{% endif %}>Total Time</option>
                                 </select>
                             </div>
+
 
                             <!-- Sort Direction -->
                             <div class="col-md-2">
