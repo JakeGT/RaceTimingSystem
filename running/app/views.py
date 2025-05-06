@@ -133,8 +133,14 @@ def upload_json(request, race_id):
 
         time_difference = finish_time - start_time
 
+        total_seconds = int(round(time_difference.total_seconds()))
+        hours, remainder = divmod(total_seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+
+        formatted_time = f"{hours:02}:{minutes:02}:{seconds:02}"
+
         RaceResult.objects.create(
-            participant=participant, race=race, total_time=str(time_difference)
+            participant=participant, race=race, total_time=formatted_time
         )
         return JsonResponse({"message": "Data processed and race result created."})
 
