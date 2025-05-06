@@ -133,8 +133,14 @@ def upload_json(request, race_id):
 
         time_difference = finish_time - start_time
 
+        total_seconds = int(round(time_difference.total_seconds()))
+        hours, remainder = divmod(total_seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+
+        formatted_time = f"{hours:02}:{minutes:02}:{seconds:02}"
+
         RaceResult.objects.create(
-            participant=participant, race=race, total_time=str(time_difference)
+            participant=participant, race=race, total_time=formatted_time
         )
         return JsonResponse({"message": "Data processed and race result created."})
 
@@ -1889,13 +1895,13 @@ def upload_image(request, race_id):
             logger.warning("No timestamp provided in the request.")
             return JsonResponse({"error": "Timestamp is required"}, status=400)
 
-        timestamp = parse_datetime(timestamp_str)
+        timestamp = datetime.fromtimestamp(float(timestamp_str), tz=tz.utc)
         if not timestamp:
             logger.error(
-                f"Invalid timestamp format: {timestamp_str}. Expected format: YYYY-MM-DD HH:MM:SS."
+                f"Invalid timestamp format: {timestamp_str}. Expected epoch time"
             )
             return JsonResponse(
-                {"error": "Invalid timestamp format. Use YYYY-MM-DD HH:MM:SS"},
+                {"error": "Invalid timestamp format. Expected epoch time"},
                 status=400,
             )
 
@@ -2004,10 +2010,17 @@ def gallery_view(request, race_id):
 
         #  use the saved timestamp from the image
         timestamp = image.timestamp
-        if timezone.is_naive(timestamp):
-            timestamp = timezone.make_aware(timestamp)
 
-        formatted_time = timestamp.strftime("%H:%M:%S")
+        race_start_naive = datetime.combine(race.date, race.start_time)
+        race_start = race_start_naive.replace(tzinfo=tz.utc)
+
+        time_difference = timestamp - race_start
+
+        total_seconds = int(round(time_difference.total_seconds()))
+        hours, remainder = divmod(total_seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+
+        formatted_time = f"{hours:02}:{minutes:02}:{seconds:02}"
 
         #  delete old result if bib number changed
         if str(old_bib_number) != bib_number:
@@ -2038,25 +2051,13 @@ def gallery_view(request, race_id):
                 existing_result.delete()
                 messages.info(request, "Existing result deleted. Creating new result.")
 
-            race_start = datetime.combine(race.date, race.start_time)
-            race_start = timezone.make_aware(race_start)
-
-            if timestamp < race_start:
-                timestamp += timedelta(days=1)
-
-            elapsed = timestamp - race_start
-            total_seconds = int(elapsed.total_seconds())
-            hours, remainder = divmod(total_seconds, 3600)
-            minutes, seconds = divmod(remainder, 60)
-            total_time = f"{hours:02}:{minutes:02}:{seconds:02}"
-
             RaceResult.objects.create(
                 participant=participant,
                 race=race,
-                total_time=total_time
+                total_time=formatted_time
             )
 
-            logger.info(f"Race result created for participant: {participant.name} with time: {total_time}.")
+            logger.info(f"Race result created for participant: {participant.name} with time: {formatted_time}.")
             messages.success(request, f"Race result created for {participant.name}!")
 
         except Participant.DoesNotExist:

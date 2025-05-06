@@ -65,10 +65,9 @@ class WebsiteAPI:
                 success, buffer = cv2.imencode(".jpg", image)
                 if success:
                     image_bytes = buffer.tobytes()
-                    timestamp_str = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(timestamp))
                     files = {"image": ("image.jpg", image_bytes, "image/jpeg")}
                     form_data = {
-                        "timestamp": timestamp_str,
+                        "timestamp": timestamp,
                         "bib_number": str(bib_number),
                     }
                     image_headers = {"Authorization": f"Token {self.token}"} if self.token else {}
