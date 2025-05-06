@@ -28,14 +28,14 @@
                 <div class="card">
                     <img src="{{ image.image.url }}" class="card-img-top img-fluid" alt="Image">
                     <div class="card-body">
-                        <p><strong>Time:</strong> {{ image.timestamp|date:"H:i" }}</p>
+                        <p><strong>Time:</strong> {{ image.timestamp|date:"H:i:s" }}</p>
                         <p><strong>Race:</strong> {{ image.race.name }}</p>
 
                         <!-- Form to Submit Bib Number -->
                         <form method="POST" class="mb-2">
                             {% csrf_token %}
                             <input type="hidden" name="image_id" value="{{ image.id }}">
-                            <input type="hidden" name="image_timestamp" value="{{ image.timestamp|date:'d M Y, g:i A' }}">
+                            <input type="hidden" name="image_timestamp" value="{{ image.timestamp|date:'d M Y, g:i:s A' }}">
                             <div class="form-group">
                                 <label for="bib_number_{{ forloop.counter }}">Bib Number:</label>
                                 <input type="text" class="form-control" id="bib_number_{{ forloop.counter }}" name="bib_number" placeholder="Enter Bib Number">
@@ -67,7 +67,7 @@
                 <div class="card">
                     <img src="{{ image.image.url }}" class="card-img-top img-fluid" alt="Image">
                     <div class="card-body">
-                        <p><strong>Time:</strong> {{ image.timestamp|date:"H:i" }}</p>
+                        <input type="hidden" name="image_timestamp" value="{{ image.timestamp|date:'d M Y, g:i:s A' }}">
                         <p><strong>Race:</strong> {{ image.race.name }}</p>
 
                         <!-- Form to Update Bib Number -->
