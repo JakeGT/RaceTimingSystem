@@ -49,16 +49,15 @@ class WebsiteAPI:
             if self.token:
                 headers["Authorization"] = f"Token {self.token}"
 
-            # Send result data with grequests
-            data_req = grequests.post(self.url_data, json=data, headers=headers)
-            data_responses = grequests.map([data_req], size=1)
-            if data_responses and data_responses[0]:
+            # Send result data with requests
+            try:
+                data_resp = requests.post(self.url_data, json=data, headers=headers)
                 try:
-                    print("Data upload response:", data_responses[0].json())
+                    print("Data upload response:", data_resp.json())
                 except Exception:
-                    print(f"Data upload failed [{data_responses[0].status_code}]: Invalid JSON")
-            else:
-                print("Data - No response from server")
+                    print(f"Data upload failed [{data_resp.status_code}]: Invalid JSON")
+            except Exception as e:
+                print(f"Data upload request failed: {e}")
 
             # Send image with requests (NOT grequests)
             if image is not None:
