@@ -306,7 +306,7 @@ class BibDetectorApp(QWidget):
         if torch.cuda.is_available():
             for i in range(torch.cuda.device_count()):
                 self.device_combo.addItem(f"cuda:{i}")
-            default_device = "cude:0"
+            default_device = "cuda:0"
         if torch.backends.mps.is_available():
             self.device_combo.addItem("mps")
             default_device = "mps"
