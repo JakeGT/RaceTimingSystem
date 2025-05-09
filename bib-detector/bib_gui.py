@@ -305,6 +305,15 @@ class BibDetectorApp(QWidget):
         if torch.cuda.is_available():
             for i in range(torch.cuda.device_count()):
                 self.device_combo.addItem(f"cuda:{i}")
+        if torch.backends.mps.is_available():
+            self.device_combo.addItem("mps")
+        else:
+            if not torch.backends.mps.is_built():
+                print("MPS not available because the current PyTorch install was not "
+                      "built with MPS enabled.")
+            else:
+                print("MPS not available because the current MacOS version is not 12.3+ "
+                      "and/or you do not have an MPS-enabled device on this machine.")
 
     def populate_camera_inputs(self):
         self.camera_combo.clear()

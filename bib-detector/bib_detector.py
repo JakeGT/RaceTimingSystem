@@ -28,7 +28,8 @@ class BibDetector:
         # Load the YOLO model using the given model path.
         self.model = YOLO(model_path)
         # Initialise the EasyOCR reader for English.
-        self.reader = easyocr.Reader(['en'], gpu=(device != "cpu"))
+        use_gpu = device != "cpu"
+        self.reader = easyocr.Reader(['en'], gpu=use_gpu)
         # Store the device setting for later use during detection.
         self.device = device
 
