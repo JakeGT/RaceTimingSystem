@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import ExternalNavbar from "../components/external-narbar.jsx";
+import {useAuth} from "../context/AuthContext.jsx";
 
 export default function RegisterPage() {
     const navigate = useNavigate();
+    const {setAccessToken} = useAuth();
     const [form, setForm] = useState({
         username: '',
         email: '',
@@ -14,6 +17,9 @@ export default function RegisterPage() {
     });
 
     const [errors, setErrors] = useState({});
+    const [loading, setLoading] = useState(false);
+    const [registered, setRegistered] = useState(false);
+    const [roles, setRoles] = useState({is_runner: false, is_organiser: false})
 
     const handleChange = (e) => {
         const {name, value, type, checked} = e.target;
@@ -35,19 +41,38 @@ export default function RegisterPage() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!validate()) return;
+        setLoading(true);
 
         const res = await fetch("/api/register/", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
+            credentials: "include",
             body: JSON.stringify(form),
         });
+
+        const data = await res.json();
+        setLoading(false);
+
         if (res.ok) {
-            navigate("/login");
+            setAccessToken(data.access)
+            setRoles({is_runner: data.is_runner, is_organiser: data.is_organiser});
+
+            if (data.is_runner && data.is_organiser) {
+                setRegistered(true);
+            } else if (data.is_organiser) {
+                navigate("/organiser/dashboard");
+            } else if (data.is_runner) {
+                navigate("/runner/dashboard");
+            }
         } else {
-            const data = await res.json();
-            alert("Registration failed: " + JSON.stringify(data))
+            alert("Registration failed: " + JSON.stringify(data));
         }
     };
+
+    const handleContinue = (role) => {
+        if (role === "runner") navigate("/runner/dashboard");
+        if (role === "organiser") navigate("organiser/dashboard");
+    }
 
     return (
         <div
@@ -55,115 +80,128 @@ export default function RegisterPage() {
             style={{backgroundImage: 'url(/assets/register-background.jpg)'}}
         >
             {/* NavBar */}
-            <nav className={"text-white bg-black/80 backdrop-blur-sm fixed top-0 w-full z-50 px-4 py-3 flex items-center justify-between shadow-md"}>
-                <div className={"text-xl font-bold cursor-pointer"} onClick={() => navigate("/")}>RaceTiming</div>
-                <div className={"space-x-4 hidden md:flex"}>
-                    <button
-                        onClick={() => navigate("/register")}
-                        className={"px-4 py-2 rounded-full bg-blue-600 hover:bg-blue-700 transition font-bold"}
-                    >
-                        Register
-                    </button>
-                    <div className={"relative group"}>
-                        <button className={"px-4 py-2 rounded-full bg-gray-700 hover:bg-gray-600 transition"}>Menu</button>
-                        <div className={"absolute right-0 mt-0 bg-gray-800 rounded shadow-lg hidden group-hover:block"}>
-                            <button className={"block px-4 py-2 hover:bg-gray-700 w-full text-left"}>Help</button>
-                            <button className={"block px-4 py-2 hover:bg-gray-700 w-full text-left"}>Learn</button>
-                        </div>
-                    </div>
-                </div>
-            </nav>
+            <ExternalNavbar />
+
+            {/* Form Container */}
 
             <div className={"flex flex-1 items-center justify-center px-4"}>
-                <form
-                    onSubmit={handleSubmit}
-                    className={"bg-white text-black rounded-xl shadow-xl w-full max-w-md p-8 space-y-4"}
-                >
-                    <h2 className={"text-2xl font-bold text-center mb-4"}>Create Your Account</h2>
-
-                    <div className={"flex gap-2"}>
-                        <div className={"w-1/2"}>
-                            <input
-                        type={"text"}
-                        name={"first_name"}
-                        placeholder={"First name"}
-                        value={form.first_name}
-                        onChange={handleChange}
-                        className={"w-full border rounded px-3 py-2"}
-                    />
-                    {errors.first_name && <p className={"text-red-500 text-sm"}>{errors.first_name}</p>}
+                <div className={"bg-white text-black rounded-xl shadow-xl w-full max-w-md p-8 space-y-4"}>
+                    {loading ? (
+                        <div className="flex items-center justify-center h-40">
+                            <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
                         </div>
-                        <div className={"w-1/2"}>
-                    <input
-                        type={"text"}
-                        name={"last_name"}
-                        placeholder={"Last name"}
-                        value={form.last_name}
-                        onChange={handleChange}
-                        className={"w-full border rounded px-3 py-2"}
-                    />
-                    {errors.last_name && <p className={"text-red-500 text-sm"}>{errors.last_name}</p>}
+                    ) : registered ? (
+                        <div className={"flex flex-col items-center space-y-4"}>
+                            <p className={"text-center font-semibold"}>Registration successful!</p>
+                            {roles.is_runner && (
+                                <button
+                                    className={"w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition duration-300"}
+                                    onClick={() => handleContinue("runner")}
+                                >
+                                    Continue as Runner
+                                </button>
+                            )}
+                            {roles.is_organiser && (
+                                <button
+                                    className={"w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition duration-300"}
+                                    onClick={() => handleContinue("organiser")}
+                                >
+                                    Continue as Organiser
+                                </button>
+                            )}
                         </div>
-                    </div>
+                    ) : (
+                        <form
+                            onSubmit={handleSubmit}
+                            className={"space-y-4"}
+                        >
+                            <h2 className={"text-2xl font-bold text-center mb-4"}>Create Your Account</h2>
 
-                    <input
-                        type={"text"}
-                        name={"username"}
-                        placeholder={"Username"}
-                        value={form.username}
-                        onChange={handleChange}
-                        className={"w-full border rounded px-3 py-2"}
-                    />
-                    {errors.username && <p className={"text-red-500 text-sm"}>{errors.username}</p>}
-                    <input
-                        type={"email"}
-                        name={"email"}
-                        placeholder={"Email"}
-                        value={form.email}
-                        onChange={handleChange}
-                        className={"w-full border rounded px-3 py-2"}
-                    />
-                    {errors.email && <p className={"text-red-500 text-sm"}>{errors.email}</p>}
-                    <input
-                        type={"password"}
-                        name={"password"}
-                        placeholder={"Password"}
-                        value={form.password}
-                        onChange={handleChange}
-                        className={"w-full border rounded px-3 py-2"}
-                    />
-                    {errors.password && <p className={"text-red-500 text-sm"}>{errors.password}</p>}
+                            <div className={"flex gap-2"}>
+                                <div className={"w-1/2"}>
+                                    <input
+                                type={"text"}
+                                name={"first_name"}
+                                placeholder={"First name"}
+                                value={form.first_name}
+                                onChange={handleChange}
+                                className={"w-full border rounded px-3 py-2"}
+                            />
+                            {errors.first_name && <p className={"text-red-500 text-sm"}>{errors.first_name}</p>}
+                                </div>
+                                <div className={"w-1/2"}>
+                            <input
+                                type={"text"}
+                                name={"last_name"}
+                                placeholder={"Last name"}
+                                value={form.last_name}
+                                onChange={handleChange}
+                                className={"w-full border rounded px-3 py-2"}
+                            />
+                            {errors.last_name && <p className={"text-red-500 text-sm"}>{errors.last_name}</p>}
+                                </div>
+                            </div>
 
-                    <div className={"flex flex-col md:flex-row md:items-center md:gap-6"}>
-                        <label className={"flex items-center"}>
                             <input
-                                type={"checkbox"}
-                                name={"is_runner"}
-                                checked={form.is_runner}
+                                type={"text"}
+                                name={"username"}
+                                placeholder={"Username"}
+                                value={form.username}
                                 onChange={handleChange}
-                                className={"mr-2"}
+                                className={"w-full border rounded px-3 py-2"}
                             />
-                            Register as Runner
-                        </label>
-                        <label className={"flex items-center"}>
+                            {errors.username && <p className={"text-red-500 text-sm"}>{errors.username}</p>}
                             <input
-                                type={"checkbox"}
-                                name={"is_organiser"}
-                                checked={form.is_organiser}
+                                type={"email"}
+                                name={"email"}
+                                placeholder={"Email"}
+                                value={form.email}
                                 onChange={handleChange}
-                                className={"mr-2"}
+                                className={"w-full border rounded px-3 py-2"}
                             />
-                            Register as Organiser
-                        </label>
-                        {errors.role && <p className={"text-red-500 text-sm"}>{errors.role}</p>}
-                    </div>
-                    <button
-                        type={"submit"}
-                        className={"w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition duration-300 cursor-pointer"}
-                    >
-                        Register
-                    </button>
-                </form>
+                            {errors.email && <p className={"text-red-500 text-sm"}>{errors.email}</p>}
+                            <input
+                                type={"password"}
+                                name={"password"}
+                                placeholder={"Password"}
+                                value={form.password}
+                                onChange={handleChange}
+                                className={"w-full border rounded px-3 py-2"}
+                            />
+                            {errors.password && <p className={"text-red-500 text-sm"}>{errors.password}</p>}
+
+                            <div className={"flex flex-col md:flex-row md:items-center md:gap-6"}>
+                                <label className={"flex items-center"}>
+                                    <input
+                                        type={"checkbox"}
+                                        name={"is_runner"}
+                                        checked={form.is_runner}
+                                        onChange={handleChange}
+                                        className={"mr-2"}
+                                    />
+                                    Register as Runner
+                                </label>
+                                <label className={"flex items-center"}>
+                                    <input
+                                        type={"checkbox"}
+                                        name={"is_organiser"}
+                                        checked={form.is_organiser}
+                                        onChange={handleChange}
+                                        className={"mr-2"}
+                                    />
+                                    Register as Organiser
+                                </label>
+                                {errors.role && <p className={"text-red-500 text-sm"}>{errors.role}</p>}
+                            </div>
+                            <button
+                                type={"submit"}
+                                className={"w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition duration-300 cursor-pointer"}
+                            >
+                                Register
+                            </button>
+                        </form>
+                    )}
+                </div>
             </div>
         </div>
     )

@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import {useNavigate} from "react-router-dom";
 import {motion, useAnimation} from "framer-motion";
 import {useInView} from "react-intersection-observer";
+import ExternalNavbar from "../components/external-narbar.jsx";
 
 
 const infographics = [
@@ -51,24 +52,7 @@ export default function LandingPage() {
     return (
         <div className={"font-sans bg-gray-900 text-white min-h-screen"}>
             {/*Navigation Bar*/}
-            <nav className={"bg-black/80 backdrop-blur-sm fixed top-0 w-full z-50 px-4 py-3 flex items-center justify-between shadow-md"}>
-                <div className={"text-xl font-bold cursor-pointer"} onClick={() => navigate("/")}>RaceTiming</div>
-                <div className={"space-x-4 hidden md:flex"}>
-                    <button
-                        onClick={() => navigate("/register")}
-                        className={"px-4 py-2 rounded-full bg-blue-600 hover:bg-blue-700 transition font-bold"}
-                    >
-                        Register
-                    </button>
-                    <div className={"relative group"}>
-                        <button className={"px-4 py-2 rounded-full bg-gray-700 hover:bg-gray-600 transition"}>Menu</button>
-                        <div className={"absolute right-0 mt-0 bg-gray-800 rounded shadow-lg hidden group-hover:block"}>
-                            <button className={"block px-4 py-2 hover:bg-gray-700 w-full text-left"}>Help</button>
-                            <button className={"block px-4 py-2 hover:bg-gray-700 w-full text-left"}>Learn</button>
-                        </div>
-                    </div>
-                </div>
-            </nav>
+            <ExternalNavbar />
 
 
 
