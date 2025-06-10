@@ -8,6 +8,7 @@ import {
     ChevronUp,
     X,
     Flag,
+    House,
 } from "lucide-react"
 import {motion, AnimatePresence} from "framer-motion"
 const Sidebar = ({isOpen, onClose}) => {
@@ -31,7 +32,7 @@ const Sidebar = ({isOpen, onClose}) => {
                         initial = {{opacity: 0}}
                         animate = {{opacity: 1}}
                         exit = {{opacity:0}}
-                        onclick={onClose}
+                        onClick={onClose}
                     />
                 )}
             </AnimatePresence>
@@ -47,15 +48,15 @@ const Sidebar = ({isOpen, onClose}) => {
                         className={"fixed, lg:static z-40 w-64 h-full bg-gray-900 text-gray-300 flex flex-col p-4"}
                     >
                         <div className={"flex items-center justify-between mb-6"}>
-                            <Link to={"/organiser/dashboard/"} className={"text-2xl font-semibold flex items-center gap-2 cursor-pointer"}><LayoutDashboard size={24} /> Dashboard</Link>
+                            <h1 className={"text-2xl font-semibold flex items-center gap-2"}><LayoutDashboard size={24} /> Dashboard</h1>
                             <button className="lg:hidden text-gray-400" onClick={onClose}>
                                 <X size={24} />
                             </button>
                         </div>
                         <nav className={"flex flex-col gap-1"}>
+                            <Link to="/organiser/dashboard" className={navItemClass("/organiser/dashboard")}> <House size={20}/>Home </Link>
                             <Link to="/organiser/dashboard/race" className={navItemClass("/organiser/dashboard/race")}> <Flag size={20} />My Races</Link>
                             <Link to="/organiser/dashboard/create-race" className={navItemClass("/organiser/dashboard/create-race")}> <PlusCircle size={20} />Create Race</Link>
-
                             <button
                                 onClick={() => setResultsOpen((prev) => !prev)}
                                 className={"flex items-center justify-between px-4 py-2 rounded-md hover:bg-gray-700 transition-colors duration-200"}

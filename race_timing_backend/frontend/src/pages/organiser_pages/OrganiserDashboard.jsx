@@ -1,4 +1,4 @@
-import Sidebar from "../components/Sidebar.jsx";
+import Sidebar from "../../components/Sidebar.jsx";
 import {Outlet} from "react-router-dom"
 import {useState} from "react";
 import {Menu} from "lucide-react"

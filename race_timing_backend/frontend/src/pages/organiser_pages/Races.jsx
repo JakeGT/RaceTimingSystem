@@ -1,13 +1,14 @@
-// MyRaces.jsx
+// Races.jsx
 import { useEffect, useState } from "react";
-import { fetchWithAuth } from "../utils/fetchWithAuth";
-import { useAuth } from "../context/AuthContext";
+import { fetchWithAuth } from "../../utils/fetchWithAuth.js";
+import { useAuth } from "../../context/AuthContext.jsx";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, ChevronUp, SquarePen } from "lucide-react";
+import RequestOrganiserPermission from "./RequestOrganiserPermission.jsx";
 
 const ITEMS_PER_PAGE = 10;
 
-const MyRaces = () => {
+const Races = ({url, title}) => {
     const { accessToken, refreshAccessToken } = useAuth();
     const [races, setRaces] = useState([]);
     const [filtered, setFiltered] = useState([]);
@@ -17,17 +18,20 @@ const MyRaces = () => {
     const [sortKey, setSortKey] = useState("start_datetime");
     const [sortAsc, setSortAsc] = useState(true);
     const [page, setPage] = useState(1);
+    const [showRequestModal, setShowRequestModal] = useState(false);
+    const [racePermissionRequest, setRacePermissionRequest] = useState();
+    const [showRequestPermissionModal, setShowRequestPermissionModal] = useState(false);
 
     useEffect(() => {
         const fetchRaces = async () => {
-            const res = await fetchWithAuth("/api/races/my/", {}, accessToken, refreshAccessToken);
+            const res = await fetchWithAuth(url, {}, accessToken, refreshAccessToken);
             if (res.ok) {
                 const data = await res.json();
                 setRaces(data);
             }
         };
         fetchRaces();
-    }, [accessToken, refreshAccessToken]);
+    }, [accessToken, refreshAccessToken, url]);
 
     useEffect(() => {
         let result = [...races];
@@ -47,9 +51,25 @@ const MyRaces = () => {
 
     const paginated = filtered.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
 
-    const openEditPanel = (race) => {
-        setSelectedRace(race);
-        setFormState(race);
+    const attemptModify = async (race) => {
+        const res = await fetchWithAuth(
+            `/api/races/${race.id}/check-organiser/`,
+            {
+                method: "GET"
+            },
+            accessToken,
+            refreshAccessToken
+        );
+        if (res.ok) {
+            const data = await res.json();
+            if (data.organiser === true) {
+                setSelectedRace(race);
+                setFormState(race);
+            } else {
+                setShowRequestModal(true);
+                setRacePermissionRequest(race)
+            }
+        }
     };
 
     const handleChange = (e) => {
@@ -88,7 +108,7 @@ const MyRaces = () => {
     return (
         <div className="p-6">
             <div className="flex justify-between items-center mb-4">
-                <h1 className="text-2xl font-bold">My Races</h1>
+                <h1 className="text-2xl font-bold">{title}</h1>
                 <input
                     type="text"
                     placeholder="Search..."
@@ -126,7 +146,7 @@ const MyRaces = () => {
                             </td>
                             <td className="p-3 text-right">
                                 <button
-                                    onClick={() => openEditPanel(race)}
+                                    onClick={() => attemptModify(race)}
                                     className="text-indigo-600 hover:underline cursor-pointer"
                                 >
                                     <SquarePen size={15}/>
@@ -150,6 +170,56 @@ const MyRaces = () => {
                     </button>
                 ))}
             </div>
+
+            {/* Permission Request */}
+            <AnimatePresence>
+                {showRequestModal && (
+                    <motion.div
+                        className={"fixed inset-0 bg-black/30 backdrop-blur-sm flex justify-center items-center z-50"}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                    >
+                        <div className={"bg-white p-6 rounded shadow-md w-full max-w-md"}>
+                            <h2 className={"text-xl font-semibold mb-2"}>Permission Required</h2>
+                            <p className={"mb-4"}>You are not an organiser of this race. Would you like to request access to manage it?</p>
+                            <div className={"flex justify-end gap-2"}>
+                                <button onClick={() => setShowRequestModal(false)} className="px-4 py-2 bg-gray-200 rounded">Cancel</button>
+                                <button onClick={() => {
+                                    setShowRequestModal(false)
+                                    setShowRequestPermissionModal(true)
+                                }
+                                } className={"px-4 py-2 bg-indigo-600 text-white rounded"}>Request Permission</button>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            <AnimatePresence>
+                {showRequestPermissionModal && (
+                    <>
+                        <motion.div
+                            className={"fixed z-40 inset-0 bg-black/30 backdrop-blur-sm"}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => {
+                                setShowRequestPermissionModal(false);
+                            }
+                        }
+                    />
+                        <motion.div
+                            className={"fixed flex justify-center items-center z-50 inset-x-0 mx-auto"}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                        >
+                            <RequestOrganiserPermission race={racePermissionRequest} closeComponent={() => setShowRequestPermissionModal(false)}/>
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
 
             <AnimatePresence>
                 {selectedRace && (
@@ -179,6 +249,7 @@ const MyRaces = () => {
                                 <input type="text" name="social_facebook" value={formState.social_facebook || ""} onChange={handleChange} className="w-full bg-gray-100 border px-3 py-2 rounded" placeholder="Facebook URL" />
                                 <input type="url" name="stream_url" value={formState.stream_url || ""} onChange={handleChange} className="w-full bg-gray-100 border px-3 py-2 rounded" placeholder="YouTube Stream URL" />
                                 <div className="flex justify-end mt-6 gap-2">
+                                    {/* TODO: Loading circle on handle save */}
                                     <button onClick={() => setSelectedRace(null)} className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Cancel</button>
                                     <button onClick={handleSave} className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">Save</button>
                                 </div>
@@ -191,4 +262,4 @@ const MyRaces = () => {
     );
 };
 
-export default MyRaces;
+export default Races;

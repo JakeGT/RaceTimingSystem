@@ -5,6 +5,7 @@ from django.contrib.auth import authenticate
 from django.views.decorators.csrf import ensure_csrf_cookie
 from ..serializers.user_serializers import UserSerializer
 
+#TODO: Logging
 
 def set_refresh_cookie(response, token):
     response.set_cookie(

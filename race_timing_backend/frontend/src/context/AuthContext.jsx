@@ -11,7 +11,6 @@ export function AuthProvider({ children }) {
     }
 
     async function refreshAccessToken() {
-        console.log("Refreshing access token...")
         const res = await fetch("/api/token/refresh/", {
             method: "POST",
             credentials: "include",
@@ -21,9 +20,6 @@ export function AuthProvider({ children }) {
             },
             body: JSON.stringify({})
         });
-
-        console.log("Refresh response: ", res)
-
         if (res.ok) {
             const data = await res.json();
             setAccessToken(data.access);

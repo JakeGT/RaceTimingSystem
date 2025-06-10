@@ -5,10 +5,10 @@ from rest_framework.response import Response
 from django.utils import timezone
 from django.http import JsonResponse
 import logging
-from ..models import Race, RaceCategory, ParticipantCategory
+from ..models import Race, RaceCategory, ParticipantCategory, OrganiserApplication
 from ..serializers.race_serializer import RaceSerializer, RaceUpdateSerializer
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('django')
 
 
 @api_view(["POST"])
@@ -103,6 +103,64 @@ def get_all_races(request):
 
     serialized = RaceSerializer(races, many=True)
     return Response(serialized.data)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def check_organiser(request, race_id):
+    user = request.user
+    logger.info(f"[CheckOrganiser] Checking organiser status of {user.username} on race ID {race_id}")
+    try:
+        race = Race.objects.get(id=race_id)
+        user_organiser = user in race.organisers.all()
+        return JsonResponse({"organiser": user_organiser})
+    except Race.DoesNotExist:
+        logger.warning(f"[CheckOrganiser] Race not found (ID: {race_id})")
+        return Response({"error": "Race not found."}, status=404)
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def request_organiser_permission(request, race_id):
+    user = request.user
+    data = request.data
+    logger.info(f"[RequestOrganiserPermission] Applying for organiser status of {user.username} on race ID {race_id}")
+    logger.info(f"[RequestOrganiserPermission] Application data: {data}")
+    try:
+        race = Race.objects.get(id=race_id)
+    except Race.DoesNotExist:
+        logger.warning(f"[RequestOrganiserPermission] Race not found (ID: {race_id})")
+        return Response({"error": "Race not found."}, status=404)
+
+    OrganiserApplication.objects.create(
+        user=user,
+        race=race,
+        message=data.get("message")
+    )
+    return JsonResponse({
+        "message": "Application created successfully.",
+    }, status=201)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def check_organiser_application(request, race_id):
+    user = request.user
+    logger.info(f"[CheckOrganiserApplication] Checking for application of {user.username} on race ID {race_id}")
+    try:
+        race = Race.objects.get(id=race_id)
+    except Race.DoesNotExist:
+        logger.warning(f"[CheckOrganiserApplication] Race not found (ID: {race_id})")
+        return Response({"error": "Race not found."}, status=404)
+    try:
+        application = OrganiserApplication.objects.get(user=user, race=race)
+        logger.info(f"[CheckOrganiserApplication] Application found for {user.username} on race ID {race_id}")
+        return JsonResponse({
+            "exists": True,
+            "message": application.message
+        })
+    except OrganiserApplication.DoesNotExist:
+        logger.info(f"[CheckOrganiserApplication] No existing application for {user.username} on race ID {race_id}")
+        return JsonResponse({
+            "exists": False
+        })
+
 
 @api_view(["PATCH"])
 @permission_classes([IsAuthenticated])

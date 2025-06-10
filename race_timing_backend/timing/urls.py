@@ -4,7 +4,15 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.views import TokenRefreshView
 from .views.category_views import get_categories
-from .views.race_views import create_race, get_my_races, update_race, get_all_races
+from .views.race_views import (
+    create_race,
+    get_my_races,
+    update_race,
+    get_all_races,
+    check_organiser,
+    request_organiser_permission,
+    check_organiser_application,
+)
 
 
 class DebugTokenRefreshView(TokenRefreshView):
@@ -28,6 +36,9 @@ urlpatterns = [
     path('api/create-race/', create_race, name='create_race'),
     path('api/races/my/', get_my_races, name="get_my_races"),
     path('api/races/<int:race_id>/update/', update_race, name="update_race"),
-    path('api/races/all', get_all_races, name="get_all_races"),
+    path('api/races/all/', get_all_races, name="get_all_races"),
+    path('api/races/<int:race_id>/check-organiser/', check_organiser, name="check_organiser"),
+    path('api/races/<int:race_id>/request-organiser-permission/', request_organiser_permission, name="request_organiser_permission"),
+    path('api/races/<int:race_id>/check-organiser-application/', check_organiser_application, name="check_organiser_persmission"),
 ]
 

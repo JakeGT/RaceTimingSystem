@@ -3,10 +3,10 @@ import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import RegisterPage from './pages/RegisterPage.jsx'
 import LoginPage from "./pages/LoginPage.jsx";
-import OrganiserDashboard from "./pages/OrganiserDashboard.jsx";
-import CreateRace from "./pages/CreateRace.jsx";
-import ModifyResults from "./pages/ModifyResults.jsx";
-import MyRaces from "./pages/MyRaces.jsx";
+import OrganiserDashboard from "./pages/organiser_pages/OrganiserDashboard.jsx";
+import CreateRace from "./pages/organiser_pages/CreateRace.jsx";
+import ModifyResults from "./pages/organiser_pages/ModifyResults.jsx";
+import Races from "./pages/organiser_pages/Races.jsx";
 
 function App() {
     return (
@@ -19,10 +19,10 @@ function App() {
                 <Route path={"/login"} element={<div>Login Redirect</div>} />
                 <Route path={"/runner/dashboard"} element={<div>Runner Dashboard</div>} />
                 <Route path={"/organiser/dashboard"} element={<OrganiserDashboard />}>
-                    <Route index element={<h1>HomePage</h1>} />
+                    <Route index element={<Races url={'/api/races/all/'} key={"all"} title={"All Races"} />} />
                     <Route path={"/organiser/dashboard/create-race"} element={<CreateRace />} />
                     <Route path={"/organiser/dashboard/results/modify"} element={<ModifyResults />} />
-                    <Route path={"/organiser/dashboard/race"} element={<MyRaces />} />
+                    <Route path={"/organiser/dashboard/race"} element={<Races url={'/api/races/my/'} key={"my"} title={"My Races"} />} />
                 </Route>
             </Routes>
         </Router>
