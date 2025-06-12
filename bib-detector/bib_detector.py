@@ -257,6 +257,12 @@ class VideoProcessor:
         self.out = None
         self.crop_coords = self.validate_crop_coords(crop_coords)
 
+        # Performance Stats
+        self.frame_count = 0
+        self.detect_times = []
+        self.ocr_times = []
+        self.start_time = None
+
     def validate_crop_coords(self, coords):
         # Ensure crop coordinates are either None or a valid tuple (x1, y1, x2, y2)
         if coords is None:
@@ -280,6 +286,8 @@ class VideoProcessor:
         else:
             cap = cv2.VideoCapture(self.input_source)
             manage_release = True
+
+        self.start_time = time.perf_counter()
 
 
         while cap.isOpened():
@@ -312,7 +320,10 @@ class VideoProcessor:
             if self.output_file and self.out is None:
                 self.out = cv2.VideoWriter(self.output_file, cv2.VideoWriter_fourcc(*'mp4v'), 15, (combined_w, frame_h))
 
+            t0 = time.perf_counter()
             results = self.detector.detect(source=frame, verbose=self.verbose)
+            t1 = time.perf_counter()
+            self.detect_times.append(t1 - t0)
             result = results[0]
 
             tracked_bibs = {}
@@ -333,6 +344,20 @@ class VideoProcessor:
                 bib_box = frame[y1:y2, x1:x2]
                 self.tracker.update(track_id, bib_box, self.detector, frame)
 
+            if len(result.boxes) > 0:
+                t2 = time.perf_counter()
+                self.ocr_times.append(t2 - t1)
+            self.frame_count += 1
+
+            elapsed = time.perf_counter() - self.start_time
+            avg_fps = self.frame_count / elapsed if elapsed > 0 else 0.0
+
+            cv2.putText(frame,
+                        f"FPS: {avg_fps:.1f}",
+                        (10, frame_h - 10),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.7, (0, 255, 0), 2)
+
             self.tracker.draw_info(side_panel, tracked_bibs, frame_w)
             self.tracker.expire_old_entries()
 
@@ -344,6 +369,20 @@ class VideoProcessor:
             cv2.imshow("Bib-Detector", combined)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
+
+        total_time = time.perf_counter() - self.start_time
+        overall_fps = self.frame_count / total_time if total_time > 0 else 0.0
+        avg_detect = (sum(self.detect_times) / len(self.detect_times)
+                      if self.detect_times else 0.0)
+        avg_ocr = (sum(self.ocr_times) / len(self.ocr_times)
+                      if self.ocr_times else 0.0)
+
+        print(f"[PERF] Processed {self.frame_count} frames in "
+              f"{total_time:.2f}s → {overall_fps:.2f} FPS overall")
+        print(f"[PERF] Detection took on average {avg_detect * 1000:.1f} ms/frame")
+        print(f"[PERF] OCR took on average {avg_ocr * 1000:.1f} ms/frame")
+
+
 
         # Release the video writer and close any open windows.
         if self.out:
