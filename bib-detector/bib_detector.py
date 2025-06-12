@@ -6,19 +6,31 @@ import argparse
 import os
 from collections import defaultdict, Counter
 from ultralytics import YOLO
-import easyocr
 import website_api
 from bib_csv import BibCSV
 
 
 class BibDetector:
-    def __init__(self, model_path, device):
+    def __init__(self, model_path, device, ocr_model="PaddleOCR"):
         # Initialise the bib detector with a YOLO detection model and an OCR reader.
         # Load the YOLO model using the given model path.
         self.model = YOLO(model_path)
         # Initialise the EasyOCR reader for English.
-        use_gpu = device != "cpu"
-        self.reader = easyocr.Reader(['en'], gpu=use_gpu)
+        self.ocr_model = ocr_model
+        if ocr_model == "EasyOCR":
+            import easyocr
+            use_gpu = device != "cpu"
+            self.reader = easyocr.Reader(['en'], gpu=use_gpu)
+        elif ocr_model == "PaddleOCR":
+            from paddleocr import PaddleOCR
+            self.reader = PaddleOCR(
+                lang="en",
+                use_angle_cls=False,
+                text_recognition_model_name="PP-OCRv5_mobile_rec",
+                text_detection_model_name="PP-OCRv5_mobile_det"
+            )
+
+
         # Store the device setting for later use during detection.
         self.device = device
 
@@ -33,17 +45,31 @@ class BibDetector:
         )
 
     def extract_bib_text(self, image):
-        # Convert the image from BGR to grayscale.
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        # Apply thresholding to improve text recognition performance
-        _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-        # Use the EasyOCR reader to detect text areas in the thresholded image.
-        results = self.reader.readtext(thresh, detail=1)
+        rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-        # Initialise variables to keep track of the most likely bib region.
+        entries = []
+        if self.ocr_model == "EasyOCR":
+            # EasyOCR: list of (bbox, text, conf)
+            for bbox, text, conf in self.reader.readtext(rgb, detail=1):
+                entries.append((bbox, text.strip(), float(conf)))
+        else:
+            # PaddleOCR: predict() → [ { ..., "rec_texts":[], "rec_scores":[], "rec_polys": ndarray, ... } ]
+            res = self.reader.predict(rgb)[0]
+            texts = res.get("rec_texts", [])
+            scores = res.get("rec_scores", [])
+            polys = res.get("rec_polys", [])
+
+            if hasattr(scores, "tolist"):
+                scores = scores.tolist()
+            if hasattr(polys, "tolist"):
+                polys = polys.tolist()
+            # pair them up
+            for bbox, text, conf in zip(polys, texts, scores):
+                entries.append((bbox, text.strip(), float(conf)))
+
         best_text, largest_height, final_conf = "", 0, 0
         # Iterate through each detected text instance and return the selected text and its confidence score.
-        for detection in results:
+        for detection in entries:
             bbox, text, conf = detection
             pts = np.array(bbox, dtype=np.int32)
             _, _, _, h = cv2.boundingRect(pts)
