@@ -120,6 +120,8 @@ def upload_json(request, race_id):
         bib_number = data.get("bib_number")
         result_time = data.get("time")
 
+        print(f"--- {bib_number} --- {result_time} ---")
+
         try:
             participant = Participant.objects.get(race=race, race_number=bib_number)
         except Participant.DoesNotExist:
@@ -132,6 +134,8 @@ def upload_json(request, race_id):
         print(finish_time)
 
         time_difference = finish_time - start_time
+
+        print(f"--- {time_difference} ---")
 
         total_seconds = int(round(time_difference.total_seconds()))
         hours, remainder = divmod(total_seconds, 3600)
@@ -1018,6 +1022,7 @@ def upload_participants(request):
                 age=age,
                 gender=gender,
                 team_name=team_name,
+                club_name=club_name,
                 age_category=age_category,
                 status="pending",
             )

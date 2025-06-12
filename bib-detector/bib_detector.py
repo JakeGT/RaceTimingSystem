@@ -13,8 +13,8 @@ from bib_csv import BibCSV
 class CustomVideoCapture(cv2.VideoCapture):
     def __init__(self, src, apiPreference=cv2.CAP_ANY):
         super().__init__(src, apiPreference)
-        self.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
-        self.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+        self.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+        self.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
 
 
 # Monkey-patch cv2.VideoCapture with our custom class
