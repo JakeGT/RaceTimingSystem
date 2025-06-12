@@ -2,7 +2,6 @@ import time
 import os
 import cv2
 import requests
-import grequests
 import threading
 
 

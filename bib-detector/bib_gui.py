@@ -71,40 +71,38 @@ class CropWindow(QWidget):
         self.end_pos = None
         self.is_selecting = False
         self.is_paused = False
+        # Ensure widget matches pixmap size
         self.setFixedSize(pixmap.size())
         self.setMouseTracking(True)
 
-        # Button Layout (bottom-right corner)
+        # Confirm/Cancel buttons
         self.confirm_button = QPushButton("Confirm", self)
         self.confirm_button.clicked.connect(self.confirm_crop)
-
         self.cancel_button = QPushButton("Cancel", self)
         self.cancel_button.clicked.connect(self.close)
 
-        self.button_layout = QHBoxLayout()
-        self.button_layout.addStretch()
-        self.button_layout.addWidget(self.confirm_button)
-        self.button_layout.addWidget(self.cancel_button)
-
-        self.main_layout = QVBoxLayout(self)
-        self.main_layout.addStretch()
-        self.main_layout.addLayout(self.button_layout)
-        self.main_layout.setContentsMargins(10, 10, 10, 10)
+        # Layout
+        button_layout = QHBoxLayout()
+        button_layout.addStretch()
+        button_layout.addWidget(self.confirm_button)
+        button_layout.addWidget(self.cancel_button)
+        main_layout = QVBoxLayout(self)
+        main_layout.addStretch()
+        main_layout.addLayout(button_layout)
+        main_layout.setContentsMargins(10, 10, 10, 10)
 
     def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton:
-            if not self.is_paused:
-                # Start or continue drawing
-                self.start_pos = event.pos()
-                self.end_pos = self.start_pos
-                self.is_selecting = True
-                self.update()
-            else:
-                # If paused and clicked again, reset selection
-                self.start_pos = None
-                self.end_pos = None
-                self.is_paused = False
-                self.update()
+        if event.button() == Qt.LeftButton and not self.is_paused:
+            self.start_pos = event.pos()
+            self.end_pos = self.start_pos
+            self.is_selecting = True
+            self.update()
+        elif self.is_paused:
+            # Reset on next click
+            self.start_pos = None
+            self.end_pos = None
+            self.is_paused = False
+            self.update()
 
     def mouseMoveEvent(self, event):
         if self.is_selecting and not self.is_paused:
@@ -115,45 +113,47 @@ class CropWindow(QWidget):
         if self.is_selecting and not self.is_paused:
             self.end_pos = event.pos()
             self.is_selecting = False
-            self.is_paused = True  # Freeze the box after releasing
+            self.is_paused = True
             self.update()
 
     def confirm_crop(self):
+        # Only proceed when selection is finalized
         if self.start_pos and self.end_pos and self.is_paused:
             rect = QRect(self.start_pos, self.end_pos).normalized()
-            x1, y1, x2, y2 = rect.left(), rect.top(), rect.right(), rect.bottom()
-            self.parent_app.x1_line.setText(str(x1))
-            self.parent_app.y1_line.setText(str(y1))
-            self.parent_app.x2_line.setText(str(x2))
-            self.parent_app.y2_line.setText(str(y2))
+            x1, y1 = rect.left(), rect.top()
+            x2, y2 = rect.right(), rect.bottom()
+            # Get pixmap dimensions
+            w = self.pixmap.width()
+            h = self.pixmap.height()
+            # Normalize to [0,1]
+            nx1 = x1 / w
+            ny1 = y1 / h
+            nx2 = x2 / w
+            ny2 = y2 / h
+            # Update parent GUI fields with normalized floats
+            self.parent_app.x1_line.setText(f"{nx1:.4f}")
+            self.parent_app.y1_line.setText(f"{ny1:.4f}")
+            self.parent_app.x2_line.setText(f"{nx2:.4f}")
+            self.parent_app.y2_line.setText(f"{ny2:.4f}")
             self.close()
 
     def paintEvent(self, event):
         painter = QPainter(self)
-
-        # Draw the snapshot
         painter.drawPixmap(0, 0, self.pixmap)
-
         if self.start_pos and self.end_pos:
             rect = QRect(self.start_pos, self.end_pos).normalized()
-
-            # Dim outside
+            # Darken outside
             painter.setBrush(QColor(0, 0, 0, 100))
             painter.setPen(Qt.NoPen)
-
-            # Top
-            painter.drawRect(0, 0, self.width(), rect.top())
-            # Bottom
-            painter.drawRect(0, rect.bottom(), self.width(), self.height() - rect.bottom())
-            # Left
-            painter.drawRect(0, rect.top(), rect.left(), rect.height())
-            # Right
-            painter.drawRect(rect.right(), rect.top(), self.width() - rect.right(), rect.height())
-
-            # Draw transparent red crop area
+            painter.drawRect(0, 0, self.width(), rect.top())  # Top
+            painter.drawRect(0, rect.bottom(), self.width(), self.height() - rect.bottom())  # Bottom
+            painter.drawRect(0, rect.top(), rect.left(), rect.height())  # Left
+            painter.drawRect(rect.right(), rect.top(), self.width() - rect.right(), rect.height())  # Right
+            # Draw selection
             painter.setBrush(QColor(255, 0, 0, 50))
             painter.setPen(QPen(Qt.red, 2, Qt.DashLine))
             painter.drawRect(rect)
+
 
 
 class BibDetectorApp(QWidget):
@@ -165,6 +165,7 @@ class BibDetectorApp(QWidget):
         self.available_cameras = None
         self.camera = None
         self.ip_camera_url = None
+        self.ip_cap = None
         self.setWindowTitle("Bib Detector GUI")
 
         self.device_label = QLabel("Device:")
@@ -325,8 +326,8 @@ class BibDetectorApp(QWidget):
     def populate_camera_inputs(self):
         self.camera_combo.clear()
         self.available_cameras = QCameraInfo.availableCameras()
-        for cam in self.available_cameras:
-            self.camera_combo.addItem(cam.description(), cam)
+        for os_index, cam in enumerate(self.available_cameras):
+            self.camera_combo.addItem(cam.description(), (cam, os_index))
 
         if self.camera_combo.count() > 0:
             self.change_camera_preview()
@@ -396,8 +397,8 @@ class BibDetectorApp(QWidget):
             self.results_line.setText(folder)
 
     def change_camera_preview(self):
-        camera_info = self.camera_combo.currentData()
-        if camera_info:
+        if self.camera_combo.currentData():
+            camera_info, _ = self.camera_combo.currentData()
             self.stop_all_cameras()
 
             self.preview_stack.setCurrentIndex(0)  # Show viewfinder
@@ -408,6 +409,8 @@ class BibDetectorApp(QWidget):
             self.camera.start()
 
     def connect_ip_camera(self):
+        if self.ip_cap is not None:
+            self.ip_cap.release()
         ip_address = self.camera_combo.currentText().strip()
         if not ip_address:
             QMessageBox.critical(self, "Missing IP", "Please enter an IP address.")
@@ -434,12 +437,12 @@ class BibDetectorApp(QWidget):
             return
 
         # Use OpenCV to trigger DroidCam stream
-        cap = cv2.VideoCapture(ip_address)
-        if not cap.isOpened():
+        self.ip_cap = cv2.VideoCapture(ip_address)
+        if not self.ip_cap.isOpened():
             QMessageBox.critical(self, "Connection Failed", f"Could not connect to DroidCam feed at {ip_address}")
-            cap.release()
+            self.ip_cap.release()
+            self.ip_cap = None
             return
-        cap.release()
 
         QMessageBox.information(self, "IP Camera Connected", f"Successfully connected to {ip_address}")
 
@@ -463,20 +466,17 @@ class BibDetectorApp(QWidget):
 
     def start_detection(self):
         device = self.device_combo.currentText()
-        camera_text = self.camera_combo.currentText().strip()
         selected_camera_info = self.camera_combo.currentData()
-        input_index = self.available_cameras.index(
-            selected_camera_info) if selected_camera_info in self.available_cameras else 0
         output_file = self.output_line.text() or None
         results_folder = self.results_line.text() or None
         url = self.url_line.text()
         verbose = self.verbose_check.isChecked()
 
         try:
-            x1 = int(self.x1_line.text())
-            y1 = int(self.y1_line.text())
-            x2 = int(self.x2_line.text())
-            y2 = int(self.y2_line.text())
+            x1 = float(self.x1_line.text())
+            y1 = float(self.y1_line.text())
+            x2 = float(self.x2_line.text())
+            y2 = float(self.y2_line.text())
             crop_coords = (x1, y1, x2, y2)
             if x2 <= x1 or y2 <= y1:
                 QMessageBox.critical(self, "Invalid Coordinates",
@@ -493,10 +493,20 @@ class BibDetectorApp(QWidget):
 
         if selected_camera_info:
             # Selected a physical camera
-            input_source = self.available_cameras.index(selected_camera_info)
+            device_id = selected_camera_info[1]
+
+            input_source = cv2.VideoCapture(device_id)
+
+            if not input_source.isOpened():
+                QMessageBox.critical(self, "Could not open camera", f"Could not open camera at {device_id}")
+                return
         else:
             # Using IP camera URL
             input_source = self.ip_camera_url
+
+        input_source.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+        input_source.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+
 
         if results_folder:
             bib_csv = BibCSV(results_folder)
@@ -507,7 +517,7 @@ class BibDetectorApp(QWidget):
         api = website_api.WebsiteAPI(url, token)
         detector = BibDetector("best.pt", device)
         tracker = BibTracker(api, bib_inset_location=self.bib_inset_location, bib_csv=bib_csv)
-        processor = VideoProcessor(detector, tracker, input_source, output_file, verbose)
+        processor = VideoProcessor(detector, tracker, input_source, output_file, verbose, crop_coords)
 
         self.hide()
         threading.Thread(target=lambda: self.run_processor(processor), daemon=True).start()

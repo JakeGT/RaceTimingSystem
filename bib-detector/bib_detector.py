@@ -9,17 +9,6 @@ from ultralytics import YOLO
 import easyocr
 import website_api
 from bib_csv import BibCSV
-# Custom VideoCapture class to set resolution to 1080x1920
-class CustomVideoCapture(cv2.VideoCapture):
-    def __init__(self, src, apiPreference=cv2.CAP_ANY):
-        super().__init__(src, apiPreference)
-        self.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-        self.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
-
-
-# Monkey-patch cv2.VideoCapture with our custom class
-cv2.VideoCapture = CustomVideoCapture
-
 
 
 class BibDetector:
@@ -250,7 +239,11 @@ class VideoProcessor:
             raise ValueError("Crop coordinates must be a tuple of (x1, y1, x2, y2)")
         x1, y1, x2, y2 = coords
         if x2 <= x1 or y2 <= y1:
-            raise ValueError(f"Invalid crop coordinates: ({x1}, {y1}), ({x2}, {y2}) — x2/y2 must be greater than x1/y1")
+            raise ValueError(f"Invalid crop coordinates: ({x1}, {y1}), ({x2}, {y2}) - x2/y2 must be greater than x1/y1")
+
+        normalised = sum([1 for x in coords if (x > 1 or x < 0)])
+        if normalised > 0:
+            raise ValueError(f"Invalid crop coordinates: ({x1}, {y1}), ({x2}, {y2}) - Values are not normalized between 0 and 1")
         return coords
 
     def run(self):
@@ -262,18 +255,28 @@ class VideoProcessor:
             cap = cv2.VideoCapture(self.input_source)
             manage_release = True
 
-        x1_crop = y1_crop = x2_crop = y2_crop = None
-        if self.crop_coords:
-            x1_crop, y1_crop, x2_crop, y2_crop = self.crop_coords
 
         while cap.isOpened():
             ret, frame = cap.read()
             if not ret:
                 break
-
+            frame_h, frame_w = frame.shape[:2]
             if self.crop_coords:
-                frame = frame[y1_crop: y2_crop, x1_crop: x2_crop]
-            frame_h, frame_w, _ = frame.shape
+                x1_n, y1_n, x2_n, y2_n = self.crop_coords
+
+                # convert to absolute pixels
+                x1_crop = int(x1_n * frame_w)
+                x2_crop = int(x2_n * frame_w)
+                y1_crop = int(y1_n * frame_h)
+                y2_crop = int(y2_n * frame_h)
+
+                # clamp to frame bounds (just in case)
+                x1_crop, x2_crop = max(0, x1_crop), min(frame_w, x2_crop)
+                y1_crop, y2_crop = max(0, y1_crop), min(frame_h, y2_crop)
+
+                # crop
+                frame = frame[y1_crop:y2_crop, x1_crop:x2_crop]
+                frame_h, frame_w = frame.shape[:2]
 
             # Create a side panel for displaying tracking information.
             side_panel = np.ones((frame_h, 300, 3), dtype=np.uint8) * 50
