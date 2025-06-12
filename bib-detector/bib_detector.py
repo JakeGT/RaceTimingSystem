@@ -9,17 +9,6 @@ from ultralytics import YOLO
 import easyocr
 import website_api
 from bib_csv import BibCSV
-# Custom VideoCapture class to set resolution to 1080x1920
-class CustomVideoCapture(cv2.VideoCapture):
-    def __init__(self, src, apiPreference=cv2.CAP_ANY):
-        super().__init__(src, apiPreference)
-        self.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-        self.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
-
-
-# Monkey-patch cv2.VideoCapture with our custom class
-cv2.VideoCapture = CustomVideoCapture
-
 
 
 class BibDetector:
@@ -35,8 +24,13 @@ class BibDetector:
 
     def detect(self, source, verbose=False):
         # Detect objects in the provided image, video stream, or file where detections are to occur using the YOLO model.
-        return self.model.track(source=source, device=self.device, stream=True, verbose=verbose,
-                                tracker="bytetrack.yaml")
+        return self.model.track(
+            source=source,
+            device=self.device,
+            persist=True,
+            verbose=verbose,
+            tracker="bytetrack.yaml"
+        )
 
     def extract_bib_text(self, image):
         # Convert the image from BGR to grayscale.
@@ -245,23 +239,44 @@ class VideoProcessor:
             raise ValueError("Crop coordinates must be a tuple of (x1, y1, x2, y2)")
         x1, y1, x2, y2 = coords
         if x2 <= x1 or y2 <= y1:
-            raise ValueError(f"Invalid crop coordinates: ({x1}, {y1}), ({x2}, {y2}) — x2/y2 must be greater than x1/y1")
+            raise ValueError(f"Invalid crop coordinates: ({x1}, {y1}), ({x2}, {y2}) - x2/y2 must be greater than x1/y1")
+
+        normalised = sum([1 for x in coords if (x > 1 or x < 0)])
+        if normalised > 0:
+            raise ValueError(f"Invalid crop coordinates: ({x1}, {y1}), ({x2}, {y2}) - Values are not normalized between 0 and 1")
         return coords
 
     def run(self):
-        # Process video frames including detection, cropping, tracking, and displaying and saving the output.
-        results = self.detector.detect(source=self.input_source, verbose=self.verbose)
-        crop_coords = self.crop_coords
 
-        for result in results:
-            frame = result.orig_img
-            frame_h, frame_w, _ = frame.shape
+        if hasattr(self.input_source, 'read'):
+            cap = self.input_source
+            manage_release = False
+        else:
+            cap = cv2.VideoCapture(self.input_source)
+            manage_release = True
 
-            # Crop the frame if the crop coordinates are specified.
-            if crop_coords:
-                x1_crop, y1_crop, x2_crop, y2_crop = crop_coords
+
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret:
+                break
+            frame_h, frame_w = frame.shape[:2]
+            if self.crop_coords:
+                x1_n, y1_n, x2_n, y2_n = self.crop_coords
+
+                # convert to absolute pixels
+                x1_crop = int(x1_n * frame_w)
+                x2_crop = int(x2_n * frame_w)
+                y1_crop = int(y1_n * frame_h)
+                y2_crop = int(y2_n * frame_h)
+
+                # clamp to frame bounds (just in case)
+                x1_crop, x2_crop = max(0, x1_crop), min(frame_w, x2_crop)
+                y1_crop, y2_crop = max(0, y1_crop), min(frame_h, y2_crop)
+
+                # crop
                 frame = frame[y1_crop:y2_crop, x1_crop:x2_crop]
-                frame_h, frame_w, _ = frame.shape  # Update dimensions
+                frame_h, frame_w = frame.shape[:2]
 
             # Create a side panel for displaying tracking information.
             side_panel = np.ones((frame_h, 300, 3), dtype=np.uint8) * 50
@@ -271,23 +286,13 @@ class VideoProcessor:
             if self.output_file and self.out is None:
                 self.out = cv2.VideoWriter(self.output_file, cv2.VideoWriter_fourcc(*'mp4v'), 15, (combined_w, frame_h))
 
+            results = self.detector.detect(source=frame, verbose=self.verbose)
+            result = results[0]
+
             tracked_bibs = {}
 
             for box in result.boxes:
                 x1, y1, x2, y2 = map(int, box.xyxy[0])
-
-                if crop_coords:
-                    center_x = (x1 + x2) // 2
-                    center_y = (y1 + y2) // 2
-                    # Skip boxes whose centre is outside the crop region.
-                    if not (x1_crop <= center_x <= x2_crop and y1_crop <= center_y <= y2_crop):
-                        continue
-
-                    # Shift coordinates to match the cropped frame.
-                    x1 -= x1_crop
-                    x2 -= x1_crop
-                    y1 -= y1_crop
-                    y2 -= y1_crop
 
                 # Ignore detections smaller than expected by drawing a red box.
                 if (x2 - x1 < BibTracker.MIN_BIB_WIDTH or y2 - y1 < BibTracker.MIN_BIB_HEIGHT):
@@ -317,6 +322,8 @@ class VideoProcessor:
         # Release the video writer and close any open windows.
         if self.out:
             self.out.release()
+        if manage_release:
+            cap.release()
         cv2.destroyAllWindows()
 
 
