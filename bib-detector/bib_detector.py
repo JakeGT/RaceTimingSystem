@@ -35,8 +35,13 @@ class BibDetector:
 
     def detect(self, source, verbose=False):
         # Detect objects in the provided image, video stream, or file where detections are to occur using the YOLO model.
-        return self.model.track(source=source, device=self.device, stream=True, verbose=verbose,
-                                tracker="bytetrack.yaml")
+        return self.model.track(
+            source=source,
+            device=self.device,
+            persist=True,
+            verbose=verbose,
+            tracker="bytetrack.yaml"
+        )
 
     def extract_bib_text(self, image):
         # Convert the image from BGR to grayscale.
@@ -249,19 +254,26 @@ class VideoProcessor:
         return coords
 
     def run(self):
-        # Process video frames including detection, cropping, tracking, and displaying and saving the output.
-        results = self.detector.detect(source=self.input_source, verbose=self.verbose)
-        crop_coords = self.crop_coords
 
-        for result in results:
-            frame = result.orig_img
+        if hasattr(self.input_source, 'read'):
+            cap = self.input_source
+            manage_release = False
+        else:
+            cap = cv2.VideoCapture(self.input_source)
+            manage_release = True
+
+        x1_crop = y1_crop = x2_crop = y2_crop = None
+        if self.crop_coords:
+            x1_crop, y1_crop, x2_crop, y2_crop = self.crop_coords
+
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret:
+                break
+
+            if self.crop_coords:
+                frame = frame[y1_crop: y2_crop, x1_crop: x2_crop]
             frame_h, frame_w, _ = frame.shape
-
-            # Crop the frame if the crop coordinates are specified.
-            if crop_coords:
-                x1_crop, y1_crop, x2_crop, y2_crop = crop_coords
-                frame = frame[y1_crop:y2_crop, x1_crop:x2_crop]
-                frame_h, frame_w, _ = frame.shape  # Update dimensions
 
             # Create a side panel for displaying tracking information.
             side_panel = np.ones((frame_h, 300, 3), dtype=np.uint8) * 50
@@ -271,23 +283,13 @@ class VideoProcessor:
             if self.output_file and self.out is None:
                 self.out = cv2.VideoWriter(self.output_file, cv2.VideoWriter_fourcc(*'mp4v'), 15, (combined_w, frame_h))
 
+            results = self.detector.detect(source=frame, verbose=self.verbose)
+            result = results[0]
+
             tracked_bibs = {}
 
             for box in result.boxes:
                 x1, y1, x2, y2 = map(int, box.xyxy[0])
-
-                if crop_coords:
-                    center_x = (x1 + x2) // 2
-                    center_y = (y1 + y2) // 2
-                    # Skip boxes whose centre is outside the crop region.
-                    if not (x1_crop <= center_x <= x2_crop and y1_crop <= center_y <= y2_crop):
-                        continue
-
-                    # Shift coordinates to match the cropped frame.
-                    x1 -= x1_crop
-                    x2 -= x1_crop
-                    y1 -= y1_crop
-                    y2 -= y1_crop
 
                 # Ignore detections smaller than expected by drawing a red box.
                 if (x2 - x1 < BibTracker.MIN_BIB_WIDTH or y2 - y1 < BibTracker.MIN_BIB_HEIGHT):
@@ -317,6 +319,8 @@ class VideoProcessor:
         # Release the video writer and close any open windows.
         if self.out:
             self.out.release()
+        if manage_release:
+            cap.release()
         cv2.destroyAllWindows()
 
 
