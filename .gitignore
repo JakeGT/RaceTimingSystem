@@ -94,3 +94,4 @@ bib-detector/demo.mp4
 bib-detector/drogo_output.mp4
 bib-detector/Queensland2024_output.mp4
 bib-detector/__pycache__/website_api.cpython-313.pyc
+*.pyc
