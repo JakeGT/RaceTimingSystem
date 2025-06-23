@@ -7,6 +7,7 @@ import OrganiserDashboard from "./pages/organiser_pages/OrganiserDashboard.jsx";
 import CreateRace from "./pages/organiser_pages/CreateRace.jsx";
 import ModifyResults from "./pages/organiser_pages/ModifyResults.jsx";
 import Races from "./pages/organiser_pages/Races.jsx";
+import AgeCategoriesManager from "./components/organiser_components/AgeCategoriesManager.jsx";
 
 function App() {
     return (
@@ -23,6 +24,7 @@ function App() {
                     <Route path={"/organiser/dashboard/create-race"} element={<CreateRace />} />
                     <Route path={"/organiser/dashboard/results/modify"} element={<ModifyResults />} />
                     <Route path={"/organiser/dashboard/race"} element={<Races url={'/api/races/my/'} key={"my"} title={"My Races"} />} />
+                    <Route path={"/organiser/dashboard/age-cat-test"} element={<AgeCategoriesManager />} />
                 </Route>
             </Routes>
         </Router>
