@@ -1,0 +1,10 @@
+{% extends "admin/change_form.html" %}
+{# SPDX-FileCopyrightText: 2026 Race Timing System contributors #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% load admin_urls %}
+{% block object-tools-items %}
+  {% if original %}
+    <li><a href="{% url 'admin:events_event_data' original.pk %}">Data in/out</a></li>
+  {% endif %}
+  {{ block.super }}
+{% endblock %}

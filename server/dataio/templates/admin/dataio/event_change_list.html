@@ -1,0 +1,7 @@
+{% extends "admin/change_list.html" %}
+{# SPDX-FileCopyrightText: 2026 Race Timing System contributors #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% block object-tools-items %}
+  <li><a href="{% url 'admin:events_event_import' %}">Import bundle</a></li>
+  {{ block.super }}
+{% endblock %}

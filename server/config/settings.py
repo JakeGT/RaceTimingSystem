@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     "events",
     "timing",
     "results",
+    "dataio",
     "allauth",
     "allauth.account",
     "allauth.mfa",
