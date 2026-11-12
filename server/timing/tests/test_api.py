@@ -17,8 +17,10 @@ from django.test import Client
 from django.utils import timezone
 
 from accounts.models import Organisation
-from events.models import Entry, Event, Race, TimingPoint
-from timing.models import Device, Heartbeat, Observation, PairingCode
+from events.models import Entry, Event, Race, Split, TimingPoint, Wave
+from results.models import Result
+from timing import api
+from timing.models import Device, Heartbeat, Observation, PairingCode, Read
 
 API = "/api/v1/devices"
 EXAMPLES = Path(settings.BASE_DIR).parent / "protocol" / "examples"
@@ -363,3 +365,58 @@ class TestProtocolContract:
             client, "/me/observations/batch", example("observations_batch"), headers=auth
         ).json()
         assert len(body["accepted"]) == 2, body
+
+
+@pytest.mark.django_db
+class TestUploadFusesAndScores:
+    """Uploading observations fuses them and rebuilds results straight away."""
+
+    @pytest.fixture
+    def course(self, race: Race, finish_line: TimingPoint) -> Entry:
+        wave = Wave.objects.create(race=race, start_at=timezone.now() - timedelta(minutes=45))
+        Split.objects.create(race=race, timing_point=finish_line, kind=Split.Kind.FINISH)
+        return Entry.objects.create(race=race, wave=wave, bib="101", given_name="Ada")
+
+    def test_upload_gives_a_result(
+        self, client: Client, auth: dict[str, str], course: Entry
+    ) -> None:
+        response = post(client, "/me/observations/batch", {"observations": [observation()]}, auth)
+        assert response.status_code == 200, response.content
+        assert Read.objects.get().bib == "101"
+        result = Result.objects.get(entry=course)
+        assert (result.outcome, result.overall_position) == ("finished", 1)
+
+    def test_fusion_failure_does_not_fail_upload(
+        self,
+        client: Client,
+        auth: dict[str, str],
+        course: Entry,
+        monkeypatch: pytest.MonkeyPatch,
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        def boom(*args: object) -> None:
+            raise RuntimeError("bug in fusion")
+
+        monkeypatch.setattr(api, "fuse_pending", boom)
+        body = {"observations": [observation()]}
+        response = post(client, "/me/observations/batch", body, auth)
+        assert response.status_code == 200
+        assert len(response.json()["accepted"]) == 1
+        assert Observation.objects.get().read is None
+        assert "Fusion failed" in caplog.text
+
+    def test_rebuild_command_catches_up(
+        self, course: Entry, paired: tuple[Device, str], finish_line: TimingPoint
+    ) -> None:
+        Observation.objects.create(
+            id=uuid.uuid7(),
+            event_id=course.event_id,
+            device=paired[0],
+            timing_point=finish_line,
+            captured_at_device=timezone.now(),
+            clock_offset_ms=0,
+            captured_at=timezone.now(),
+            candidates=[{"bib": "101", "confidence": 0.9}],
+        )
+        call_command("rebuild_results", "riverside-10k")
+        assert Result.objects.get(entry=course).outcome == "finished"

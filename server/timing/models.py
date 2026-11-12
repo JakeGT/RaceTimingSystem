@@ -8,12 +8,13 @@ resend a batch after a dropped connection without creating duplicates.
 
 from datetime import timedelta
 
+from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils import timezone
 
 from common.models import UUIDModel
-from events.models import Event, TimingPoint
+from events.models import Entry, Event, TimingPoint, Wave
 from timing.secrets import hash_secret, new_device_token, new_pairing_code
 
 PAIRING_CODE_LIFETIME = timedelta(minutes=15)
@@ -180,6 +181,14 @@ class Observation(models.Model):
     )
     crop = models.FileField(upload_to=crop_upload_path, blank=True)
     received_at = models.DateTimeField(auto_now_add=True)
+    read = models.ForeignKey(
+        "Read",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="observations",
+        help_text="The read fusion merged this into. Empty until fusion has run.",
+    )
 
     class Meta:
         ordering = ("timing_point", "captured_at")
@@ -188,3 +197,98 @@ class Observation(models.Model):
     def __str__(self) -> str:
         best = self.candidates[0]["bib"] if self.candidates else "?"
         return f"{best} @ {self.timing_point} {self.captured_at:%H:%M:%S.%f}"
+
+
+class Read(UUIDModel):
+    """One runner crossing a timing point: what the results engine consumes.
+
+    Fusion makes reads from observations. People confirm, reject or correct them, or
+    add manual reads, always through timing.review so every change is audited.
+    """
+
+    class State(models.TextChoices):
+        AUTO = "auto", "Accepted automatically"
+        NEEDS_REVIEW = "needs_review", "Needs review"
+        CONFIRMED = "confirmed", "Confirmed by a person"
+        REJECTED = "rejected", "Rejected"
+        MANUAL = "manual", "Added by a person"
+
+    class ReviewReason(models.TextChoices):
+        UNREADABLE = "unreadable", "Bib couldn't be read"
+        NOT_ENTERED = "not_entered", "Bib read, but nobody has that bib"
+        LOW_CONFIDENCE = "low_confidence", "Low confidence"
+        AMBIGUOUS = "ambiguous", "Two bibs almost equally likely"
+
+    ACCEPTED_STATES = (State.AUTO, State.CONFIRMED, State.MANUAL)
+
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="reads")
+    timing_point = models.ForeignKey(TimingPoint, on_delete=models.PROTECT, related_name="reads")
+    bib = models.CharField(max_length=16, blank=True, help_text="Blank while unknown.")
+    at = models.DateTimeField(help_text="Crossing time on the server clock.")
+    state = models.CharField(max_length=16, choices=State.choices)
+    review_reason = models.CharField(max_length=16, choices=ReviewReason.choices, blank=True)
+    suggested_bib = models.CharField(
+        max_length=16, blank=True, help_text="Best guess when the bib isn't an entered one."
+    )
+    confidence = models.FloatField(null=True, blank=True)
+
+    class Meta:
+        ordering = ("timing_point", "at")
+        indexes = (
+            models.Index(fields=("timing_point", "bib", "at")),
+            models.Index(fields=("event", "state")),
+        )
+
+    def __str__(self) -> str:
+        return f"{self.bib or '?'} @ {self.timing_point} {self.at:%H:%M:%S}"
+
+    @property
+    def is_accepted(self) -> bool:
+        return self.state in self.ACCEPTED_STATES and bool(self.bib)
+
+
+class Adjustment(UUIDModel):
+    """Append-only audit log of every change a person makes to timing data.
+
+    `actor` is set for signed-in staff; `actor_label` names everyone else (a venue
+    staff session, a device, a system process), because those have no User row and
+    the log has to survive being exported to another server (ADR 0002).
+    """
+
+    class Action(models.TextChoices):
+        READ_CONFIRMED = "read_confirmed", "Read confirmed"
+        READ_REJECTED = "read_rejected", "Read rejected"
+        READ_BIB_CHANGED = "read_bib_changed", "Read bib changed"
+        READ_TIME_CHANGED = "read_time_changed", "Read time changed"
+        READ_ADDED = "read_added", "Manual read added"
+        ENTRY_STATUS_CHANGED = "entry_status_changed", "Entry status changed"
+        WAVE_STARTED = "wave_started", "Wave started"
+
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="adjustments")
+    action = models.CharField(max_length=32, choices=Action.choices)
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="adjustments",
+    )
+    actor_label = models.CharField(max_length=150)
+    read = models.ForeignKey(
+        Read, on_delete=models.SET_NULL, null=True, blank=True, related_name="adjustments"
+    )
+    entry = models.ForeignKey(
+        Entry, on_delete=models.SET_NULL, null=True, blank=True, related_name="adjustments"
+    )
+    wave = models.ForeignKey(
+        Wave, on_delete=models.SET_NULL, null=True, blank=True, related_name="adjustments"
+    )
+    before = models.JSONField(default=dict, blank=True)
+    after = models.JSONField(default=dict, blank=True)
+    reason = models.CharField(max_length=255, blank=True)
+
+    class Meta:
+        ordering = ("event", "-created_at")
+
+    def __str__(self) -> str:
+        return f"{self.get_action_display()} by {self.actor_label}"

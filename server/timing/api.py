@@ -9,6 +9,7 @@ call after pairing uses `Authorization: Bearer <device token>`.
 
 import hashlib
 import json
+import logging
 from datetime import datetime, timedelta
 from typing import Annotated, Any, Literal
 from uuid import UUID
@@ -23,6 +24,8 @@ from ninja.security import HttpBearer
 from ninja.throttling import AnonRateThrottle
 
 from events.models import Entry, TimingPoint
+from results.services import races_using, rebuild_races
+from timing.fusion import fuse_pending
 from timing.models import Device, Heartbeat, Observation, PairingCode
 from timing.secrets import hash_secret, normalise_pairing_code
 
@@ -49,6 +52,7 @@ def current_device(request: HttpRequest) -> Device:
     return device
 
 
+logger = logging.getLogger(__name__)
 router = Router(tags=["devices"], auth=DeviceAuth())
 
 
@@ -366,7 +370,19 @@ def upload_observations(request: HttpRequest, payload: ObservationBatchIn) -> Ob
         # ignore_conflicts covers two copies of the same batch arriving at once.
         Observation.objects.bulk_create(new.values(), ignore_conflicts=True)
         Device.objects.filter(pk=device.pk).update(last_seen_at=now)
+    if new:
+        _fuse_and_rebuild(device)
     return ObservationBatchOut(accepted=accepted, duplicates=duplicates, rejected=rejected)
+
+
+def _fuse_and_rebuild(device: Device) -> None:
+    """The observations are already stored, so a failure here mustn't fail the upload:
+    the phone would retry forever. The next upload (or `rebuild_results`) catches up."""
+    try:
+        touched = fuse_pending(device.event)
+        rebuild_races(races_using(touched))
+    except Exception:
+        logger.exception("Fusion failed for event %s; observations kept", device.event_id)
 
 
 @router.post(
