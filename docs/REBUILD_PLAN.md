@@ -143,7 +143,7 @@ Delivered as PR-sized slices into `v2`, roughly in this order:
 | Slice | Contents |
 |---|---|
 | 1.1 Domain models ✅ | UUIDv7 base model, user/organisation/membership, event/race/wave/timing point/split/entry/categories, admin |
-| 1.2 Results engine | Pure module: gun/chip time, splits and laps, statuses, positions, categories |
+| 1.2 Results engine ✅ | Pure module: gun/chip time, splits and laps, statuses, positions, categories |
 | 1.3 Device protocol | API framework, pairing, clock sync, observation ingestion, heartbeat, OpenAPI + `protocol/` contract tests |
 | 1.4 Fusion v1 | Reads from observations, review states, adjustments/audit log, result rebuilds |
 | 1.5 Auth | django-allauth headless, passkeys, TOTP, invites, role permissions on the API |
