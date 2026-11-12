@@ -68,10 +68,11 @@ docs/
 
 - **Organisation**, with members and roles (owner, organiser, volunteer). Many organisations per install
 - **Event**: name, venue, *timezone*, date(s), checkout lease (node, time, state). It contains:
-  - **Race**: distance, start type (gun or chip), category scheme
+  - **TimingPoint**: a physical line where phones watch, e.g. "Finish". Several races can share one
+  - **Race**: distance, ranking basis (gun or net time), category scheme
     - **Wave**: `start_at` (timezone-aware), set by the starter or from a start-line read
-    - **TimingPoint**: kind (start, split or finish), distance along the course, order
-  - **Entry**: bib, name, date of birth (or age on race day), gender, club, wave, status (`registered | started | finished | DNS | DNF | DSQ`), optional email (for results), `hide_name` flag. **No runner accounts in v1**
+    - **Split**: where a timing point falls on this race's course (kind start/split/finish, distance, order). Laps list the same timing point more than once, with `min_elapsed` to tell passes apart
+  - **Entry**: bib (unique across the event, so one shared finish line can identify everyone), name, date of birth (or age on race day), gender, club, wave, status (`registered | started | finished | DNS | DNF | DSQ`), optional email (for results), `hide_name` flag. **No runner accounts in v1**
 - **CategoryScheme / CategoryRule**: age and gender bands, calculated from age *on race day*
 - **Device**: paired to an event by QR code, *hashed* token, assigned timing point, measured clock offset, last heartbeat (battery, temperature, fps)
 - **Observation** (append-only, written by a device): client UUID, device, timing point, frame timestamp (device clock and corrected), track id, ranked bib candidates with confidences, crop image, line-crossing direction
@@ -136,6 +137,18 @@ Each phase ends with something demonstrable. Phases 1 and 2 can run alongside ea
 - [ ] **Data:** contact 1–2 local clubs or race organisers about filming a finish; book a staged session with consent; write the data policy (§6, Data strategy)
 
 ### Phase 1: Core server (≈2–3 weeks)
+
+Delivered as PR-sized slices into `v2`, roughly in this order:
+
+| Slice | Contents |
+|---|---|
+| 1.1 Domain models ✅ | UUIDv7 base model, user/organisation/membership, event/race/wave/timing point/split/entry/categories, admin |
+| 1.2 Results engine | Pure module: gun/chip time, splits and laps, statuses, positions, categories |
+| 1.3 Device protocol | API framework, pairing, clock sync, observation ingestion, heartbeat, OpenAPI + `protocol/` contract tests |
+| 1.4 Fusion v1 | Reads from observations, review states, adjustments/audit log, result rebuilds |
+| 1.5 Auth | django-allauth headless, passkeys, TOTP, invites, role permissions on the API |
+| 1.6 Data in/out | CSV import/export (legacy-compatible), versioned event bundle export/import |
+
 - [ ] Domain models from §4 with migrations, Django admin as the stopgap UI
 - [ ] Auth: django-allauth (headless) with email + password, passkeys and TOTP (2FA required for owners and organisers), email invites, organisation roles. No social login
 - [ ] Event-mode groundwork: UUIDv7 keys, event scoping, **event bundle export/import** (versioned, idempotent), CI against both Postgres and SQLite
