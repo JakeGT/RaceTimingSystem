@@ -3,10 +3,11 @@
 """Smoke test: every admin page we register renders for a superuser."""
 
 import pytest
-from accounts.models import User
 from django.contrib import admin
 from django.test import Client
 from django.urls import reverse
+
+from accounts.models import User
 
 
 @pytest.mark.django_db

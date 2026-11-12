@@ -5,10 +5,11 @@
 import uuid
 from typing import Any, ClassVar
 
-from common.models import UUIDModel
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+
+from common.models import UUIDModel
 
 
 class UserManager(BaseUserManager["User"]):

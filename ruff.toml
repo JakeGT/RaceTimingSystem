@@ -1,6 +1,8 @@
 # Shared Ruff config for server/ and vision/.
 line-length = 100
 target-version = "py313"
+# First-party packages are found from these roots, so new apps need no config.
+src = ["server", "vision/src"]
 
 [lint]
 select = ["E", "F", "W", "I", "UP", "B", "SIM", "DJ", "S", "RUF"]
@@ -11,6 +13,3 @@ ignore = []
 "conftest.py" = ["S101"]
 "**/migrations/**" = ["RUF012", "E501"]
 "server/config/test_settings.py" = ["S105"]
-
-[lint.isort]
-known-first-party = ["config", "core", "racevision"]

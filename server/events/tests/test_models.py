@@ -3,10 +3,10 @@
 from datetime import date, timedelta
 
 import pytest
-from accounts.models import Organisation
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 
+from accounts.models import Organisation
 from events.models import (
     CategoryScheme,
     Entry,

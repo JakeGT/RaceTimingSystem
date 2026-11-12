@@ -1,0 +1,25 @@
+{
+  "observations": [
+    {
+      "id": "019a7c4e-7d10-7b3a-9f21-5c0d2e8a1b01",
+      "captured_at_device": "2026-06-14T09:41:07.533+01:00",
+      "clock_offset_ms": -42,
+      "track_id": 118,
+      "candidates": [
+        { "bib": "1234", "confidence": 0.94 },
+        { "bib": "1284", "confidence": 0.04 }
+      ],
+      "direction": "forward",
+      "confidence": 0.98
+    },
+    {
+      "id": "019a7c4e-7e2a-7c11-8a3b-9e4f1d2c3b02",
+      "captured_at_device": "2026-06-14T09:41:08.101+01:00",
+      "clock_offset_ms": -42,
+      "track_id": 119,
+      "candidates": [],
+      "direction": "forward",
+      "confidence": 0.91
+    }
+  ]
+}
