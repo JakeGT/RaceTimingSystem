@@ -2,14 +2,18 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """Staff accounts and organisations. Runners don't have accounts in v1 (ADR 0002)."""
 
+import secrets
 import uuid
+from datetime import timedelta
 from typing import Any, ClassVar
 
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.utils import timezone
 
 from common.models import UUIDModel
+from common.secrets import hash_secret
 
 
 class UserManager(BaseUserManager["User"]):
@@ -104,3 +108,69 @@ class Membership(UUIDModel):
 
     def __str__(self) -> str:
         return f"{self.user} - {self.organisation} ({self.get_role_display()})"
+
+
+ROLE_RANK = {Role.VOLUNTEER: 1, Role.ORGANISER: 2, Role.OWNER: 3}
+INVITE_LIFETIME = timedelta(days=7)
+
+
+class InvitationQuerySet(models.QuerySet["Invitation"]):
+    def pending(self) -> "InvitationQuerySet":
+        return self.filter(accepted_at__isnull=True, expires_at__gt=timezone.now())
+
+
+class Invitation(UUIDModel):
+    r"""An emailed link that lets someone join an organisation with a role.
+
+    Only a hash of the link's token is stored. Accepting an invite is the only way to
+    get an account (apart from \`createsuperuser\`), and doing so proves the email
+    address, because the link was sent there.
+    """
+
+    organisation = models.ForeignKey(
+        Organisation, on_delete=models.CASCADE, related_name="invitations"
+    )
+    email = models.EmailField()
+    role = models.CharField(max_length=16, choices=Role.choices, default=Role.VOLUNTEER)
+    token_hash = models.CharField(max_length=64, unique=True, editable=False)
+    invited_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    expires_at = models.DateTimeField()
+    accepted_at = models.DateTimeField(null=True, blank=True)
+    accepted_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+
+    objects = InvitationQuerySet.as_manager()
+
+    class Meta:
+        ordering = ("-created_at",)
+
+    def __str__(self) -> str:
+        return f"{self.email} to {self.organisation} as {self.get_role_display()}"
+
+    @classmethod
+    def issue(
+        cls, organisation: Organisation, email: str, role: str, invited_by: User | None
+    ) -> tuple["Invitation", str]:
+        """Create an invite and return it with the raw token (shown once, in the email)."""
+        raw = secrets.token_urlsafe(32)
+        invitation = cls.objects.create(
+            organisation=organisation,
+            email=UserManager.normalize_email(email).lower(),
+            role=role,
+            token_hash=hash_secret(raw),
+            invited_by=invited_by,
+            expires_at=timezone.now() + INVITE_LIFETIME,
+        )
+        return invitation, raw
+
+    @classmethod
+    def find_pending(cls, raw: str) -> "Invitation | None":
+        return (
+            cls.objects.pending()
+            .select_related("organisation")
+            .filter(token_hash=hash_secret(raw))
+            .first()
+        )

@@ -2,19 +2,16 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """Device tokens and pairing codes. Only hashes are stored (rebuild plan §2)."""
 
-import hashlib
 import secrets
+
+from common.secrets import hash_secret
+
+__all__ = ["hash_secret", "new_device_token", "new_pairing_code", "normalise_pairing_code"]
 
 # Crockford base32 without I, L, O, U: easy to read off a screen and type.
 _CODE_ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
 PAIRING_CODE_LENGTH = 10  # 50 bits; codes expire in minutes and the endpoint is throttled
 TOKEN_BYTES = 32
-
-
-def hash_secret(value: str) -> str:
-    """SHA-256 is enough here: tokens and codes are random, not chosen by people, so
-    there's nothing for a slow password hash to protect against."""
-    return hashlib.sha256(value.encode()).hexdigest()
 
 
 def new_pairing_code() -> str:

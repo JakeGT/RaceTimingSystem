@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2026 Race Timing System contributors
 # SPDX-License-Identifier: AGPL-3.0-or-later
 from django.contrib import admin
-from django.urls import path
+from django.urls import include, path
 
 from config.api import api
 from core.views import health
@@ -10,4 +10,6 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/health", health, name="health"),
     path("api/v1/", api.urls),
+    # Sign-in, passkeys, TOTP, password reset: allauth's headless API.
+    path("api/auth/", include("allauth.headless.urls")),
 ]

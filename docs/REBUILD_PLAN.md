@@ -148,7 +148,7 @@ Delivered as PR-sized slices into `v2`, roughly in this order:
 | 1.2 Results engine ✅ | Pure module: gun/chip time, splits and laps, statuses, positions, categories |
 | 1.3 Device protocol ✅ | API framework, pairing, clock sync, observation ingestion, heartbeat, OpenAPI + `protocol/` contract tests |
 | 1.4 Fusion v1 ✅ | Reads from observations (merge across phones within 2 s, snap to entered bibs, uncertain → review queue), audited review services, stored results rebuilt on every change; admin as the stopgap review UI |
-| 1.5 Auth | django-allauth headless, passkeys, TOTP, invites, role permissions on the API |
+| 1.5 Auth ✅ | django-allauth headless (password, passkeys, TOTP), invite-only accounts, roles enforced on a staff API with 2FA required for owners and organisers ([staff sign-in](staff-sign-in.md)) |
 | 1.6 Data in/out | CSV import/export (legacy-compatible), versioned event bundle export/import |
 
 - [ ] Domain models from §4 with migrations, Django admin as the stopgap UI

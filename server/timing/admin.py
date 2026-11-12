@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """Admin for devices. Stopgap until the organiser console's device dashboard (Phase 4)."""
 
-import json
 from typing import Any
 
 from django import forms
@@ -22,6 +21,7 @@ from timing.models import (
     Observation,
     PairingCode,
     Read,
+    pairing_qr_payload,
 )
 
 
@@ -52,10 +52,7 @@ class PairingCodeAdmin(admin.ModelAdmin[PairingCode]):
     def save_model(self, request: HttpRequest, obj: PairingCode, form: Any, change: bool) -> None:
         raw = obj.assign_new_code()
         super().save_model(request, obj, form, change)
-        qr_payload = json.dumps(
-            {"v": 1, "server": request.build_absolute_uri("/"), "code": raw},
-            separators=(",", ":"),
-        )
+        qr_payload = pairing_qr_payload(request.build_absolute_uri("/"), raw)
         minutes = int(PAIRING_CODE_LIFETIME.total_seconds() // 60)
         messages.success(
             request,
