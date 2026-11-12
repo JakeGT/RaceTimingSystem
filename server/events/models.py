@@ -11,12 +11,12 @@ from datetime import date, timedelta
 from functools import cache
 from zoneinfo import available_timezones
 
-from accounts.models import Organisation
-from common.models import UUIDModel
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, RegexValidator
 from django.db import models
 
+from accounts.models import Organisation
+from common.models import UUIDModel
 from events.categories import Band, age_on, pick_category
 
 

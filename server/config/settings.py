@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     "core",
     "accounts",
     "events",
+    "timing",
 ]
 
 MIDDLEWARE = [
@@ -89,6 +90,10 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = "static/"
+
+# Uploaded crops are personal data: never served publicly. Organiser views stream them
+# after a permission check (slice 1.4+).
+MEDIA_ROOT = env.path("MEDIA_ROOT", default=BASE_DIR / "media")
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # Models subclass common.models.UUIDModel; this only affects third-party apps.

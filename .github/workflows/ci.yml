@@ -49,6 +49,8 @@ jobs:
       - run: uv run ruff format --check .
       - run: uv run mypy .
       - run: uv run python manage.py makemigrations --check --dry-run --settings=config.test_settings
+      - name: protocol/openapi.json matches the code
+        run: uv run python manage.py export_openapi --check --settings=config.test_settings
       - run: uv run pytest
 
   web:

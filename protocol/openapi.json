@@ -1,0 +1,923 @@
+{
+  "components": {
+    "schemas": {
+      "Candidate": {
+        "properties": {
+          "bib": {
+            "pattern": "^[0-9A-Za-z-]{1,16}$",
+            "title": "Bib",
+            "type": "string"
+          },
+          "confidence": {
+            "maximum": 1,
+            "minimum": 0,
+            "title": "Confidence",
+            "type": "number"
+          }
+        },
+        "required": [
+          "bib",
+          "confidence"
+        ],
+        "title": "Candidate",
+        "type": "object"
+      },
+      "ClockIn": {
+        "properties": {
+          "client_sent_at": {
+            "description": "Device clock when the request was sent (t0).",
+            "format": "date-time",
+            "title": "Client Sent At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "client_sent_at"
+        ],
+        "title": "ClockIn",
+        "type": "object"
+      },
+      "ClockOut": {
+        "description": "NTP-style exchange. With t3 = device clock when the response arrives:\noffset = ((t1 - t0) + (t2 - t3)) / 2 and round trip = (t3 - t0) - (t2 - t1).",
+        "properties": {
+          "client_sent_at": {
+            "format": "date-time",
+            "title": "Client Sent At",
+            "type": "string"
+          },
+          "server_received_at": {
+            "format": "date-time",
+            "title": "Server Received At",
+            "type": "string"
+          },
+          "server_sent_at": {
+            "format": "date-time",
+            "title": "Server Sent At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "client_sent_at",
+          "server_received_at",
+          "server_sent_at"
+        ],
+        "title": "ClockOut",
+        "type": "object"
+      },
+      "DeviceConfig": {
+        "properties": {
+          "bibs": {
+            "description": "Every bib entered in the event, for snapping reads.",
+            "items": {
+              "type": "string"
+            },
+            "title": "Bibs",
+            "type": "array"
+          },
+          "capture_config": {
+            "additionalProperties": true,
+            "title": "Capture Config",
+            "type": "object"
+          },
+          "config_version": {
+            "description": "Changes whenever anything above changes.",
+            "title": "Config Version",
+            "type": "string"
+          },
+          "device_id": {
+            "format": "uuid",
+            "title": "Device Id",
+            "type": "string"
+          },
+          "event": {
+            "$ref": "#/components/schemas/EventInfo"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "server_time": {
+            "format": "date-time",
+            "title": "Server Time",
+            "type": "string"
+          },
+          "timing_point_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timing Point Id"
+          },
+          "timing_points": {
+            "items": {
+              "$ref": "#/components/schemas/TimingPointInfo"
+            },
+            "title": "Timing Points",
+            "type": "array"
+          }
+        },
+        "required": [
+          "device_id",
+          "name",
+          "event",
+          "timing_point_id",
+          "timing_points",
+          "capture_config",
+          "bibs",
+          "config_version",
+          "server_time"
+        ],
+        "title": "DeviceConfig",
+        "type": "object"
+      },
+      "Error": {
+        "properties": {
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          }
+        },
+        "required": [
+          "detail"
+        ],
+        "title": "Error",
+        "type": "object"
+      },
+      "EventInfo": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "start_date": {
+            "title": "Start Date",
+            "type": "string"
+          },
+          "timezone": {
+            "title": "Timezone",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "timezone",
+          "start_date"
+        ],
+        "title": "EventInfo",
+        "type": "object"
+      },
+      "HeartbeatIn": {
+        "properties": {
+          "app_version": {
+            "anyOf": [
+              {
+                "maxLength": 32,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "App Version"
+          },
+          "battery_pct": {
+            "anyOf": [
+              {
+                "maximum": 100,
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Battery Pct"
+          },
+          "camera_ok": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Camera Ok"
+          },
+          "charging": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Charging"
+          },
+          "clock_offset_ms": {
+            "anyOf": [
+              {
+                "maximum": 86400000,
+                "minimum": -86400000,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Clock Offset Ms"
+          },
+          "clock_rtt_ms": {
+            "anyOf": [
+              {
+                "maximum": 60000,
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Clock Rtt Ms"
+          },
+          "fps": {
+            "anyOf": [
+              {
+                "maximum": 1000,
+                "minimum": 0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fps"
+          },
+          "outbox_size": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Outbox Size"
+          },
+          "temperature_c": {
+            "anyOf": [
+              {
+                "maximum": 120,
+                "minimum": -40,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Temperature C"
+          }
+        },
+        "title": "HeartbeatIn",
+        "type": "object"
+      },
+      "HeartbeatOut": {
+        "properties": {
+          "config_version": {
+            "title": "Config Version",
+            "type": "string"
+          },
+          "server_time": {
+            "format": "date-time",
+            "title": "Server Time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "server_time",
+          "config_version"
+        ],
+        "title": "HeartbeatOut",
+        "type": "object"
+      },
+      "ObservationBatchIn": {
+        "properties": {
+          "observations": {
+            "items": {
+              "$ref": "#/components/schemas/ObservationIn"
+            },
+            "maxItems": 500,
+            "minItems": 1,
+            "title": "Observations",
+            "type": "array"
+          }
+        },
+        "required": [
+          "observations"
+        ],
+        "title": "ObservationBatchIn",
+        "type": "object"
+      },
+      "ObservationBatchOut": {
+        "properties": {
+          "accepted": {
+            "description": "Stored now.",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Accepted",
+            "type": "array"
+          },
+          "duplicates": {
+            "description": "Already stored from an earlier upload: fine.",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Duplicates",
+            "type": "array"
+          },
+          "rejected": {
+            "description": "Won't be stored. Don't resend.",
+            "items": {
+              "$ref": "#/components/schemas/Rejection"
+            },
+            "title": "Rejected",
+            "type": "array"
+          }
+        },
+        "required": [
+          "accepted",
+          "duplicates",
+          "rejected"
+        ],
+        "title": "ObservationBatchOut",
+        "type": "object"
+      },
+      "ObservationIn": {
+        "properties": {
+          "candidates": {
+            "description": "Best guess first. Empty if unreadable.",
+            "items": {
+              "$ref": "#/components/schemas/Candidate"
+            },
+            "maxItems": 5,
+            "title": "Candidates",
+            "type": "array"
+          },
+          "captured_at_device": {
+            "description": "Frame timestamp on the device clock, with timezone.",
+            "format": "date-time",
+            "title": "Captured At Device",
+            "type": "string"
+          },
+          "clock_offset_ms": {
+            "description": "Server time minus device time, as measured by the device.",
+            "maximum": 86400000,
+            "minimum": -86400000,
+            "title": "Clock Offset Ms",
+            "type": "integer"
+          },
+          "confidence": {
+            "anyOf": [
+              {
+                "maximum": 1,
+                "minimum": 0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence"
+          },
+          "direction": {
+            "anyOf": [
+              {
+                "enum": [
+                  "forward",
+                  "reverse"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Direction"
+          },
+          "id": {
+            "description": "Generated on the device (UUIDv7 recommended). Idempotency key.",
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "timing_point_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Defaults to the device's assigned timing point.",
+            "title": "Timing Point Id"
+          },
+          "track_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Track Id"
+          }
+        },
+        "required": [
+          "id",
+          "captured_at_device",
+          "clock_offset_ms"
+        ],
+        "title": "ObservationIn",
+        "type": "object"
+      },
+      "PairIn": {
+        "properties": {
+          "app_version": {
+            "default": "",
+            "maxLength": 32,
+            "title": "App Version",
+            "type": "string"
+          },
+          "code": {
+            "description": "Code from the pairing QR.",
+            "maxLength": 32,
+            "minLength": 4,
+            "title": "Code",
+            "type": "string"
+          },
+          "name": {
+            "description": "e.g. \"Finish - left tripod\".",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "platform": {
+            "default": "",
+            "description": "e.g. \"ios\" or \"android\".",
+            "maxLength": 32,
+            "title": "Platform",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "name"
+        ],
+        "title": "PairIn",
+        "type": "object"
+      },
+      "PairOut": {
+        "properties": {
+          "device_id": {
+            "format": "uuid",
+            "title": "Device Id",
+            "type": "string"
+          },
+          "event": {
+            "$ref": "#/components/schemas/EventInfo"
+          },
+          "server_time": {
+            "format": "date-time",
+            "title": "Server Time",
+            "type": "string"
+          },
+          "timing_point_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timing Point Id"
+          },
+          "token": {
+            "description": "Send as `Authorization: Bearer <token>`. Shown once.",
+            "title": "Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "device_id",
+          "token",
+          "event",
+          "timing_point_id",
+          "server_time"
+        ],
+        "title": "PairOut",
+        "type": "object"
+      },
+      "Rejection": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "reason": {
+            "enum": [
+              "no_timing_point",
+              "timing_point_not_in_event",
+              "in_future",
+              "id_used_by_another_device"
+            ],
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "reason"
+        ],
+        "title": "Rejection",
+        "type": "object"
+      },
+      "TimingPointIn": {
+        "properties": {
+          "timing_point_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timing Point Id"
+          }
+        },
+        "required": [
+          "timing_point_id"
+        ],
+        "title": "TimingPointIn",
+        "type": "object"
+      },
+      "TimingPointInfo": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "TimingPointInfo",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "DeviceAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "description": "Device protocol and (later) organiser API. See protocol/README.md.",
+    "title": "Race Timing System API",
+    "version": "1"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/v1/devices/me": {
+      "get": {
+        "operationId": "timing_api_get_config",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeviceConfig"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "DeviceAuth": []
+          }
+        ],
+        "summary": "Get this device's configuration",
+        "tags": [
+          "devices"
+        ]
+      }
+    },
+    "/api/v1/devices/me/clock": {
+      "post": {
+        "operationId": "timing_api_clock",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClockIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClockOut"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "DeviceAuth": []
+          }
+        ],
+        "summary": "Clock sync exchange (NTP-style)",
+        "tags": [
+          "devices"
+        ]
+      }
+    },
+    "/api/v1/devices/me/heartbeat": {
+      "post": {
+        "operationId": "timing_api_heartbeat",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HeartbeatIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HeartbeatOut"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "DeviceAuth": []
+          }
+        ],
+        "summary": "Report device health",
+        "tags": [
+          "devices"
+        ]
+      }
+    },
+    "/api/v1/devices/me/observations/batch": {
+      "post": {
+        "operationId": "timing_api_upload_observations",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ObservationBatchIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObservationBatchOut"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "DeviceAuth": []
+          }
+        ],
+        "summary": "Upload observations (idempotent: resending a batch is safe)",
+        "tags": [
+          "devices"
+        ]
+      }
+    },
+    "/api/v1/devices/me/observations/{observation_id}/crop": {
+      "post": {
+        "operationId": "timing_api_upload_crop",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "observation_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Observation Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "properties": {
+                  "image": {
+                    "format": "binary",
+                    "title": "Image",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "image"
+                ],
+                "title": "FileParams",
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "DeviceAuth": []
+          }
+        ],
+        "summary": "Upload the crop image for an observation (JPEG, replaces any earlier upload)",
+        "tags": [
+          "devices"
+        ]
+      }
+    },
+    "/api/v1/devices/me/timing-point": {
+      "put": {
+        "operationId": "timing_api_set_timing_point",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TimingPointIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeviceConfig"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Bad Request"
+          }
+        },
+        "security": [
+          {
+            "DeviceAuth": []
+          }
+        ],
+        "summary": "Choose which timing point this device is watching",
+        "tags": [
+          "devices"
+        ]
+      }
+    },
+    "/api/v1/devices/pair": {
+      "post": {
+        "operationId": "timing_api_pair",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PairIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PairOut"
+                }
+              }
+            },
+            "description": "Created"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Bad Request"
+          }
+        },
+        "summary": "Pair a device with a one-time code",
+        "tags": [
+          "devices"
+        ]
+      }
+    }
+  },
+  "servers": []
+}

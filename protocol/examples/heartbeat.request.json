@@ -1,0 +1,11 @@
+{
+  "battery_pct": 71,
+  "charging": false,
+  "temperature_c": 38.5,
+  "fps": 29.7,
+  "outbox_size": 3,
+  "camera_ok": true,
+  "clock_offset_ms": -42,
+  "clock_rtt_ms": 18,
+  "app_version": "0.1.0"
+}

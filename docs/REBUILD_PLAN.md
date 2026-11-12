@@ -80,7 +80,9 @@ docs/
 - **Adjustment** (audit trail): who changed what, when, and why. Covers manual times, bib reassignments, penalties and DSQs
 - **Result** (stored, rebuilt whenever reads or adjustments change): gun time, chip time, splits, overall / gender / category position
 
-## 5. Device ⇄ server protocol (sketch)
+## 5. Device ⇄ server protocol
+
+> Implemented in slice 1.3 with Django Ninja. The contract is [`protocol/openapi.json`](../protocol/openapi.json) (generated, and checked in CI). The guide for app developers is [`protocol/README.md`](../protocol/README.md). The sketch below is the original outline.
 
 1. **Pairing:** an organiser shows a QR code (one-time code + server URL + event + the TLS certificate fingerprint when the server is a venue laptop). The phone swaps it for a device token scoped to that event, then picks or is assigned a timing point.
 2. **Clock sync:** the device pings the server repeatedly, NTP-style, and the server keeps the device's offset and its drift. Every observation carries both the raw frame timestamp and the offset used.
@@ -144,7 +146,7 @@ Delivered as PR-sized slices into `v2`, roughly in this order:
 |---|---|
 | 1.1 Domain models ✅ | UUIDv7 base model, user/organisation/membership, event/race/wave/timing point/split/entry/categories, admin |
 | 1.2 Results engine ✅ | Pure module: gun/chip time, splits and laps, statuses, positions, categories |
-| 1.3 Device protocol | API framework, pairing, clock sync, observation ingestion, heartbeat, OpenAPI + `protocol/` contract tests |
+| 1.3 Device protocol ✅ | API framework, pairing, clock sync, observation ingestion, heartbeat, OpenAPI + `protocol/` contract tests |
 | 1.4 Fusion v1 | Reads from observations, review states, adjustments/audit log, result rebuilds |
 | 1.5 Auth | django-allauth headless, passkeys, TOTP, invites, role permissions on the API |
 | 1.6 Data in/out | CSV import/export (legacy-compatible), versioned event bundle export/import |

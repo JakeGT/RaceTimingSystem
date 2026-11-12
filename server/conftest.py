@@ -5,6 +5,7 @@
 from datetime import date
 
 import pytest
+
 from accounts.models import Organisation
 from events.models import CategoryRule, CategoryScheme, Event, Gender, Race, TimingPoint, Wave
 
