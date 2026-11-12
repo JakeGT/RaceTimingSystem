@@ -2,9 +2,11 @@ version = 1
 SPDX-PackageName = "Race Timing System"
 SPDX-PackageDownloadLocation = "https://github.com/JakeGT/RaceTimingSystem"
 
-# Files that can't carry an SPDX header (config, lock files, docs, markup).
+# Files that can't carry an SPDX header (config, lock files, docs, markup) or are
+# generated (Django migrations).
 [[annotations]]
 path = [
+  "**/migrations/*.py",
   "**/*.md",
   "**/*.toml",
   "**/*.json",

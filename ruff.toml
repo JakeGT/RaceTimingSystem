@@ -7,7 +7,9 @@ select = ["E", "F", "W", "I", "UP", "B", "SIM", "DJ", "S", "RUF"]
 ignore = []
 
 [lint.per-file-ignores]
-"**/tests/**" = ["S101"]
+"**/tests/**" = ["S101", "S105", "S106"]
+"conftest.py" = ["S101"]
+"**/migrations/**" = ["RUF012", "E501"]
 "server/config/test_settings.py" = ["S105"]
 
 [lint.isort]

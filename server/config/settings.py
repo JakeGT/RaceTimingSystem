@@ -4,7 +4,11 @@
 
 from pathlib import Path
 
+import django_stubs_ext
 import environ
+
+# Lets admin/form classes be subscripted at runtime (e.g. ModelAdmin[Event]) for mypy.
+django_stubs_ext.monkeypatch()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -28,6 +32,8 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "core",
+    "accounts",
+    "events",
 ]
 
 MIDDLEWARE = [
@@ -39,6 +45,8 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+AUTH_USER_MODEL = "accounts.User"
 
 ROOT_URLCONF = "config.urls"
 
@@ -83,6 +91,7 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
+# Models subclass common.models.UUIDModel; this only affects third-party apps.
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 if not DEBUG:
