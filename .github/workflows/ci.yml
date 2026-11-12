@@ -1,0 +1,126 @@
+# SPDX-FileCopyrightText: 2026 Race Timing System contributors
+# SPDX-License-Identifier: AGPL-3.0-or-later
+name: CI
+
+on:
+  push:
+    branches: [main, v2]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  server:
+    name: server (${{ matrix.database }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Cloud runs Postgres, the venue laptop runs SQLite (ADR 0002): test both.
+        database: [postgres, sqlite]
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: racetiming
+          POSTGRES_PASSWORD: racetiming
+          POSTGRES_DB: racetiming
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U racetiming"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    defaults:
+      run:
+        working-directory: server
+    env:
+      DATABASE_URL: ${{ matrix.database == 'postgres' && 'postgres://racetiming:racetiming@localhost:5432/racetiming' || 'sqlite:///test.sqlite3' }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: astral-sh/setup-uv@v10.3.3
+        with:
+          working-directory: server
+      - run: uv sync --frozen
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run mypy .
+      - run: uv run python manage.py makemigrations --check --dry-run --settings=config.test_settings
+      - run: uv run pytest
+
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: pnpm/action-setup@v6.1.1
+        with:
+          version: 12
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: web/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm format:check
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+
+  vision:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: vision
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: astral-sh/setup-uv@v10.3.3
+        with:
+          working-directory: vision
+      - run: uv sync --frozen
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run mypy src tests
+      - run: uv run pytest
+
+  repo:
+    name: licensing & secrets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: fsfe/reuse-action@v6.0.0
+      - name: No Ultralytics in shipped code (ADR 0001)
+        run: scripts/check-no-ultralytics.sh
+      - uses: gitleaks/gitleaks-action@v3.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  dco:
+    name: DCO sign-off
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Every commit has a Signed-off-by line
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          missing=0
+          for sha in $(git rev-list --no-merges "$BASE..$HEAD"); do
+            if ! git log -1 --format=%B "$sha" | grep -qE '^Signed-off-by: .+ <.+>$'; then
+              echo "::error::Commit $(git log -1 --format='%h %s' "$sha") is not signed off (use git commit -s)"
+              missing=1
+            fi
+          done
+          exit $missing

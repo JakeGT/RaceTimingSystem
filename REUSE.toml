@@ -1,0 +1,25 @@
+version = 1
+SPDX-PackageName = "Race Timing System"
+SPDX-PackageDownloadLocation = "https://github.com/JakeGT/RaceTimingSystem"
+
+# Files that can't carry an SPDX header (config, lock files, docs, markup).
+[[annotations]]
+path = [
+  "**/*.md",
+  "**/*.toml",
+  "**/*.json",
+  "**/*.yaml",
+  "**/*.yml",
+  "**/*.lock",
+  "**/*.html",
+  "**/.gitignore",
+  "**/.dockerignore",
+  "**/.prettierignore",
+  "**/.python-version",
+  ".editorconfig",
+  "**/.env.example",
+  "LICENSE",
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 Race Timing System contributors"
+SPDX-License-Identifier = "AGPL-3.0-or-later"

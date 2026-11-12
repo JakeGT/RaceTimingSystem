@@ -1,97 +1,36 @@
-# === General Logs and Environment ===
-*.log
-.env
-venv/
-env/
-.Python
-
-# === OS Files (macOS) ===
-.DS_Store
-.AppleDouble
-.LSOverride
-Icon
-._*
-.Spotlight-V100
-.Trashes
-.AppleDB
-.AppleDesktop
-Network Trash Folder
-Temporary Items
-.apdisk
-
-# === Python ===
+# Python
 __pycache__/
 *.py[cod]
-*.so
-*.egg
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 *.egg-info/
-*.manifest
-*.spec
-pip-log.txt
-pip-delete-this-directory.txt
 
-# Build / Distribution
-build/
-dist/
-downloads/
-develop-eggs/
-eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-.installed.cfg
+# Django
+server/.env
+server/db.sqlite3*
+server/staticfiles/
+server/media/
 
-# Unit Test / Coverage
-htmlcov/
-.tox/
-.coverage
-.cache
-nosetests.xml
-coverage.xml
+# Node
+node_modules/
+web/dist/
 
-# Sphinx Documentation
-docs/_build/
+# Secrets and local env files
+.env
+.env.*
+!.env.example
 
-# PyBuilder
-target/
+# Model weights and datasets (published via releases, never committed)
+*.pt
+*.onnx
+*.tflite
+*.mlpackage/
+vision/data/
+vision/runs/
 
-# Translations
-*.mo
-*.pot
-
-# === Django Specific ===
-*.sqlite3
-db.sqlite3
-local_settings.py
-
-# === PyCharm / VSCode ===
+# Editors / OS
 .idea/
 .vscode/
-
-# === Node.js (for Playwright) ===
-node_modules/
-test-results/
-playwright-report/
-blob-report/
-playwright/.cache/
-
-# === Project-Specific Files ===
-running/logs/app.log
-running/db.sqlite3
-
-# Media Files (ignore video/image outputs)
-*.jpg
-*.mp4
-
-# bib-detector generated/output files
-/bib-detector/drogo.mp4
-bib-detector/output.mp4
-/bib-detector/2hills2024
-/bib-detector/2hills_output
-bib-detector/demo.mp4
-bib-detector/drogo_output.mp4
-bib-detector/Queensland2024_output.mp4
-bib-detector/__pycache__/website_api.cpython-313.pyc
-*.pyc
+.DS_Store

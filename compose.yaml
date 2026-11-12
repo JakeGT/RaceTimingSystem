@@ -1,0 +1,51 @@
+# Development stack: Postgres + Django + Vite, with source mounted for live reload.
+# Ports: set SERVER_PORT / WEB_PORT if 8000 or 5173 are already taken.
+# Production images and a venue-laptop profile come later (rebuild plan, Phases 6–7).
+name: racetiming
+
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: racetiming
+      POSTGRES_PASSWORD: racetiming
+      POSTGRES_DB: racetiming
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U racetiming"]
+      interval: 2s
+      timeout: 5s
+      retries: 20
+
+  server:
+    build: ./server
+    environment:
+      SECRET_KEY: dev-only-not-secret
+      DEBUG: "true"
+      ALLOWED_HOSTS: localhost,127.0.0.1,server
+      CSRF_TRUSTED_ORIGINS: http://localhost:5173
+      DATABASE_URL: postgres://racetiming:racetiming@db:5432/racetiming
+    command: sh -c "uv run --frozen python manage.py migrate && uv run --frozen python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - ./server:/app
+    ports:
+      - "${SERVER_PORT:-8000}:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build: ./web
+    environment:
+      API_PROXY_TARGET: http://server:8000
+    volumes:
+      - ./web:/app
+      - /app/node_modules
+    ports:
+      - "${WEB_PORT:-5173}:5173"
+    depends_on:
+      - server
+
+volumes:
+  db-data:
