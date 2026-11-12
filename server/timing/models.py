@@ -6,6 +6,7 @@ Observations are append-only and keyed by the UUID the phone generates, so a pho
 resend a batch after a dropped connection without creating duplicates.
 """
 
+import json
 from datetime import timedelta
 
 from django.conf import settings
@@ -63,6 +64,11 @@ class PairingCode(UUIDModel):
     @property
     def is_usable(self) -> bool:
         return self.used_at is None and timezone.now() < self.expires_at
+
+
+def pairing_qr_payload(server_url: str, raw_code: str) -> str:
+    """What the pairing QR code encodes (protocol/README.md)."""
+    return json.dumps({"v": 1, "server": server_url, "code": raw_code}, separators=(",", ":"))
 
 
 class Device(UUIDModel):

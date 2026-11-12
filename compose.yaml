@@ -25,6 +25,7 @@ services:
       DEBUG: "true"
       ALLOWED_HOSTS: localhost,127.0.0.1,server
       CSRF_TRUSTED_ORIGINS: http://localhost:5173
+      WEB_URL: http://localhost:5173
       DATABASE_URL: postgres://racetiming:racetiming@db:5432/racetiming
     command: sh -c "uv run --frozen python manage.py migrate && uv run --frozen python manage.py runserver 0.0.0.0:8000"
     volumes:

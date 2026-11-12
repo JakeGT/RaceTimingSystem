@@ -36,6 +36,10 @@ INSTALLED_APPS = [
     "events",
     "timing",
     "results",
+    "allauth",
+    "allauth.account",
+    "allauth.mfa",
+    "allauth.headless",
 ]
 
 MIDDLEWARE = [
@@ -46,9 +50,14 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 AUTH_USER_MODEL = "accounts.User"
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",  # Django admin's login form
+    "allauth.account.auth_backends.AuthenticationBackend",
+]
 
 ROOT_URLCONF = "config.urls"
 
@@ -96,6 +105,51 @@ STATIC_URL = "static/"
 # after a permission check (slice 1.4+).
 MEDIA_ROOT = env.path("MEDIA_ROOT", default=BASE_DIR / "media")
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# ------------------------------------------------------------------ staff sign-in (ADR 0002)
+# The React app's address: links in emails (invites, password resets) point here.
+WEB_URL = env("WEB_URL", default="http://localhost:5173").rstrip("/")
+
+# EMAIL_URL (e.g. smtp+tls://user:pass@host:587) becomes Django 6.1's MAILERS setting.
+_email = env.email_url("EMAIL_URL", default="consolemail://")
+_email_options = {
+    "host": _email.get("EMAIL_HOST"),
+    "port": _email.get("EMAIL_PORT"),
+    "username": _email.get("EMAIL_HOST_USER"),
+    "password": _email.get("EMAIL_HOST_PASSWORD"),
+    "use_tls": _email.get("EMAIL_USE_TLS"),
+    "use_ssl": _email.get("EMAIL_USE_SSL"),
+}
+MAILERS = {
+    "default": {
+        "BACKEND": _email["EMAIL_BACKEND"],
+        "OPTIONS": {k: v for k, v in _email_options.items() if v not in (None, "", False)},
+    }
+}
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="Race Timing <timing@localhost>")
+
+# django-allauth, headless only: the React app (or the venue laptop's UI) draws the forms.
+# Accounts are created only by accepting an invite (accounts.api), never by open sign-up.
+HEADLESS_ONLY = True
+HEADLESS_CLIENTS = ("browser", "app")
+HEADLESS_FRONTEND_URLS = {
+    "account_confirm_email": f"{WEB_URL}/account/verify-email/{{key}}",
+    "account_reset_password": f"{WEB_URL}/account/password/reset",
+    "account_reset_password_from_key": f"{WEB_URL}/account/password/reset/key/{{key}}",
+    "account_signup": f"{WEB_URL}/account/signup-closed",
+}
+ACCOUNT_ADAPTER = "accounts.adapter.AccountAdapter"
+ACCOUNT_LOGIN_METHODS = {"email"}
+ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*"]
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+ACCOUNT_LOGIN_ON_PASSWORD_RESET = False
+ACCOUNT_PREVENT_ENUMERATION = True
+MFA_SUPPORTED_TYPES = ["totp", "recovery_codes", "webauthn"]
+MFA_PASSKEY_LOGIN_ENABLED = True
+MFA_TOTP_ISSUER = env("MFA_TOTP_ISSUER", default="Race Timing")
+# Browsers only allow WebAuthn on https or localhost; this lets plain-http dev work.
+MFA_WEBAUTHN_ALLOW_INSECURE_ORIGIN = DEBUG
 
 # Models subclass common.models.UUIDModel; this only affects third-party apps.
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
