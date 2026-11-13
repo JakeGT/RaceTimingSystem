@@ -138,7 +138,7 @@ Each phase ends with something demonstrable. Phases 1 and 2 can run alongside ea
 - [ ] Have the draft app-store permission ([LICENSE-APPSTORE-EXCEPTION.md](../LICENSE-APPSTORE-EXCEPTION.md)) reviewed before the first mobile release
 - [ ] **Data:** contact 1–2 local clubs or race organisers about filming a finish; book a staged session with consent; write the data policy (§6, Data strategy)
 
-### Phase 1: Core server (≈2–3 weeks)
+### Phase 1: Core server (≈2–3 weeks) ✅
 
 Delivered as PR-sized slices into `v2`, roughly in this order:
 
@@ -149,16 +149,16 @@ Delivered as PR-sized slices into `v2`, roughly in this order:
 | 1.3 Device protocol ✅ | API framework, pairing, clock sync, observation ingestion, heartbeat, OpenAPI + `protocol/` contract tests |
 | 1.4 Fusion v1 ✅ | Reads from observations (merge across phones within 2 s, snap to entered bibs, uncertain → review queue), audited review services, stored results rebuilt on every change; admin as the stopgap review UI |
 | 1.5 Auth ✅ | django-allauth headless (password, passkeys, TOTP), invite-only accounts, roles enforced on a staff API with 2FA required for owners and organisers ([staff sign-in](staff-sign-in.md)) |
-| 1.6 Data in/out | CSV import/export (legacy-compatible), versioned event bundle export/import |
+| 1.6 Data in/out ✅ | CSV import/export for entries, times and results (legacy files work as they are), versioned event bundle export/import ([data in and out](data-in-and-out.md)) |
 
-- [ ] Domain models from §4 with migrations, Django admin as the stopgap UI
-- [ ] Auth: django-allauth (headless) with email + password, passkeys and TOTP (2FA required for owners and organisers), email invites, organisation roles. No social login
-- [ ] Event-mode groundwork: UUIDv7 keys, event scoping, **event bundle export/import** (versioned, idempotent), CI against both Postgres and SQLite
-- [ ] Device pairing, clock sync, observation ingestion (idempotent) and heartbeat
-- [ ] **Results engine as a pure, heavily tested module:** gun and chip time, splits, statuses, positions and categories
-- [ ] Fusion v1 (single camera per timing point), review states, audit log
-- [ ] CSV import and export for entries and results. Keep compatibility with the legacy CSV examples
-- [ ] OpenAPI schema published, contract tests in `protocol/`
+- [x] Domain models from §4 with migrations, Django admin as the stopgap UI
+- [x] Auth: django-allauth (headless) with email + password, passkeys and TOTP (2FA required for owners and organisers), email invites, organisation roles. No social login
+- [x] Event-mode groundwork: UUIDv7 keys, event scoping, **event bundle export/import** (versioned, idempotent), CI against both Postgres and SQLite
+- [x] Device pairing, clock sync, observation ingestion (idempotent) and heartbeat
+- [x] **Results engine as a pure, heavily tested module:** gun and chip time, splits, statuses, positions and categories
+- [x] Fusion v1 (single camera per timing point), review states, audit log
+- [x] CSV import and export for entries and results. Keep compatibility with the legacy CSV examples
+- [x] OpenAPI schema published, contract tests in `protocol/`
 
 ### Phase 2: Vision reference pipeline and evaluation (≈2–4 weeks, alongside Phase 1)
 - [ ] Synthetic bib generator, and train the digit model on synthetic data + SVHN + Roboflow crops

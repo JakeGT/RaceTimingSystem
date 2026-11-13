@@ -13,6 +13,8 @@ from ninja.responses import NinjaJSONEncoder
 from accounts.api import public_router as invitations_router
 from accounts.api import router as staff_router
 from accounts.permissions import MfaRequired
+from dataio.api import organisations_router as staff_bundles_router
+from dataio.api import router as staff_data_router
 from timing.api import router as devices_router
 from timing.staff_api import router as staff_devices_router
 
@@ -45,6 +47,8 @@ api = NinjaAPI(
 api.add_router("/devices", devices_router)
 api.add_router("/staff", staff_router)
 api.add_router("/staff/events", staff_devices_router)
+api.add_router("/staff/events", staff_data_router)
+api.add_router("/staff/organisations", staff_bundles_router)
 api.add_router("/invitations", invitations_router)
 
 

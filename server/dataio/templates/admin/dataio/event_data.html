@@ -1,0 +1,55 @@
+{% extends "admin/base_site.html" %}
+{# SPDX-FileCopyrightText: 2026 Race Timing System contributors #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% load admin_urls %}
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">Home</a>
+  &rsaquo; <a href="{% url 'admin:events_event_changelist' %}">Events</a>
+  &rsaquo; <a href="{% url 'admin:events_event_change' event.pk %}">{{ event }}</a>
+  &rsaquo; Data in/out
+</div>
+{% endblock %}
+{% block content %}
+<div id="content-main">
+  {% if report and report.errors %}
+    <div class="module">
+      <h2>Problems in the file (nothing was saved)</h2>
+      <table>
+        <thead><tr><th>Line</th><th>Problem</th></tr></thead>
+        <tbody>
+          {% for error in report.errors %}
+            <tr><td>{{ error.line }}</td><td>{{ error.message }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+
+  <div class="module">
+    <h2>Download</h2>
+    <ul>
+      {% for what, label in downloads %}
+        <li><a href="{% url 'admin:events_event_download' event.pk what %}">{{ label }}</a></li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <form method="post" enctype="multipart/form-data" class="module aligned">
+    {% csrf_token %}
+    <h2>Import entries</h2>
+    <input type="hidden" name="form" value="entries">
+    <fieldset class="module aligned">{{ entries_form.as_div }}</fieldset>
+    <div class="submit-row"><input type="submit" value="Import entries" class="default"></div>
+  </form>
+
+  <form method="post" enctype="multipart/form-data" class="module aligned">
+    {% csrf_token %}
+    <h2>Import times</h2>
+    <p>Each row becomes a manual read, recorded in the audit log. Rows already imported are skipped.</p>
+    <input type="hidden" name="form" value="times">
+    <fieldset class="module aligned">{{ times_form.as_div }}</fieldset>
+    <div class="submit-row"><input type="submit" value="Import times" class="default"></div>
+  </form>
+</div>
+{% endblock %}

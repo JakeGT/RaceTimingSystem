@@ -1,0 +1,20 @@
+{% extends "admin/base_site.html" %}
+{# SPDX-FileCopyrightText: 2026 Race Timing System contributors #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">Home</a>
+  &rsaquo; <a href="{% url 'admin:events_event_changelist' %}">Events</a>
+  &rsaquo; Import bundle
+</div>
+{% endblock %}
+{% block content %}
+<div id="content-main">
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    <fieldset class="module aligned">{{ form.as_div }}</fieldset>
+    <div class="submit-row"><input type="submit" value="Import" class="default"></div>
+  </form>
+</div>
+{% endblock %}

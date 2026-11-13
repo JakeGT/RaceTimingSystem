@@ -45,6 +45,56 @@
         "title": "AcceptOut",
         "type": "object"
       },
+      "BundleImportOut": {
+        "properties": {
+          "crops": {
+            "title": "Crops",
+            "type": "integer"
+          },
+          "event_id": {
+            "format": "uuid",
+            "title": "Event Id",
+            "type": "string"
+          },
+          "replaced": {
+            "title": "Replaced",
+            "type": "boolean"
+          },
+          "rows": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Rows",
+            "type": "object"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Warnings",
+            "type": "array"
+          }
+        },
+        "required": [
+          "summary",
+          "event_id",
+          "slug",
+          "replaced",
+          "rows",
+          "crops",
+          "warnings"
+        ],
+        "title": "BundleImportOut",
+        "type": "object"
+      },
       "Candidate": {
         "properties": {
           "bib": {
@@ -366,6 +416,68 @@
           "config_version"
         ],
         "title": "HeartbeatOut",
+        "type": "object"
+      },
+      "ImportReportOut": {
+        "properties": {
+          "created": {
+            "title": "Created",
+            "type": "integer"
+          },
+          "dry_run": {
+            "title": "Dry Run",
+            "type": "boolean"
+          },
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/RowErrorOut"
+            },
+            "title": "Errors",
+            "type": "array"
+          },
+          "ignored_columns": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Ignored Columns",
+            "type": "array"
+          },
+          "skipped": {
+            "title": "Skipped",
+            "type": "integer"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          },
+          "unchanged": {
+            "title": "Unchanged",
+            "type": "integer"
+          },
+          "updated": {
+            "title": "Updated",
+            "type": "integer"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Warnings",
+            "type": "array"
+          }
+        },
+        "required": [
+          "summary",
+          "dry_run",
+          "created",
+          "updated",
+          "unchanged",
+          "skipped",
+          "errors",
+          "warnings",
+          "ignored_columns"
+        ],
+        "title": "ImportReportOut",
         "type": "object"
       },
       "InvitationIn": {
@@ -874,6 +986,24 @@
         "title": "RoleIn",
         "type": "object"
       },
+      "RowErrorOut": {
+        "properties": {
+          "line": {
+            "title": "Line",
+            "type": "integer"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          }
+        },
+        "required": [
+          "line",
+          "message"
+        ],
+        "title": "RowErrorOut",
+        "type": "object"
+      },
       "TimingPointIn": {
         "properties": {
           "timing_point_id": {
@@ -1370,6 +1500,277 @@
         ]
       }
     },
+    "/api/v1/staff/events/{event_id}/bundle": {
+      "get": {
+        "operationId": "dataio_api_event_bundle",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/zip": {}
+            },
+            "description": "Event bundle"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "XSessionTokenAuth": []
+          },
+          {
+            "BrowserSessionAuth": []
+          }
+        ],
+        "summary": "Download the whole event as a bundle (zip)",
+        "tags": [
+          "staff"
+        ]
+      }
+    },
+    "/api/v1/staff/events/{event_id}/entries.csv": {
+      "get": {
+        "operationId": "dataio_api_entries_csv",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "race_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Race Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "legacy",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Legacy",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/csv": {}
+            },
+            "description": "CSV file"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "XSessionTokenAuth": []
+          },
+          {
+            "BrowserSessionAuth": []
+          }
+        ],
+        "summary": "Download the entry list as CSV",
+        "tags": [
+          "staff"
+        ]
+      }
+    },
+    "/api/v1/staff/events/{event_id}/entries/import": {
+      "post": {
+        "description": "Rows are matched to entries by bib. If any row has a problem nothing is saved, and the response (422) lists every problem by line. `dry_run` checks the file without saving.",
+        "operationId": "dataio_api_import_entries_csv",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "properties": {
+                  "dry_run": {
+                    "default": false,
+                    "title": "Dry Run",
+                    "type": "boolean"
+                  },
+                  "file": {
+                    "format": "binary",
+                    "title": "File",
+                    "type": "string"
+                  },
+                  "race_id": {
+                    "anyOf": [
+                      {
+                        "format": "uuid",
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Race Id"
+                  }
+                },
+                "required": [
+                  "file"
+                ],
+                "title": "MultiPartBodyParams",
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportReportOut"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportReportOut"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "security": [
+          {
+            "XSessionTokenAuth": []
+          },
+          {
+            "BrowserSessionAuth": []
+          }
+        ],
+        "summary": "Create or update entries from a CSV (this system's or the legacy format)",
+        "tags": [
+          "staff"
+        ]
+      }
+    },
     "/api/v1/staff/events/{event_id}/pairing-codes": {
       "post": {
         "operationId": "timing_staff_api_issue_pairing_code",
@@ -1451,6 +1852,248 @@
         ]
       }
     },
+    "/api/v1/staff/events/{event_id}/results.csv": {
+      "get": {
+        "description": "`legacy=true` gives the old system's `race_number,total_time` layout.",
+        "operationId": "dataio_api_results_csv",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "race_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Race Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "legacy",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Legacy",
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "decimals",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "title": "Decimals",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/csv": {}
+            },
+            "description": "CSV file"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "XSessionTokenAuth": []
+          },
+          {
+            "BrowserSessionAuth": []
+          }
+        ],
+        "summary": "Download results as CSV",
+        "tags": [
+          "staff"
+        ]
+      }
+    },
+    "/api/v1/staff/events/{event_id}/times/import": {
+      "post": {
+        "description": "One time column: `at` (ISO date-time), `clock` (time of day), `unix`, or `elapsed` (since the wave start); the legacy `Result` and `total_time` columns work too. Times go on `timing_point_id`, or the race's finish line. Rows already imported are skipped.",
+        "operationId": "dataio_api_import_times_csv",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "properties": {
+                  "dry_run": {
+                    "default": false,
+                    "title": "Dry Run",
+                    "type": "boolean"
+                  },
+                  "file": {
+                    "format": "binary",
+                    "title": "File",
+                    "type": "string"
+                  },
+                  "race_id": {
+                    "anyOf": [
+                      {
+                        "format": "uuid",
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Race Id"
+                  },
+                  "reason": {
+                    "default": "",
+                    "title": "Reason",
+                    "type": "string"
+                  },
+                  "timing_point_id": {
+                    "anyOf": [
+                      {
+                        "format": "uuid",
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Timing Point Id"
+                  }
+                },
+                "required": [
+                  "file"
+                ],
+                "title": "MultiPartBodyParams",
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportReportOut"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportReportOut"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "security": [
+          {
+            "XSessionTokenAuth": []
+          },
+          {
+            "BrowserSessionAuth": []
+          }
+        ],
+        "summary": "Add crossing times from a CSV as manual reads",
+        "tags": [
+          "staff"
+        ]
+      }
+    },
     "/api/v1/staff/me": {
       "get": {
         "operationId": "accounts_api_me",
@@ -1476,6 +2119,124 @@
           }
         ],
         "summary": "The signed-in staff member and their roles",
+        "tags": [
+          "staff"
+        ]
+      }
+    },
+    "/api/v1/staff/organisations/{slug}/events/import": {
+      "post": {
+        "description": "Creates the event (201). If it's already here, `replace` must be set, and the event is made to match the bundle (200). `event_slug` renames it on the way in.",
+        "operationId": "dataio_api_import_event_bundle",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "properties": {
+                  "event_slug": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Event Slug"
+                  },
+                  "file": {
+                    "format": "binary",
+                    "title": "File",
+                    "type": "string"
+                  },
+                  "replace": {
+                    "default": false,
+                    "title": "Replace",
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "file"
+                ],
+                "title": "MultiPartBodyParams",
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BundleImportOut"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BundleImportOut"
+                }
+              }
+            },
+            "description": "Created"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "XSessionTokenAuth": []
+          },
+          {
+            "BrowserSessionAuth": []
+          }
+        ],
+        "summary": "Import an event bundle into this organisation",
         "tags": [
           "staff"
         ]
