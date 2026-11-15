@@ -1,5 +1,7 @@
 # SPDX-FileCopyrightText: 2026 Race Timing System contributors
 # SPDX-License-Identifier: AGPL-3.0-or-later
+"""The adapter around ByteTrack: what the crossing pipeline relies on, not ByteTrack itself."""
+
 import pytest
 
 from racevision.geometry import Box
@@ -12,59 +14,54 @@ def person(x: float, y: float = 300, score: float = 0.9) -> Detection:
     return Detection(Box(x, y, x + 80, y + 240), score, "person")
 
 
-def run(tracker: Tracker, frames: list[list[Detection]]) -> list[list[int]]:
-    """Track ids matched in each frame, ordered by detection x."""
+def run(tracker: Tracker, frames: list[list[Detection]], start: int = 0) -> list[list[int]]:
+    """Track ids matched in each frame, ordered by box x."""
     out = []
-    for i, dets in enumerate(frames):
+    for i, dets in enumerate(frames, start):
         update = tracker.update(i / FPS, dets)
         out.append([tr.id for tr in sorted(update.matched, key=lambda tr: tr.box.x1)])
     return out
 
 
 class TestTracker:
-    def test_follows_a_runner(self) -> None:
+    def test_follows_a_runner_once_confirmed(self) -> None:
         ids = run(Tracker(), [[person(100 + 12 * i)] for i in range(30)])
-        assert ids == [[1]] * 30
+        assert ids[0] == []  # a track needs two matches before it gets an id
+        assert {i for frame in ids[1:] for i in frame} == {ids[1][0]}
 
-    def test_two_runners_crossing_paths_keep_their_ids(self) -> None:
-        """One runner overtakes another; in between, their boxes overlap heavily."""
+    def test_history_and_score(self) -> None:
         tracker = Tracker()
-        frames = [[person(100 + 20 * i, 300), person(400 + 8 * i, 330)] for i in range(60)]
-        run(tracker, frames)
-        a, b = sorted(tracker.tracks, key=lambda tr: tr.id)
-        assert a.box.x1 == pytest.approx(100 + 20 * 59)  # the faster one stayed id 1
-        assert b.box.x1 == pytest.approx(400 + 8 * 59)
-        assert len(a.history) == len(b.history) == 60
+        run(tracker, [[person(100 + 12 * i, score=0.9 if i < 5 else 0.4)] for i in range(8)])
+        [track] = tracker.tracks
+        assert track.hits == 7  # every matched frame since it got an id
+        assert track.box == Box(184, 300, 264, 540)
+        assert track.score == pytest.approx(0.4)  # kept by ByteTrack's low-score pass
 
-    def test_survives_a_gap_using_predicted_motion(self) -> None:
-        """Hidden for 10 frames (a third of a second) while moving 15 px a frame."""
-        frames = [[person(100 + 15 * i)] if not 20 <= i < 30 else [] for i in range(50)]
-        ids = run(Tracker(), frames)
-        assert {i for frame in ids for i in frame} == {1}
+    def test_gap_and_estimate_while_hidden(self) -> None:
+        """Hidden for 10 frames while moving 15 px a frame: ByteTrack keeps the track."""
+        tracker = Tracker()
+        frames = [[person(100 + 15 * i)] if not 20 <= i < 30 else [] for i in range(40)]
+        ids = run(tracker, frames[:25])
+        [track] = tracker.tracks
+        assert track.missed == 5
+        assert track.estimate.x1 > track.box.x1  # predicted on past where it was last seen
+        ids += run(tracker, frames[25:31], start=25)
+        assert track.gap == 10 and track.missed == 0  # seen again at frame 30
+        ids += run(tracker, frames[31:], start=31)
+        assert len({i for frame in ids for i in frame}) == 1
+        assert track.gap == 0
 
     def test_lost_too_long_ends_the_track(self) -> None:
-        tracker = Tracker(max_lost_seconds=0.5)
+        tracker = Tracker(lost_seconds=0.5)
         run(tracker, [[person(100)]] * 5)
-        update = tracker.update(5 / FPS, [])
-        assert update.ended == []
-        update = tracker.update(5 / FPS + 0.6, [])
-        assert [tr.id for tr in update.ended] == [1]
-
-    def test_partly_hidden_runner_kept_by_low_score_detections(self) -> None:
-        frames = [[person(100 + 12 * i, score=0.9 if i < 10 else 0.3)] for i in range(30)]
-        ids = run(Tracker(), frames)
-        assert ids == [[1]] * 30
+        assert tracker.update(5 / FPS, []).ended == []
+        ended = tracker.update(5 / FPS + 0.6, []).ended
+        assert len(ended) == 1
+        assert tracker.tracks == []
 
     def test_low_score_detections_never_start_tracks(self) -> None:
         ids = run(Tracker(), [[person(100 + 12 * i, score=0.3)] for i in range(10)])
         assert ids == [[]] * 10
-
-    def test_one_frame_false_detection_is_dropped(self) -> None:
-        tracker = Tracker()
-        tracker.update(0, [person(100)])
-        update = tracker.update(1 / FPS, [])
-        assert [tr.id for tr in update.ended] == [1]
-        assert tracker.tracks == []
 
     def test_frames_out_of_order(self) -> None:
         tracker = Tracker()

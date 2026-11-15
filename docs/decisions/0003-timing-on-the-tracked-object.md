@@ -70,11 +70,11 @@ Embeddings and crops are personal data. They're scoped to the event and deleted 
 ## Consequences
 
 - **Ground truth per runner** becomes: bib, crossing frame by the torso rule, the person's box at that frame, and an occlusion flag.
-- **The reference pipeline core is pure Python** (slice 2.1): boxes, a ByteTrack-style tracker, both line geometries with sub-frame interpolation, bib-to-person matching, bib voting snapped to the registered bibs, and the sport profile. The ML models plug into it later.
+- **The reference pipeline core** (slice 2.1): boxes, ByteTrack (Roboflow's `trackers`, Apache-2.0) behind an adapter, both line geometries with sub-frame interpolation, bib-to-person matching, bib voting snapped to the registered bibs, and the sport profile. The ML models plug into it later.
 - **The protocol doesn't change now.** An optional embedding field is noted for protocol v2.
 - **First measurements (synthetic, slice 2.1):**
   - **In-plane camera, line drawn on the image:** exact.
   - **Angled camera, ground line:** the box's bottom edge sits about 18 cm ahead of the hips, so 0.02–0.06 s early depending on speed. It needs correcting as a ground offset in metres, not as a time.
   - **Angled camera, line drawn on the image:** out by up to ~0.5 s, and misses runners.
-  - **Busy finishes:** a camera 4.5 m up loses fewer runners than one at 2.5 m (0.25% against 0.4%). The errors that remain are same-lane overtakes, which geometry can't separate. That's early evidence for appearance matching inside the tracker. Details in [`vision/README.md`](../../vision/README.md).
+  - **Busy finishes:** a camera 4.5 m up loses fewer runners than one at 2.5 m (0.25% against 0.45%), and about 1 in 800 runners is sent confidently with the wrong bib at either height. The errors that remain are same-lane overtakes, which geometry can't separate. That's early evidence for appearance matching inside the tracker. Details in [`vision/README.md`](../../vision/README.md).
 - **Licences to check** before anything ships or weights are published are listed in [`vision/datasets.md`](../../vision/datasets.md). That covers re-ID models, open-vocabulary labellers and datasets. Nothing named in this ADR has been checked yet.

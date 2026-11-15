@@ -169,8 +169,8 @@ Timing is on the person, not the bib ([ADR 0003](decisions/0003-timing-on-the-tr
 
 | Slice | Contents |
 |---|---|
-| 2.1 Tracking core ✅ | Pure Python, no ML: boxes, ByteTrack-style tracker, line crossing with sub-frame interpolation (in-plane and ground-plane lines), bib-to-person matching, bib voting snapped to the registered bibs, sport profile, crossing pipeline |
-| 2.2 Evaluation harness | Ground-truth format, synthetic scenes with known answers, metrics (**missed finishers, bib accuracy, timing error p50/p95, false reads**), report per clip |
+| 2.1 Tracking core ✅ | No ML: boxes, ByteTrack (Roboflow `trackers`, Apache-2.0) behind an adapter, line crossing with sub-frame interpolation (in-plane and ground-plane lines), bib-to-person matching, bib voting snapped to the registered bibs, sport profile, crossing pipeline |
+| 2.2 Evaluation harness | Ground-truth format, synthetic scenes with known answers, metrics (**missed finishers, bib accuracy, timing error p50/p95, false reads**, plus HOTA, IDF1 and ID switches for tracking), report per clip. **Tracker comparison** on our footage: ByteTrack, OC-SORT, BoT-SORT, C-BIoU, and ByteTraX's open-scene changes (lenient thresholds, no high/low split, stricter track start) re-implemented as ByteTrack settings. Re-measure the pipeline's identity-doubt thresholds on real footage |
 | 2.3 Synthetic bibs | Generator: fonts, colours, perspective, creases, blur, occlusion, composited onto person crops |
 | 2.4 Digit recogniser | Trained on synthetic bibs + public data (licences permitting), compared with EasyOCR and PaddleOCR, ONNX export |
 | 2.5 Detector | Person + bib detector fine-tuned from COCO weights, ONNX inference adapter, pre-labelling tools |

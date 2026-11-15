@@ -5,12 +5,23 @@
 import random
 from dataclasses import dataclass
 
+import numpy as np
 import pytest
+from scipy.optimize import linear_sum_assignment
 
+from racevision.geometry import Box
 from racevision.lines import Direction
-from racevision.pipeline import CrossingPipeline, Flag, Observation, Recogniser
+from racevision.pipeline import (
+    JUMP,
+    CrossingPipeline,
+    Flag,
+    Observation,
+    Recogniser,
+    expected,
+    jump,
+)
 from racevision.profile import RUNNING, Anchor, SportProfile
-from racevision.tracker import assign
+from racevision.tracker import Track
 from tests.scene import ANGLED, HIGH, Camera, Person, Scene
 
 AUTO = 0.6
@@ -56,7 +67,11 @@ class Score:
             [d if (d := abs(o.at - p.crosses_at)) < 0.5 else 1e6 for o in observations]
             for p in people
         ]
-        pairs = [pair for pair in assign(cost) if cost[pair[0]][pair[1]] < 1e6]
+        pairs: list[tuple[int, int]] = []
+        if observations:
+            rows, cols = linear_sum_assignment(np.array(cost))
+            pairs = [(r, c) for r, c in zip(rows.tolist(), cols.tolist(), strict=True)]
+        pairs = [(r, c) for r, c in pairs if cost[r][c] < 1e6]
         self.lost += len(people) - len(pairs)
         self.extra += len(observations) - len(pairs)
         self.observations += len(observations)
@@ -92,7 +107,7 @@ class TestFinish:
 
     @pytest.mark.parametrize(
         ("camera", "max_lost", "max_extra", "max_wrong", "min_auto"),
-        [(ANGLED, 4, 14, 1, 0.80), (HIGH, 2, 3, 1, 0.86)],
+        [(ANGLED, 4, 8, 1, 0.82), (HIGH, 2, 2, 1, 0.87)],
         ids=["camera_2.5m", "camera_4.5m"],
     )
     def test_busy_finishes(
@@ -188,3 +203,22 @@ def test_profile_without_identity_sends_straight_away() -> None:
     scene = Scene(ANGLED, [Person(x0=-16, y=4, speed=4)], seconds=8)
     sent_at = [t for t, d in scene.frames() if pipeline.update(t, d)]
     assert sent_at == [pytest.approx(4.0, abs=0.1)]
+
+
+class TestJump:
+    def track(self, *boxes: Box) -> Track:
+        history = [(i / 30, box) for i, box in enumerate(boxes)]
+        return Track(id=1, history=history, score=0.9, estimate=boxes[-1])
+
+    def test_steady_runner_coming_closer_is_expected(self) -> None:
+        """Moving right and growing, at an uneven frame rate: no jump."""
+        a, b = Box(100, 200, 140, 300), Box(110, 198, 152, 303)
+        c = Box(130, 194, 176, 309)  # twice the time step, twice the change
+        track = self.track(a, b, c)
+        track.history[-1] = (3 / 30, c)
+        assert jump(expected(track), c) == pytest.approx(0, abs=1e-9)
+
+    def test_switch_to_someone_at_another_depth_is_a_jump(self) -> None:
+        a, b = Box(100, 200, 140, 300), Box(110, 200, 150, 300)
+        nearer = Box(118, 190, 168, 340)  # overlaps a lot, but bigger and feet lower
+        assert jump(expected(self.track(a, b, nearer)), nearer) > JUMP

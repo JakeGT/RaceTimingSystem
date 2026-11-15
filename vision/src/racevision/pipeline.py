@@ -19,13 +19,14 @@ Two aims, matching the server's rules (fusion sends reads under 0.6 confidence t
 
 Neither is guaranteed: two runners in the same lane, one overtaking the other, can't be told
 apart by geometry alone. On synthetic busy finishes (`tests/test_pipeline.py`; a runner every
-~0.6 s, often hidden behind each other), about 0.3% of runners are lost and about 1 in 1,600
+~0.6 s, often hidden behind each other), 0.25 to 0.45% of runners are lost and about 1 in 800
 is sent confidently with the wrong bib. A higher camera helps most. Appearance matching
 (re-identification, ADR 0003) is the next step if real footage shows the same.
 """
 
 from __future__ import annotations
 
+import math
 from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass, field, replace
 from enum import StrEnum
@@ -43,8 +44,8 @@ DOUBT = 0.5
 """Confidence is multiplied by this when identity is in doubt, which sends it to review."""
 OVERLAP = 0.4
 """Two tracks overlapping this much (IoU) might swap identities."""
-POOR_MATCH = 0.5
-"""A tracker match this unlike the prediction (`match_cost`) might be a different person."""
+JUMP = 0.5
+"""A track's box changing this much in one frame (`jump`) might mean it's now someone else."""
 STITCH_SECONDS = 2.0
 """How long a track that vanished before the line can be joined to one that appears past it."""
 
@@ -222,14 +223,14 @@ class CrossingPipeline:
             # can't see right now is exactly the one this track might swap with.
             touching = any(
                 other is not track
-                and _overlapping(track.box, other.box if other in matched else other.predict(t))
+                and _overlapping(track.box, other.box if other in matched else other.estimate)
                 for other in self.tracker.tracks
             )
             contact = (
                 touching
                 or track.gap > 0
                 or track.score < self.tracker.high_score
-                or track.cost > POOR_MATCH
+                or (track.hits > 2 and jump(expected(track), track.box) > JUMP)
             )
             if contact:
                 state.contact_times.add(t)
@@ -376,6 +377,32 @@ class CrossingPipeline:
         if state is None or state.crossing is None or state.sent:
             return out
         return [*out, self._send(track, state, state.crossing)]
+
+
+def expected(track: Track) -> Box:
+    """Where the latest box should be if the track kept moving as over its two previous
+    matches. ByteTrack's own prediction isn't exposed after its update."""
+    (t0, a), (t1, b), (t2, _) = track.history[-3:]
+    k = (t2 - t1) / (t1 - t0)
+    return b.shifted(
+        k * (b.centre.x - a.centre.x),
+        k * (b.centre.y - a.centre.y),
+        k * (b.width - a.width),
+        k * (b.height - a.height),
+    )
+
+
+def jump(before: Box, after: Box) -> float:
+    """How far a box is from where it was expected: 0 for exactly there.
+
+    Runners in different lanes are at different distances from the camera, so if a track has
+    jumped to someone else, the box usually changes height and the feet move, not just the
+    overlap.
+    """
+    h = max(before.height, 1e-6)
+    size = abs(math.log(max(after.height, 1e-6) / h))
+    feet = abs(after.y2 - before.y2) / h
+    return (1 - before.iou(after)) + 2 * size + 2 * feet
 
 
 def _overlapping(a: Box, b: Box) -> bool:
