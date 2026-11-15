@@ -81,11 +81,26 @@ class TestFusePending:
         assert read.observations.count() == 2
         assert read.confidence == 0.95
 
-    def test_three_sightings_use_the_middle_one(
+    def test_one_phone_never_merges_with_itself(
         self, event: Event, entries: dict[str, Entry], observe: MakeObservation
     ) -> None:
-        for s in (2400.0, 2400.3, 2401.5):
-            observe({"101": 0.95}, s)
+        # One phone saw two crossings: two runners, even if both look like 101.
+        observe({"101": 0.95}, 2400.0)
+        observe({"101": 0.95}, 2400.3)
+        fuse_pending(event)
+        assert Read.objects.count() == 2
+        assert all(read.observations.count() == 1 for read in Read.objects.all())
+
+    def test_three_sightings_use_the_middle_one(
+        self,
+        event: Event,
+        entries: dict[str, Entry],
+        observe: MakeObservation,
+        phones: tuple[Device, Device],
+        third_phone: Device,
+    ) -> None:
+        for s, phone in zip((2400.0, 2400.3, 2401.5), (*phones, third_phone), strict=True):
+            observe({"101": 0.95}, s, phone)
         fuse_pending(event)
         assert as_seconds(Read.objects.get().at) == pytest.approx(2400.3)
 
@@ -114,22 +129,30 @@ class TestFusePending:
         assert Read.objects.count() == 1
 
     def test_late_upload_joins_existing_read(
-        self, event: Event, entries: dict[str, Entry], observe: MakeObservation
+        self,
+        event: Event,
+        entries: dict[str, Entry],
+        observe: MakeObservation,
+        phones: tuple[Device, Device],
     ) -> None:
         observe({"101": 0.95}, 2400)
         fuse_pending(event)
-        observe({"101": 0.9}, 2401)
+        observe({"101": 0.9}, 2401, phones[1])
         fuse_pending(event)
         read = Read.objects.get()
         assert as_seconds(read.at) == pytest.approx(2400.5)
 
     def test_sure_second_phone_clears_review(
-        self, event: Event, entries: dict[str, Entry], observe: MakeObservation
+        self,
+        event: Event,
+        entries: dict[str, Entry],
+        observe: MakeObservation,
+        phones: tuple[Device, Device],
     ) -> None:
         observe({"101": 0.4}, 2400)
         fuse_pending(event)
         assert Read.objects.get().state == State.NEEDS_REVIEW
-        observe({"101": 0.95}, 2400.2)
+        observe({"101": 0.95}, 2400.2, phones[1])
         fuse_pending(event)
         read = Read.objects.get()
         assert (read.state, read.review_reason) == (State.AUTO, "")
@@ -140,12 +163,13 @@ class TestFusePending:
         event: Event,
         entries: dict[str, Entry],
         observe: MakeObservation,
+        phones: tuple[Device, Device],
         decided: Read.State,
     ) -> None:
         observe({"101": 0.95}, 2400)
         fuse_pending(event)
         Read.objects.update(state=decided)
-        observe({"101": 0.95}, 2401)
+        observe({"101": 0.95}, 2401, phones[1])
         fuse_pending(event)
         read = Read.objects.get()
         assert (read.state, as_seconds(read.at)) == (decided, 2400)
@@ -161,9 +185,49 @@ class TestFusePending:
         assert not Read.objects.exists()
 
     def test_window_is_inclusive(
-        self, event: Event, entries: dict[str, Entry], observe: MakeObservation
+        self,
+        event: Event,
+        entries: dict[str, Entry],
+        observe: MakeObservation,
+        phones: tuple[Device, Device],
     ) -> None:
         observe({"101": 0.95}, 2400)
-        observe({"101": 0.95}, 2400 + MERGE_WINDOW / timedelta(seconds=1))
+        observe({"101": 0.95}, 2400 + MERGE_WINDOW / timedelta(seconds=1), phones[1])
         fuse_pending(event)
         assert Read.objects.count() == 1
+
+    def test_suspected_swap_stays_two_reviews(
+        self, event: Event, entries: dict[str, Entry], observe: MakeObservation
+    ) -> None:
+        # The phone thinks two runners may have swapped identities, so it sends both
+        # crossings with low confidence. Both must reach the review queue.
+        observe({"101": 0.5, "102": 0.3}, 2400.0)
+        observe({"101": 0.5, "102": 0.4}, 2400.3)
+        fuse_pending(event)
+        reads = list(Read.objects.all())
+        assert [(r.bib, r.state, r.review_reason) for r in reads] == [
+            ("101", State.NEEDS_REVIEW, Why.LOW_CONFIDENCE)
+        ] * 2
+
+    def test_one_phone_across_two_runs(
+        self, event: Event, entries: dict[str, Entry], observe: MakeObservation
+    ) -> None:
+        observe({"101": 0.95}, 2400.0)
+        fuse_pending(event)
+        observe({"101": 0.95}, 2400.3)
+        fuse_pending(event)
+        assert Read.objects.count() == 2
+
+    def test_second_phone_joins_one_crossing_only(
+        self,
+        event: Event,
+        entries: dict[str, Entry],
+        observe: MakeObservation,
+        phones: tuple[Device, Device],
+    ) -> None:
+        left, right = phones
+        observe({"101": 0.95}, 2400.0, left)
+        observe({"101": 0.95}, 2400.2, right)
+        observe({"101": 0.95}, 2400.4, left)
+        fuse_pending(event)
+        assert sorted(r.observations.count() for r in Read.objects.all()) == [1, 2]

@@ -4,8 +4,17 @@
 
 Each new observation is matched to the bibs entered in the event and then either
 merged into an existing read (same timing point, same bib, within MERGE_WINDOW, from
-any device) or turned into a new read. Anything uncertain becomes a read that needs
+another device) or turned into a new read. Anything uncertain becomes a read that needs
 review rather than being dropped.
+
+Observations from the same device never merge. One phone sends one observation per
+crossing it sees, so two from the same phone are two crossings, even when both look like
+the same bib. That happens when runners finish close together: the phone sends
+low-confidence observations when it suspects two tracked runners have swapped
+identities, and the top guess may then be a neighbour's bib. Merging them would hide a
+finisher, and here a duplicate read is safer than a lost one: a person sees it in
+review, and the results engine already counts repeat reads within a few seconds as one
+crossing.
 
 Fusion v2 (Phase 5) will weigh devices against each other. v1 already merges
 sightings from several phones, which is enough for a second camera to back up the first.
@@ -110,8 +119,12 @@ def fuse_pending(event: Event) -> set[UUID]:
 
 
 def _merge_target(obs: Observation, decision: Decision) -> Read | None:
-    """Rejected reads count too: a late upload from a second phone shouldn't bring
-    back a crossing someone has already thrown out."""
+    """The read another device's sighting of this crossing is in, if any.
+
+    Reads that already hold an observation from this device are skipped (see the module
+    docstring). Rejected reads count too: a late upload from a second phone shouldn't
+    bring back a crossing someone has already thrown out.
+    """
     return (
         Read.objects.filter(
             timing_point_id=obs.timing_point_id,
@@ -119,6 +132,7 @@ def _merge_target(obs: Observation, decision: Decision) -> Read | None:
             at__gte=obs.captured_at - MERGE_WINDOW,
             at__lte=obs.captured_at + MERGE_WINDOW,
         )
+        .exclude(observations__device_id=obs.device_id)
         .order_by("at")
         .first()
     )

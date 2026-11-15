@@ -60,6 +60,11 @@ def phones(event: Event, finish_line: TimingPoint) -> tuple[Device, Device]:
 
 
 @pytest.fixture
+def third_phone(event: Event, finish_line: TimingPoint) -> Device:
+    return _device(event, finish_line, "Middle")
+
+
+@pytest.fixture
 def observe(phones: tuple[Device, Device], finish_line: TimingPoint) -> MakeObservation:
     def make(bibs: dict[str, float], seconds: float, device: Device | None = None) -> Observation:
         device = device or phones[0]
