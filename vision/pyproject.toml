@@ -2,13 +2,20 @@
 name = "racevision"
 version = "0.1.0"
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "numpy>=2.5",
+    "supervision>=0.31.7",
+    "trackers>=2.7.0,<2.8",
+]
 
 [dependency-groups]
 dev = [
+    "hypothesis>=6.170.15",
     "mypy>=2.4.1",
     "pytest>=9.2.0",
     "ruff>=0.17.5",
+    "scipy>=1.18",
+    "scipy-stubs>=1.18.1.1",
 ]
 
 [build-system]

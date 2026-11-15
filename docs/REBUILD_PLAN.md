@@ -1,6 +1,6 @@
 # Race Timing System — Rebuild Plan
 
-> Status: **draft for discussion** · Last updated 2026-11-12
+> Status: **draft for discussion** · Last updated 2026-11-15
 
 ## 1. Goals
 
@@ -92,10 +92,13 @@ docs/
 
 ## 6. Vision strategy
 
-- **Detection:** a permissively licensed bib detector (YOLOX-Nano, RF-DETR Nano or D-FINE-N, chosen by the Phase 3 spike) behind an ONNX interface, converted to CoreML / TFLite / NCNN. **No Ultralytics in anything we ship.** See [ADR 0001](decisions/0001-licence-and-detector.md).
+- **Time the person, not the bib** ([ADR 0003](decisions/0003-timing-on-the-tracked-object.md)). The pipeline tracks people and times the moment a track crosses the line. The bib only identifies the track, and it can be read anywhere along it. A crossing whose bib was never read is still sent, and goes to review with its crop.
+- **Detection:** one permissively licensed detector for **people and bibs** (YOLOX-Nano, RF-DETR Nano or D-FINE-N, chosen by the Phase 3 spike), fine-tuned from COCO weights with COCO mixed in so it keeps the general classes. It sits behind an ONNX interface, converted to CoreML / TFLite / NCNN. **No Ultralytics in anything we ship.** See [ADR 0001](decisions/0001-licence-and-detector.md).
 - **Recognition:** replace general OCR with a **digit-level model**. Either YOLO with 10 digit classes run on the bib crop, or a tiny CRNN. It's far cheaper than EasyOCR, runs on the phone's neural-network chip, and handles bib fonts better.
-- **Combine readings across frames:** accumulate a confidence per digit over the life of a track, then match the result against the registered bib list using edit distance. A probable 3-digit read that matches exactly one entered bib becomes a confident read.
-- **Timing:** the moment the torso or bib box centre crosses a configurable line, interpolated between frames. Real systems time on the torso, so a person detector may beat the bib box. The evaluation harness will settle it.
+- **Combine readings across frames:** bib boxes are matched to the person box that contains them. Readings are accumulated over the life of the track and matched against the registered bib list using edit distance. A probable 3-digit read that matches exactly one entered bib becomes a confident read, and recognition stops for that track.
+- **Timing:** interpolated between frames, with two line geometries. With the camera **in the plane of the finish line**, the line is drawn on the image and the torso (box centre) is timed against it. From **any other angle**, a line drawn on the image suffers from parallax, so four marked points on the ground give a homography and the **bottom centre of the person box** is timed against the line on the ground. The harness compares both.
+- **Sport profiles:** the tracked object, the timing anchor (torso or front) and where identity comes from live in a profile. Only running is built. Cycling and rowing are sketched in ADR 0003, and rowing needs crew entries and lane-based identity first.
+- **Re-identification** across phones and timing points is deferred to fusion v2 (Phase 5). The choice between embeddings sent with observations and crops sent to a central service is open (ADR 0003).
 - **Fusion (server-side):** observations from phones at the same timing point within a ±N s window, with compatible bibs, merge into one read. Conflicts and solitary low-confidence reads go to review.
 
 ### Data strategy (starting with no footage)
@@ -110,7 +113,7 @@ We have no recorded races yet, so data collection starts in Phase 0 and runs in 
 2. **Staged sessions with consent, first-hand and soon:** a club track session or friends with printed bibs. These let us script the hard cases (bunched finishes, occlusion, low sun, rain, bibs on shorts, sprint finishes) and give exact ground truth. It's also the only footage we can **publish as an open dataset**, as long as participants explicitly agree.
 3. **Real races, with permission:** a local club race or cross-country fixture (the season is under way now). Get the organiser's sign-off, put a notice at the finish and a line in the entry privacy notice, and get the race's official results to use as ground truth. Film with **two phones** at the finish to test multi-camera from day one. Real-race footage stays private: it's for internal evaluation only and is deleted on a set schedule.
 4. **Recording protocol (until the app can record):** stock camera at 60 fps, phones locked off on tripods. Start each clip by filming an internet-synced clock (e.g. time.is) so the video can be lined up with the official times. Note the camera height, distance and angle for each clip.
-5. **Labelling:** CVAT or Label Studio, pre-labelled with the legacy `best.pt` to save time. Ground truth per runner = bib number + the frame where they cross the line + an occlusion flag.
+5. **Labelling:** CVAT or Label Studio, pre-labelled with the legacy `best.pt` to save time. Ground truth per runner = bib number + the frame where their torso crosses the line + their box at that frame + an occlusion flag.
 6. **Governance:** footage of identifiable people is personal data under UK GDPR, *even in a public place*. The legacy ethics doc gets that wrong. Write a short data policy covering the lawful basis, notices, retention (e.g. crops deleted 30 days after results are final), access requests, and what can be published.
 
 A useful side effect: the capture app's first build should be a **"record only" mode** that saves video with the sensor's frame timestamps and the measured clock offset. From then on, every outing produces data we can evaluate against.
@@ -160,13 +163,25 @@ Delivered as PR-sized slices into `v2`, roughly in this order:
 - [x] CSV import and export for entries and results. Keep compatibility with the legacy CSV examples
 - [x] OpenAPI schema published, contract tests in `protocol/`
 
-### Phase 2: Vision reference pipeline and evaluation (≈2–4 weeks, alongside Phase 1)
-- [ ] Synthetic bib generator, and train the digit model on synthetic data + SVHN + Roboflow crops
-- [ ] Label the first staged session (and a race, once one is available). Ground truth = bib + crossing frame for each runner
-- [ ] Until real footage exists, the harness runs on the public datasets (still images, so recognition only). Timing accuracy is measured once the staged footage is in
+### Phase 2: Vision reference pipeline and evaluation (≈2–4 weeks)
+
+Timing is on the person, not the bib ([ADR 0003](decisions/0003-timing-on-the-tracked-object.md)). Delivered as slices into `v2`:
+
+| Slice | Contents |
+|---|---|
+| 2.1 Tracking core ✅ | No ML: boxes, ByteTrack (Roboflow `trackers`, Apache-2.0) behind an adapter, line crossing with sub-frame interpolation (in-plane and ground-plane lines), bib-to-person matching, bib voting snapped to the registered bibs, sport profile, crossing pipeline |
+| 2.2 Evaluation harness | Ground-truth format, synthetic scenes with known answers, metrics (**missed finishers, bib accuracy, timing error p50/p95, false reads**, plus HOTA, IDF1 and ID switches for tracking), report per clip. **Tracker comparison** on our footage: ByteTrack, OC-SORT, BoT-SORT, C-BIoU, and ByteTraX's open-scene changes (lenient thresholds, no high/low split, stricter track start) re-implemented as ByteTrack settings. Re-measure the pipeline's identity-doubt thresholds on real footage |
+| 2.3 Synthetic bibs | Generator: fonts, colours, perspective, creases, blur, occlusion, composited onto person crops |
+| 2.4 Digit recogniser | Trained on synthetic bibs + public data (licences permitting), compared with EasyOCR and PaddleOCR, ONNX export |
+| 2.5 Detector | Person + bib detector fine-tuned from COCO weights, ONNX inference adapter, pre-labelling tools |
+| 2.6 Simulated device | Replays footage through the pipeline and sends observations over the real device protocol: the end-to-end test rig |
+
 - [ ] Python reference pipeline in `vision/`: detection, tracking, line crossing, digit recognition, bib-list snapping
-- [ ] Evaluation harness: **detection recall, bib accuracy, timing error (p50/p95), false-read rate**, with a report per clip
+- [ ] Evaluation harness: **missed finishers, bib accuracy, timing error (p50/p95), false-read rate**, with a report per clip
+- [ ] Until real footage exists, the harness runs on synthetic scenes and the public datasets (still images, so recognition only). Timing accuracy on real video is measured once the staged footage is in
+- [ ] Synthetic bib generator, and train the digit model on synthetic data + public data whose licences allow it ([`vision/datasets.md`](../vision/datasets.md))
 - [ ] Train the digit recogniser and compare it against EasyOCR and PaddleOCR baselines
+- [ ] Label the first staged session (and a race, once one is available). Ground truth = bib + torso crossing frame + box + occlusion flag for each runner
 - [ ] "Simulated device": replays footage and talks the real device protocol. This becomes the end-to-end test rig
 
 ### Phase 3: Mobile spike, then capture app (spike ≈1–2 weeks, app ≈4–6 weeks)
@@ -182,6 +197,7 @@ Delivered as PR-sized slices into `v2`, roughly in this order:
 
 ### Phase 5: Multiple cameras and splits (≈2–3 weeks)
 - [ ] Fusion v2: several devices per timing point, conflict resolution, per-device health weighting
+- [ ] Re-identification across phones and timing points: decide between embeddings sent with observations and crops sent to a central service ([ADR 0003](decisions/0003-timing-on-the-tracked-object.md))
 - [ ] Split timing points and course validation (missed split → flagged)
 - [ ] Start-line timing for chip times
 
